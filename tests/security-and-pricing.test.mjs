@@ -1,0 +1,52 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { loadTypeScript } from "./load-typescript.mjs";
+
+const { hashPassword, verifyPassword } = loadTypeScript(new URL("../src/lib/auth/password.ts", import.meta.url));
+const { addTokenToSession, addUserToToken } = loadTypeScript(new URL("../src/lib/auth/session.ts", import.meta.url));
+const { shippingFor } = loadTypeScript(new URL("../src/lib/pricing.ts", import.meta.url));
+const { parseCart } = loadTypeScript(new URL("../src/lib/cart.ts", import.meta.url));
+
+test("password hashes use unique salts and verify only the matching password", async () => {
+  const first = await hashPassword("correct horse battery staple");
+  const second = await hashPassword("correct horse battery staple");
+
+  assert.match(first, /^scrypt\$[a-f0-9]{32}\$[a-f0-9]{128}$/);
+  assert.notEqual(first, second);
+  assert.equal(await verifyPassword("correct horse battery staple", first), true);
+  assert.equal(await verifyPassword("wrong password", first), false);
+  assert.equal(await verifyPassword("correct horse battery staple", "invalid"), false);
+});
+
+test("Auth.js token and session carry the authenticated database identity and role", () => {
+  const token = addUserToToken({}, { id: "customer-123", role: "CUSTOMER" });
+  assert.equal(token.sub, "customer-123");
+  assert.equal(token.role, "CUSTOMER");
+
+  const session = addTokenToSession({ user: { name: "A", email: "a@example.com" }, expires: "2099-01-01" }, token);
+  assert.equal(session.user.id, "customer-123");
+  assert.equal(session.user.role, "CUSTOMER");
+
+  const adminToken = addUserToToken({}, { id: "admin-123", role: "ADMIN" });
+  const adminSession = addTokenToSession({ user: {}, expires: "2099-01-01" }, adminToken);
+  assert.equal(adminSession.user.id, "admin-123");
+  assert.equal(adminSession.user.role, "ADMIN");
+});
+
+test("shipping is free at the configured threshold and charged below it", () => {
+  assert.equal(shippingFor(99.99, 20, 100), 20);
+  assert.equal(shippingFor(100, 20, 100), 0);
+  assert.equal(shippingFor(100, 20, null), 20);
+});
+
+test("cart restoration rejects malformed entries and clamps quantities", () => {
+  const lines = parseCart([
+    { key: "ok", slug: "gold-jug", name: "إبريق", image: "/products/jug.jpg", price: 45, qty: 100 },
+    { key: "bad-url", slug: "other", name: "صورة غير موثوقة", image: "https://example.invalid/image.jpg", price: 10, qty: 1 },
+    { key: "bad-qty", slug: "bad", name: "كمية غير صالحة", image: "/products/jug.jpg", price: 10, qty: 0 },
+  ]);
+
+  assert.equal(lines.length, 1);
+  assert.equal(lines[0].qty, 99);
+  assert.equal(lines[0].slug, "gold-jug");
+});

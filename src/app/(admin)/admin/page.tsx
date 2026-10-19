@@ -1,30 +1,44 @@
 import Link from "next/link";
 import Image from "next/image";
+import { AlertTriangle, ArrowUpLeft, Boxes, Package, ShoppingBag, Wallet } from "lucide-react";
 import { StatusSelect } from "@/components/admin/Controls";
 import s from "@/components/admin/admin.module.css";
-import { stats } from "@/lib/data/admin";
-import { db } from "@/lib/data/db";
+import { getRecentOrders, stats } from "@/lib/data/admin";
 import { formatPrice } from "@/lib/format";
 
-export default function Dashboard() {
-  const st = stats();
+export default async function Dashboard() {
+  const [st, orders] = await Promise.all([stats(), getRecentOrders()]);
   return (
     <>
+      <header className={s.pageHeader}>
+        <div><span className={s.eyebrow}>نظرة عامة</span><h1>الرئيسية</h1><p>ملخص حركة المتجر والمهام التي تحتاج متابعة.</p></div>
+        <div className={s.pageActions}><Link href="/admin/products/new" className={s.btn}><Package size={16} /> إضافة منتج</Link></div>
+      </header>
       <div className={s.stats}>
-        <div className={s.stat}><small>المنتجات</small><b>{st.products}</b></div>
-        <div className={s.stat}><small>الطلبات</small><b>{st.orders}</b></div>
-        <div className={s.stat}><small>مخزون منخفض</small><b>{st.low}</b></div>
-        <div className={s.stat}><small>المبيعات</small><b>{formatPrice(st.sales)}</b></div>
+        <div className={s.stat}><div className={s.statTop}>المنتجات <span className={`${s.statIcon} ${s.greenIcon}`}><Package size={17} /></span></div><b className={s.statValue}>{st.products}</b><small className={s.statNote}>منتج مسجل في الكتالوج</small></div>
+        <div className={s.stat}><div className={s.statTop}>الطلبات <span className={`${s.statIcon} ${s.blueIcon}`}><ShoppingBag size={17} /></span></div><b className={s.statValue}>{st.orders}</b><small className={s.statNote}>إجمالي الطلبات المسجلة</small></div>
+        <div className={s.stat}><div className={s.statTop}>مخزون منخفض <span className={`${s.statIcon} ${s.redIcon}`}><AlertTriangle size={17} /></span></div><b className={s.statValue}>{st.low}</b><small className={s.statNote}>منتج عند حد التنبيه أو أقل</small></div>
+        <div className={s.stat}><div className={s.statTop}>المبيعات <span className={`${s.statIcon} ${s.amberIcon}`}><Wallet size={17} /></span></div><b className={s.statValue}>{formatPrice(st.sales)}</b><small className={s.statNote}>من الطلبات غير الملغاة</small></div>
       </div>
-      <div className={s.bar}><h2>آخر الطلبات</h2><Link href="/admin/orders" className={s.sm}>كل الطلبات</Link></div>
-      {db.orders.slice(0, 5).map((o) => (
-        <div key={o.orderNumber} className={s.row}>
-          <Image src={o.items[0].image} alt="" width={48} height={48} />
-          <div className={s.grow}><b>{o.orderNumber}</b><small>{o.customer.name} · {formatPrice(o.total)}</small></div>
-          <StatusSelect orderNumber={o.orderNumber} status={o.status} />
-          <Link href={`/admin/orders/${o.orderNumber}`} className={s.sm}>التفاصيل</Link>
-        </div>
-      ))}
+      <div className={s.sectionHead}><div><h2>أحدث الطلبات</h2><p>آخر ما وصل إلى المتجر</p></div><Link href="/admin/orders" className={s.btnGhost}>عرض كل الطلبات <ArrowUpLeft size={15} /></Link></div>
+      {orders.length === 0 ? <div className={s.emptyState}>لا توجد طلبات حتى الآن.</div> : (
+        <div className={s.tableWrap}><table className={s.table}>
+          <thead><tr><th>الطلب</th><th>العميل</th><th>الإجمالي</th><th>الحالة</th><th>الإجراء</th></tr></thead>
+          <tbody>{orders.map((o) => (
+            <tr key={o.orderNumber}>
+              <td><div className={s.itemCell}><Image className={s.thumb} src={o.image} alt="" width={42} height={42} /><b>{o.orderNumber}</b></div></td>
+              <td>{o.customerName}</td><td><b>{formatPrice(o.total)}</b></td>
+              <td><StatusSelect orderNumber={o.orderNumber} status={o.status} /></td>
+              <td><Link href={`/admin/orders/${o.orderNumber}`} className={s.sm}>التفاصيل</Link></td>
+            </tr>
+          ))}</tbody>
+        </table></div>
+      )}
+      <div className={s.sectionHead}><div><h2>اختصارات الإدارة</h2><p>انتقل مباشرة إلى المهام اليومية</p></div></div>
+      <div className={s.pageActions}>
+        <Link href="/admin/inventory" className={s.btnGhost}><Boxes size={16} /> مراجعة المخزون</Link>
+        <Link href="/admin/products" className={s.btnGhost}><Package size={16} /> إدارة المنتجات</Link>
+      </div>
     </>
   );
 }

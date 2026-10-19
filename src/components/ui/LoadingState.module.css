@@ -1,0 +1,10 @@
+.spinner{display:inline-block;flex:0 0 auto;width:1em;aspect-ratio:1;border:2px solid currentColor;border-inline-end-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-.12em}
+.large{width:2rem;border-width:3px}
+.screen{min-height:48vh;display:grid;justify-items:center;align-content:center;gap:12px;padding:40px 16px;color:var(--muted);text-align:center}
+.screen p{font-weight:600}
+.screen .spinner{color:var(--teal)}
+.fullPage{min-height:100vh}
+.progress{display:block;width:min(220px,60vw);height:4px;overflow:hidden;border-radius:999px;background:var(--line)}
+.progress span{display:block;width:38%;height:100%;border-radius:inherit;background:var(--gold);animation:progress 1.15s ease-in-out infinite alternate}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes progress{from{transform:translateX(0)}to{transform:translateX(165%)}}

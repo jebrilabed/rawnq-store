@@ -1,31 +1,45 @@
 import { saveSettingsAction } from "../actions";
+import { SubmitButton } from "@/components/admin/Controls";
+import { DeliveryAreasEditor } from "@/components/admin/DeliveryAreasEditor";
 import s from "@/components/admin/admin.module.css";
-import { db } from "@/lib/data/db";
+import { getSettings } from "@/lib/data/db";
 
-export default function SettingsAdmin({ searchParams }: { searchParams: { error?: string; saved?: string } }) {
-  const st = db.settings;
+export default async function SettingsAdmin({ searchParams }: { searchParams: { error?: string; saved?: string } }) {
+  const st = await getSettings();
   return (
     <>
-      <div className={s.bar}><h1>إعدادات المتجر</h1></div>
+      <header className={s.pageHeader}><div><span className={s.eyebrow}>التشغيل</span><h1>إعدادات المتجر</h1><p>بيانات المتجر والشحن وطرق الدفع وحدود المخزون.</p></div></header>
       {searchParams.error && <p role="alert" className={s.error}>{searchParams.error}</p>}
       {searchParams.saved && <p className={s.saved}>تم الحفظ</p>}
-      <form action={saveSettingsAction} className={s.form}>
-        <label className={s.label}>اسم المتجر<input className={s.field} name="storeName" defaultValue={st.storeName} required /></label>
-        <div className={s.two}>
-          <label className={s.label}>الهاتف<input className={s.field} name="phone" defaultValue={st.phone} dir="ltr" /></label>
-          <label className={s.label}>واتساب<input className={s.field} name="whatsapp" defaultValue={st.whatsapp} dir="ltr" /></label>
+      <form action={saveSettingsAction} className={`${s.form} ${s.settingsForm}`}>
+        <section className={s.settingsSection}>
+          <h2>الهوية والتواصل</h2><p>المعلومات التي تظهر للمتسوقين في المتجر.</p>
+          <div className={s.settingsGrid}>
+            <label className={`${s.label} ${s.settingsWide}`}>اسم المتجر<input className={s.field} name="storeName" defaultValue={st.storeName} required /></label>
+            <label className={`${s.label} ${s.settingsWide}`}>رقم الجوال وواتساب<input className={s.field} name="phone" type="tel" defaultValue={st.phone || st.whatsapp} dir="ltr" autoComplete="tel" /></label>
+            <label className={`${s.label} ${s.settingsWide}`}>حساب إنستغرام<input className={s.field} name="instagram" defaultValue={st.instagram} dir="ltr" /></label>
+          </div>
+        </section>
+        <section className={s.settingsSection}>
+          <h2>مناطق التوصيل والمخزون</h2><p>أضف مناطق التوصيل وحدد رسوم كل منطقة على حدة.</p>
+          <div className={s.settingsGrid}>
+            <label className={s.label}>حد تنبيه المخزون المنخفض<input className={s.field} name="lowStockThreshold" type="number" min={0} defaultValue={st.lowStockThreshold} /></label>
+          </div>
+          <DeliveryAreasEditor initial={st.deliveryAreas} />
+        </section>
+        <section className={s.settingsSection}>
+          <h2>طرق الدفع</h2><p>فعّل الوسائل المتاحة عند إتمام الطلب.</p>
+          <div className={s.settingsGrid}>
+            <label className={s.check}><input type="checkbox" name="cod" defaultChecked={st.cod} /> الدفع عند الاستلام</label>
+            <label className={s.check}><input type="checkbox" name="bank" defaultChecked={st.bank} /> تحويل بنكي</label>
+            <label className={s.label}>اسم صاحب الحساب<input className={s.field} name="bankAccountName" defaultValue={st.bankAccountName} maxLength={120} autoComplete="name" /></label>
+            <label className={s.label}>رقم الحساب<input className={s.field} name="bankAccountNumber" defaultValue={st.bankAccountNumber} maxLength={34} dir="ltr" inputMode="numeric" /></label>
+            <label className={`${s.label} ${s.settingsWide}`}>رقم الآيبان (IBAN)<input className={s.field} name="bankIban" defaultValue={st.bankIban} maxLength={34} dir="ltr" autoCapitalize="characters" /></label>
+          </div>
+        </section>
+        <div className={s.settingsActions}>
+          <SubmitButton className={s.btn}>حفظ الإعدادات</SubmitButton>
         </div>
-        <label className={s.label}>حساب إنستغرام<input className={s.field} name="instagram" defaultValue={st.instagram} dir="ltr" /></label>
-        <div className={s.two}>
-          <label className={s.label}>رسوم الشحن (₪)<input className={s.field} name="shippingFee" type="number" min={0} step="0.5" defaultValue={st.shippingFee} required /></label>
-          <label className={s.label}>شحن مجاني فوق (₪)<input className={s.field} name="freeShippingFrom" type="number" min={0} defaultValue={st.freeShippingFrom ?? ""} placeholder="فارغ = معطّل" /></label>
-        </div>
-        <label className={s.label}>حد تنبيه المخزون المنخفض<input className={s.field} name="lowStockThreshold" type="number" min={0} defaultValue={st.lowStockThreshold} /></label>
-        <b>طرق الدفع</b>
-        <label className={s.check}><input type="checkbox" name="cod" defaultChecked={st.cod} /> الدفع عند الاستلام</label>
-        <label className={s.check}><input type="checkbox" name="bank" defaultChecked={st.bank} /> تحويل بنكي</label>
-        <label className={s.label}>بيانات الحساب البنكي (تظهر للزبون)<textarea className={s.field} name="bankDetails" rows={3} defaultValue={st.bankDetails} maxLength={500} /></label>
-        <button className={s.btn}>حفظ الإعدادات</button>
       </form>
     </>
   );

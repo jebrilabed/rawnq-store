@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FavoriteButton } from "@/components/storefront/FavoriteButton";
 import { VariantPicker } from "@/components/storefront/VariantPicker";
 import s from "@/components/storefront/storefront.module.css";
 import { getProduct } from "@/lib/data/catalog";
@@ -24,6 +25,7 @@ export default async function ProductPage({ params }: Props) {
       <div className={s.panel}>
         <Link href={`/${params.locale}/products`} className={s.muted}>← كل المنتجات</Link>
         <h1>{product.name}</h1>
+        <div className={s.favoriteDetail}><FavoriteButton productId={product.id} productName={product.name} /><span>أضف إلى المفضلة</span></div>
         <p className={s.muted}>{product.description}</p>
         <VariantPicker product={product} />
       </div>

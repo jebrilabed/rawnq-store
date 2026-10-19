@@ -2,12 +2,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Menu, ShoppingCart, User, X } from "lucide-react";
+import { Heart, Menu, ShoppingCart, User, X } from "lucide-react";
 import { useCart } from "./CartProvider";
+import { useFavorites } from "./FavoritesProvider";
 import s from "./storefront.module.css";
 
-export function Header({ locale }: { locale: string }) {
+export function Header({ locale, storeName }: { locale: string; storeName: string }) {
   const { count } = useCart();
+  const favorites = useFavorites();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const base = `/${locale}`;
@@ -21,6 +23,7 @@ export function Header({ locale }: { locale: string }) {
   const links = [
     { href: base, label: "الرئيسية" },
     { href: `${base}/products`, label: "المنتجات" },
+    { href: `${base}/favorites`, label: "المفضلة" },
     { href: `${base}/orders`, label: "طلباتي" },
   ];
 
@@ -30,13 +33,17 @@ export function Header({ locale }: { locale: string }) {
         <div className={`${s.wrap} ${s.bar}`}>
           <button className={s.menuBtn} onClick={() => setOpen(true)} aria-label="القائمة"><Menu size={22} /></button>
           <Link href={base} className={s.logo}>
-            <Image src="/brand/logo.png" alt="شعار رونق" width={44} height={44} priority />
-            RAWNQ
+            <Image src="/brand/logo.png" alt={`شعار ${storeName}`} width={44} height={44} priority />
+            <span className={s.logoName}>{storeName}</span>
           </Link>
           <nav className={s.nav} aria-label="التنقل الرئيسي">
             {links.map((l) => <Link key={l.href} href={l.href}>{l.label}</Link>)}
           </nav>
           <Link href={`${base}/login`} className={s.iconBtn} aria-label="الحساب"><User size={22} /></Link>
+          <Link href={`${base}/favorites`} className={s.iconBtn} aria-label={`المفضلة، ${favorites.count} منتجات`}>
+            <Heart size={21} />
+            {favorites.count > 0 && <span className={s.badge}>{favorites.count}</span>}
+          </Link>
           <Link href={`${base}/cart`} className={s.iconBtn} aria-label="سلة التسوق">
             <ShoppingCart size={22} />
             {count > 0 && <span className={s.badge}>{count}</span>}

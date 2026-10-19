@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { formatPrice } from "@/lib/format";
-import { PAYMENT_LABEL, STATUS_LABEL, readOrders, type OrderSummary } from "@/lib/orders";
+import { PAYMENT_LABEL, STATUS_LABEL, readOrders, type CustomerOrderListItem, type OrderSummary } from "@/lib/orders";
 import s from "./storefront.module.css";
 
 function useOrders() {
@@ -14,9 +14,7 @@ function useOrders() {
 }
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("ar");
 
-export function OrdersList({ locale }: { locale: string }) {
-  const orders = useOrders();
-  if (!orders) return null;
+export function OrdersList({ locale, orders }: { locale: string; orders: CustomerOrderListItem[] }) {
   if (!orders.length) {
     return (
       <div className={s.empty}>
@@ -27,29 +25,33 @@ export function OrdersList({ locale }: { locale: string }) {
   }
   return (
     <>
-      {orders.map((o) => (
-        <Link key={o.orderNumber} href={`/${locale}/orders/${o.orderNumber}`} className={s.line}>
-          <Image src={o.items[0].image} alt="" width={64} height={64} />
-          <div className={s.lineBody}><b>{o.orderNumber}</b><span>{fmtDate(o.createdAt)} · {formatPrice(o.total)}</span></div>
-          <span className={s.pill}>{STATUS_LABEL[o.status]}</span>
-        </Link>
-      ))}
+      <div className={s.ordersList}>
+        {orders.map((o) => (
+          <Link key={o.orderNumber} href={`/${locale}/orders/${o.orderNumber}`} className={s.orderRow}>
+            <Image src={o.image} alt="" width={72} height={72} />
+            <div className={s.lineBody}>
+              <b>طلب {o.orderNumber}</b>
+              <span className={s.muted}>{fmtDate(o.createdAt)}</span>
+              <span>{o.itemCount} منتجات · {formatPrice(o.total)}</span>
+            </div>
+            <span className={s.pill}>{STATUS_LABEL[o.status]}</span>
+          </Link>
+        ))}
+      </div>
     </>
   );
 }
 
-export function OrderDetail({ locale, orderNumber, confirmation }: { locale: string; orderNumber: string; confirmation?: boolean }) {
-  const orders = useOrders();
-  if (!orders) return null;
-  const o = orders.find((x) => x.orderNumber === orderNumber);
-  if (!o) {
+export function OrderDetail({ locale, orderNumber, order, confirmation }: { locale: string; orderNumber: string; order?: OrderSummary; confirmation?: boolean }) {
+  if (!order) {
     return (
       <div className={s.empty}>
-        <h2>الطلب غير موجود على هذا الجهاز</h2>
+        <h2>الطلب غير موجود</h2>
         <Link className={s.btn} href={`/${locale}/orders`}>طلباتي</Link>
       </div>
     );
   }
+  const o = order;
   return (
     <>
       {confirmation && (
@@ -78,9 +80,18 @@ export function OrderDetail({ locale, orderNumber, confirmation }: { locale: str
       </div>
       <div className={s.summary}>
         <div><span>العنوان</span><b>{o.customer.city}، {o.customer.address}</b></div>
+        {o.deliveryAreaName && <div><span>منطقة التوصيل</span><b>{o.deliveryAreaName}</b></div>}
         <div><span>الدفع</span><b>{PAYMENT_LABEL[o.payment]}</b></div>
+        {o.paymentReceiptUrl && <div><span>إيصال التحويل</span><a className={s.link} href={o.paymentReceiptUrl} target="_blank" rel="noreferrer">عرض الإيصال</a></div>}
       </div>
       <Link className={s.btn} href={`/${locale}/products`}>متابعة التسوق</Link>
     </>
   );
+}
+
+export function OrderConfirmation({ locale, orderNumber, initialOrder }: { locale: string; orderNumber: string; initialOrder?: OrderSummary }) {
+  const localOrders = useOrders();
+  if (!initialOrder && !localOrders) return null;
+  const order = initialOrder ?? localOrders?.find((item) => item.orderNumber === orderNumber);
+  return <OrderDetail locale={locale} orderNumber={orderNumber} order={order} confirmation />;
 }

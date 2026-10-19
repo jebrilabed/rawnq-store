@@ -1,10 +1,14 @@
 import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/data/prisma";
 
 /**
- * بوابة لوحة التحكم. استدعِها في layout لوحة التحكم وفي **كل** Server Action.
- * TODO: اربطها بـ Auth.js: auth() ثم أعد قراءة الدور من قاعدة البيانات (لا تثق بالجلسة وحدها).
- * للأمان: ممنوعة افتراضياً في الإنتاج حتى يتم الربط (أو ALLOW_INSECURE_ADMIN=1 لتجربة مؤقتة فقط).
+ * بوابة لوحة التحكم. استدعِها في layout لوحة التحكم وفي كل Server Action.
  */
 export async function requireAdmin() {
-  if (process.env.NODE_ENV === "production" && process.env.ALLOW_INSECURE_ADMIN !== "1") redirect("/ar/login");
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId || session.user.role !== "ADMIN") redirect("/ar/login?next=admin");
+  const user = await prisma.adminUser.findUnique({ where: { id: userId }, select: { role: true } });
+  if (user?.role !== "ADMIN") redirect("/ar/login?next=admin");
 }

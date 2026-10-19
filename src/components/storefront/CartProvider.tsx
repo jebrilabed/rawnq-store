@@ -1,10 +1,11 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { parseCart, type CartLine } from "@/lib/cart";
 
-export type CartLine = { key: string; slug: string; name: string; image: string; price: number; qty: number; option?: string };
+export type { CartLine } from "@/lib/cart";
 type Ctx = {
   lines: CartLine[]; count: number; subtotal: number;
-  add: (line: Omit<CartLine, "qty">) => void;
+  add: (line: Omit<CartLine, "qty"> & { qty?: number }) => void;
   setQty: (key: string, qty: number) => void;
   remove: (key: string) => void;
   clear: () => void;
@@ -13,29 +14,28 @@ type Ctx = {
 const CartContext = createContext<Ctx | null>(null);
 const STORAGE_KEY = "rawnq-cart";
 
-/**
- * سلة على جهاز الزبون للتصميم فقط. في الإنتاج استخدم سلة الخادم
- * (رمز ضيف مُجزّأ + Server Actions) والتحقق من السعر والمخزون من قاعدة البيانات.
- */
+/** Keep cart selections on the device; checkout rechecks catalog prices and stock on the server. */
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    try { setLines(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]")); } catch { /* ignore */ }
+    try { setLines(parseCart(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]"))); } catch { setLines([]); }
     setReady(true);
   }, []);
   useEffect(() => {
     if (ready) try { localStorage.setItem(STORAGE_KEY, JSON.stringify(lines)); } catch { /* ignore */ }
   }, [lines, ready]);
 
-  const add = useCallback((line: Omit<CartLine, "qty">) => {
+  const add = useCallback((line: Omit<CartLine, "qty"> & { qty?: number }) => {
+    const quantity = Math.max(1, Math.min(99, Math.trunc(line.qty ?? 1)));
     setLines((cur) => cur.some((l) => l.key === line.key)
-      ? cur.map((l) => (l.key === line.key ? { ...l, qty: l.qty + 1 } : l))
-      : [...cur, { ...line, qty: 1 }]);
+      ? cur.map((l) => (l.key === line.key ? { ...l, qty: Math.min(99, l.qty + quantity) } : l))
+      : [...cur, { ...line, qty: quantity }]);
   }, []);
   const setQty = useCallback((key: string, qty: number) => {
-    setLines((cur) => cur.map((l) => (l.key === key ? { ...l, qty } : l)).filter((l) => l.qty > 0));
+    const nextQty = Number.isFinite(qty) ? Math.min(99, Math.trunc(qty)) : 0;
+    setLines((cur) => cur.map((l) => (l.key === key ? { ...l, qty: nextQty } : l)).filter((l) => l.qty > 0));
   }, []);
   const remove = useCallback((key: string) => setLines((cur) => cur.filter((l) => l.key !== key)), []);
 

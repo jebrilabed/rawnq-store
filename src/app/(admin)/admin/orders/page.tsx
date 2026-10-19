@@ -2,22 +2,27 @@ import Image from "next/image";
 import Link from "next/link";
 import { StatusSelect } from "@/components/admin/Controls";
 import s from "@/components/admin/admin.module.css";
-import { db } from "@/lib/data/db";
+import { getOrders } from "@/lib/data/admin";
 import { formatPrice } from "@/lib/format";
 
-export default function OrdersAdmin() {
+export default async function OrdersAdmin() {
+  const orders = await getOrders();
   return (
     <>
-      <div className={s.bar}><h1>الطلبات</h1></div>
-      {db.orders.length === 0 && <p className={s.muted}>لا توجد طلبات بعد.</p>}
-      {db.orders.map((o) => (
-        <div key={o.orderNumber} className={s.row}>
-          <Image src={o.items[0].image} alt="" width={48} height={48} />
-          <div className={s.grow}><b>{o.orderNumber}</b><small>{o.customer.name} · {formatPrice(o.total)}</small></div>
-          <StatusSelect orderNumber={o.orderNumber} status={o.status} />
-          <Link href={`/admin/orders/${o.orderNumber}`} className={s.sm}>التفاصيل</Link>
-        </div>
-      ))}
+      <header className={s.pageHeader}><div><span className={s.eyebrow}>المبيعات</span><h1>الطلبات</h1><p>راجع الطلبات الواردة وحدّث حالتها وتفاصيلها.</p></div><span className={s.pill}>{orders.length} طلب</span></header>
+      {orders.length === 0 ? <div className={s.emptyState}>لا توجد طلبات بعد.</div> : (
+        <div className={s.tableWrap}><table className={s.table}>
+          <thead><tr><th>رقم الطلب</th><th>العميل</th><th>الإجمالي</th><th>الحالة</th><th>تفاصيل</th></tr></thead>
+          <tbody>{orders.map((o) => (
+            <tr key={o.orderNumber}>
+              <td><div className={s.itemCell}><Image className={s.thumb} src={o.image} alt="" width={42} height={42} /><b>{o.orderNumber}</b></div></td>
+              <td>{o.customerName}</td><td><b>{formatPrice(o.total)}</b></td>
+              <td><StatusSelect orderNumber={o.orderNumber} status={o.status} /></td>
+              <td><Link href={`/admin/orders/${o.orderNumber}`} className={s.sm}>فتح الطلب</Link></td>
+            </tr>
+          ))}</tbody>
+        </table></div>
+      )}
     </>
   );
 }

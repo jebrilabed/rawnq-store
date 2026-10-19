@@ -6,14 +6,15 @@ export type OrderItem = { slug: string; name: string; image: string; option?: st
 export type OrderSummary = {
   orderNumber: string; createdAt: string; status: OrderStatus;
   customer: { name: string; phone: string; city: string; address: string; notes?: string };
-  payment: "cod" | "bank"; items: OrderItem[]; subtotal: number; shipping: number; total: number;
+  payment: "cod" | "bank"; deliveryAreaName?: string; paymentReceiptUrl?: string;
+  items: OrderItem[]; subtotal: number; shipping: number; total: number;
 };
-export const PAYMENT_LABEL = { cod: "الدفع عند الاستلام", bank: "تحويل بنكي" } as const;
+export type CustomerOrderListItem = {
+  orderNumber: string; createdAt: string; status: OrderStatus; itemCount: number; image: string; total: number;
+};
+export const PAYMENT_LABEL = { cod: "الدفع عند التوصيل", bank: "الدفع الفوري بالتحويل البنكي" } as const;
 
-/**
- * تخزين الطلبات في المتصفح للتصميم فقط. في الإنتاج اقرأ الطلبات من قاعدة البيانات
- * مع تقييدها بصاحب الحساب، وللضيف استخدم رمزاً موقّعاً خاصاً بالطلب.
- */
+/** Keep a local receipt copy for guest confirmation; saved orders remain in PostgreSQL. */
 const KEY = "rawnq-orders";
 export function readOrders(): OrderSummary[] {
   try { return JSON.parse(localStorage.getItem(KEY) ?? "[]"); } catch { return []; }

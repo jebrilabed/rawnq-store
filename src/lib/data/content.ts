@@ -1,4 +1,4 @@
-/** نصوص تجريبية: استبدلها بمحتوى حقيقي من قاعدة البيانات/لوحة التحكم. */
+/** Initial content used until the admin panel saves database values. */
 export const PAGES: Record<string, { title: string; body: string }> = {
   about: { title: "من نحن", body: "رونق Home & Living متجر للأدوات المنزلية والتخزين والديكور. نختار منتجاتنا بعناية لتمنح بيتك لمسة جمال وجودة." },
   delivery: { title: "التوصيل والاسترجاع", body: "نوصّل لجميع المحافظات، ويتم تأكيد موعد التوصيل هاتفياً بعد الطلب. تُحدد شروط الاستبدال والاسترجاع من إدارة المتجر." },

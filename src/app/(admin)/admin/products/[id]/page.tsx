@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/ProductForm";
 import s from "@/components/admin/admin.module.css";
-import { db } from "@/lib/data/db";
+import { getAdminProduct } from "@/lib/data/catalog";
+import { getCategories } from "@/lib/data/catalog";
 
-export default function EditProduct({ params, searchParams }: { params: { id: string }; searchParams: { error?: string } }) {
-  const product = db.products.find((p) => p.id === params.id);
+export default async function EditProduct({ params, searchParams }: { params: { id: string }; searchParams: { error?: string } }) {
+  const [product, categories] = await Promise.all([getAdminProduct(params.id), getCategories()]);
   if (!product) notFound();
-  return (<><div className={s.bar}><h1>تعديل: {product.name}</h1></div><ProductForm product={product} error={searchParams.error} /></>);
+  return (<><header className={s.pageHeader}><div><span className={s.eyebrow}>الكتالوج</span><h1>تعديل المنتج</h1><p>{product.name}</p></div></header><ProductForm product={product} categories={categories} error={searchParams.error} /></>);
 }

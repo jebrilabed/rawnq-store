@@ -1,15 +1,28 @@
 import { CheckoutForm } from "@/components/storefront/CheckoutForm";
 import s from "@/components/storefront/storefront.module.css";
-import { db } from "@/lib/data/db";
+import { getSettings } from "@/lib/data/db";
 
 export const dynamic = "force-dynamic";
 
-export default function CheckoutPage({ params }: { params: { locale: string } }) {
-  const { shippingFee, freeShippingFrom, cod, bank, bankDetails } = db.settings;
+export default async function CheckoutPage({ params }: { params: { locale: string } }) {
+  const settings = await getSettings();
+  const { deliveryAreas, cod, bank } = settings;
+  const bankDetails = [
+    settings.bankAccountName && `اسم صاحب الحساب: ${settings.bankAccountName}`,
+    settings.bankIban && `الآيبان (IBAN): ${settings.bankIban}`,
+    settings.bankAccountNumber && `رقم الحساب: ${settings.bankAccountNumber}`,
+  ].filter(Boolean).join("\n") || settings.bankDetails;
   return (
-    <main className={`${s.wrap} ${s.section}`}>
-      <div className={s.head}><h1>إتمام الطلب</h1></div>
-      <CheckoutForm locale={params.locale} shippingFee={shippingFee} freeFrom={freeShippingFrom} methods={{ cod, bank, bankDetails }} />
+    <main className={`${s.wrap} ${s.section} ${s.compactPage}`}>
+      <header className={s.checkoutPageHeader}>
+        <div><span>متجر {settings.storeName}</span><h1>إتمام الطلب</h1><p>أدخل بيانات التوصيل، ثم راجع طريقة الدفع والملخص.</p></div>
+        <ol className={s.checkoutProgress} aria-label="خطوات إتمام الطلب">
+          <li className={s.checkoutProgressActive}><b>01</b><span>التوصيل</span></li>
+          <li><b>02</b><span>الدفع</span></li>
+          <li><b>03</b><span>التأكيد</span></li>
+        </ol>
+      </header>
+      <CheckoutForm locale={params.locale} areas={deliveryAreas} methods={{ cod, bank, bankDetails }} />
     </main>
   );
 }
