@@ -4,6 +4,10 @@ const nextConfig = {
   poweredByHeader: false,
   experimental: {
     serverActions: { bodySizeLimit: "6mb" },
+    // Prisma 6 loads this WASM file by path at runtime; include it in Vercel's server trace.
+    outputFileTracingIncludes: {
+      "/*": ["./node_modules/.prisma/client/query_compiler_bg.wasm"],
+    },
   },
   images: {
     // Product images uploaded by the admin panel use Cloudinary.
