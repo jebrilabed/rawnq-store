@@ -40,6 +40,13 @@ try {
     });
   }
   await prisma.storeSettings.upsert({ where: { id: 1 }, create: { id: 1, storeName: "RAWNQ Home & Living", phone: "+972 569836183", instagram: "rawna.qstore26", shippingFee: 20, cod: true, bank: true }, update: {} });
+  if (await prisma.deliveryArea.count() === 0) {
+    await prisma.deliveryArea.createMany({ data: [
+      { name: "الضفة", fee: 20, sortOrder: 0 },
+      { name: "القدس", fee: 30, sortOrder: 1 },
+      { name: "الداخل", fee: 70, sortOrder: 2 },
+    ] });
+  }
   await prisma.storeContent.upsert({
     where: { id: 1 },
     create: {

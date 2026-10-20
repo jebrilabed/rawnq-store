@@ -34,7 +34,11 @@ export async function getSettings(): Promise<Settings> {
     lowStockThreshold: row?.lowStockThreshold ?? 5,
     deliveryAreas: areas.length
       ? areas.map((area) => ({ id: area.id, name: area.name, fee: Number(area.fee) }))
-      : [{ id: "legacy-delivery", name: "التوصيل", fee: shippingFee }],
+      : [
+        { id: "west-bank", name: "الضفة", fee: 20 },
+        { id: "jerusalem", name: "القدس", fee: 30 },
+        { id: "inside", name: "الداخل", fee: 70 },
+      ],
   };
 }
 

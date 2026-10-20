@@ -79,6 +79,19 @@ export async function getOrder(orderNumber: string) {
   return row ? toOrder(row) : undefined;
 }
 
+export async function getBestRouteShipment(orderNumber: string) {
+  const row = await prisma.storeOrder.findUnique({
+    where: { orderNumber },
+    select: { bestRouteState: true, bestRouteOrderId: true, bestRouteError: true, bestRouteUpdatedAt: true },
+  });
+  return row ? {
+    state: row.bestRouteState,
+    orderId: row.bestRouteOrderId ?? undefined,
+    error: row.bestRouteError ?? undefined,
+    updatedAt: row.bestRouteUpdatedAt?.toISOString(),
+  } : undefined;
+}
+
 export async function getCustomerOrders(customerUserId: string): Promise<CustomerOrderListItem[]> {
   const rows = await prisma.storeOrder.findMany({
     where: { customerUserId },

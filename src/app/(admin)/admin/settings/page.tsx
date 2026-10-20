@@ -3,12 +3,14 @@ import { SubmitButton } from "@/components/admin/Controls";
 import { DeliveryAreasEditor } from "@/components/admin/DeliveryAreasEditor";
 import s from "@/components/admin/admin.module.css";
 import { getSettings } from "@/lib/data/db";
+import { BestRouteConnectionCheck } from "@/components/admin/BestRouteConnectionCheck";
 
 export default async function SettingsAdmin({ searchParams }: { searchParams: { error?: string; saved?: string } }) {
   const st = await getSettings();
   return (
     <>
       <header className={s.pageHeader}><div><span className={s.eyebrow}>التشغيل</span><h1>إعدادات المتجر</h1><p>بيانات المتجر والشحن وطرق الدفع وحدود المخزون.</p></div></header>
+      <BestRouteConnectionCheck />
       {searchParams.error && <p role="alert" className={s.error}>{searchParams.error}</p>}
       {searchParams.saved && <p className={s.saved}>تم الحفظ</p>}
       <form action={saveSettingsAction} className={`${s.form} ${s.settingsForm}`}>

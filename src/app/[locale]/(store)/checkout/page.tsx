@@ -1,6 +1,7 @@
 import { CheckoutForm } from "@/components/storefront/CheckoutForm";
 import s from "@/components/storefront/storefront.module.css";
 import { getSettings } from "@/lib/data/db";
+import bestRouteAreaCatalog from "@/lib/integrations/best-route-areas.json";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export default async function CheckoutPage({ params }: { params: { locale: strin
           <li><b>03</b><span>التأكيد</span></li>
         </ol>
       </header>
-      <CheckoutForm locale={params.locale} areas={deliveryAreas} methods={{ cod, bank, bankDetails }} />
+      <CheckoutForm locale={params.locale} areas={deliveryAreas} courierAreas={bestRouteAreaCatalog.areas.map((area) => area.name)} methods={{ cod, bank, bankDetails }} />
     </main>
   );
 }

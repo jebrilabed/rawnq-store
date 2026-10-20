@@ -74,6 +74,10 @@ model StoreOrder {
   payment     String
   deliveryAreaName String?
   paymentReceiptUrl String?
+  bestRouteState String @default("NOT_SENT")
+  bestRouteOrderId String?
+  bestRouteError String?
+  bestRouteUpdatedAt DateTime?
   subtotal    Decimal     @db.Decimal(10, 2)
   shipping    Decimal     @db.Decimal(10, 2)
   total       Decimal     @db.Decimal(10, 2)

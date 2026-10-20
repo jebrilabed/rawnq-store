@@ -3,12 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusSelect } from "@/components/admin/Controls";
 import s from "@/components/admin/admin.module.css";
-import { getOrder } from "@/lib/data/admin";
+import { getBestRouteShipment, getOrder } from "@/lib/data/admin";
+import { BestRouteOrderButton } from "@/components/admin/BestRouteOrderButton";
 import { formatPrice } from "@/lib/format";
 import { PAYMENT_LABEL } from "@/lib/orders";
 
 export default async function OrderAdmin({ params }: { params: { orderNumber: string } }) {
-  const o = await getOrder(params.orderNumber);
+  const [o, shipment] = await Promise.all([getOrder(params.orderNumber), getBestRouteShipment(params.orderNumber)]);
   if (!o) notFound();
   return (
     <>
@@ -16,6 +17,8 @@ export default async function OrderAdmin({ params }: { params: { orderNumber: st
         <div><span className={s.eyebrow}>تفاصيل الطلب</span><h1>{o.orderNumber}</h1><p>{new Date(o.createdAt).toLocaleString("ar")}</p></div>
         <div className={s.pageActions}><StatusSelect orderNumber={o.orderNumber} status={o.status} /><Link href="/admin/orders" className={s.btnGhost}>العودة للطلبات</Link></div>
       </header>
+      {shipment && <BestRouteOrderButton orderNumber={o.orderNumber} payment={o.payment} orderStatus={o.status}
+        shipment={shipment} orderTypeConfigured={Boolean(process.env.BEST_ROUTE_ORDER_TYPE_ID?.trim())} />}
       <div className={s.sectionHead}><div><h2>المنتجات</h2><p>{o.items.length} صنف في هذا الطلب</p></div></div>
       <div className={s.tableWrap}><table className={s.table}>
         <thead><tr><th>المنتج</th><th>الخيار</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th></tr></thead>

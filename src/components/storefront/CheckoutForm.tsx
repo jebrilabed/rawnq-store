@@ -11,9 +11,9 @@ import { useCart } from "./CartProvider";
 import { Spinner } from "@/components/ui/LoadingState";
 import s from "./storefront.module.css";
 
-type Props = { locale: string; areas: DeliveryArea[]; methods: { cod: boolean; bank: boolean; bankDetails: string } };
+type Props = { locale: string; areas: DeliveryArea[]; courierAreas: string[]; methods: { cod: boolean; bank: boolean; bankDetails: string } };
 
-export function CheckoutForm({ locale, areas, methods }: Props) {
+export function CheckoutForm({ locale, areas, courierAreas, methods }: Props) {
   const { lines, subtotal, clear } = useCart();
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -101,8 +101,11 @@ export function CheckoutForm({ locale, areas, methods }: Props) {
             <label className={s.checkoutLabel}>رقم الهاتف
               <input className={`${s.input} ${s.phoneInput}`} name="phone" type="tel" placeholder="05xxxxxxxx" required autoComplete="tel" />
             </label>
-            <label className={s.checkoutLabel}>المدينة
-              <input className={s.input} name="city" placeholder="المدينة" required />
+            <label className={s.checkoutLabel}>المدينة / المنطقة
+              <select className={s.input} name="city" defaultValue="" required>
+                <option value="" disabled>اختر المدينة أو المنطقة</option>
+                {courierAreas.map((city) => <option key={city} value={city}>{city}</option>)}
+              </select>
             </label>
             <label className={s.checkoutLabel}>منطقة التوصيل
               <select className={s.input} value={deliveryAreaId} onChange={(event) => setDeliveryAreaId(event.target.value)} required>

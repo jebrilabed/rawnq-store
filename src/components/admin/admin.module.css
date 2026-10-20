@@ -119,6 +119,23 @@
 .settingsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
 .settingsWide{grid-column:1/-1}
 .settingsActions{padding-top:20px}
+.bestRouteCheck{display:grid;gap:12px;margin:0 0 20px;padding:16px;border:1px solid var(--a-line);border-radius:6px;background:#fff}
+.bestRouteHeading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.bestRouteHeading h2{margin-bottom:3px;font-size:1rem}
+.bestRouteHeading p,.bestRouteChecked{color:var(--a-muted);font-size:.8rem}
+.bestRouteResults{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.bestRouteResult{display:grid;gap:4px;min-width:0;padding:10px;border:1px solid var(--a-line);border-radius:5px;background:#fbfcfb}
+.bestRouteResult>span,.bestRouteResult small{color:var(--a-muted);font-size:.76rem}
+.bestRouteResult small{overflow-wrap:anywhere}
+.bestRouteOk{color:#167044;font-size:.82rem}
+.bestRouteFail{color:#a33131;font-size:.82rem}
+.bestRouteChecked{justify-self:end}
+.bestRouteShipment{display:grid;gap:12px;margin:0 0 22px;padding:16px;border:1px solid var(--a-line);border-radius:6px;background:#fff}
+.bestRouteShipmentInfo{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;max-width:450px;font-size:.82rem}
+.bestRouteShipmentInfo span{color:var(--a-muted)}
+.bestRouteShipmentInfo b{overflow-wrap:anywhere}
+.bestRouteConfirm{display:flex;align-items:flex-start;gap:8px;color:var(--a-ink);font-size:.82rem}
+.bestRouteNotice{padding:10px;border-radius:5px;background:#fff5dc;color:#765500;font-size:.82rem}
 .deliveryAreas{display:grid;gap:10px}
 .deliveryAreaRow{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,220px) auto;align-items:end;gap:10px;padding:12px;border:1px solid var(--a-line);border-radius:5px;background:#fff}
 .imagePreview{position:relative;width:min(100%,420px);aspect-ratio:3/2;overflow:hidden;border:1px solid var(--a-line);border-radius:5px;background:#f4f6f4}
@@ -127,5 +144,5 @@
 .actionPending{display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .statusControl{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
 @media(max-width:1050px){.shell{grid-template-columns:220px minmax(0,1fr)}.main{padding:24px 22px 40px}.top{padding-inline:22px}.stats{gap:9px}.stat{padding:14px}}
-@media(max-width:760px){.shell{display:block}.sidebar{position:static;height:auto;gap:14px;padding:12px 14px}.brand{padding:0 4px}.brand img{width:34px;height:34px}.navCaption,.sidebarFoot{display:none}.tabs{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tab{flex:0 0 auto;min-height:38px;padding:7px 10px;font-size:.82rem}.top{position:static;min-height:56px;padding:9px 16px}.topIdentity{display:none}.main{padding:21px 16px 36px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.pageHeader{align-items:flex-start;flex-direction:column;margin-bottom:20px}.pageHeader h1{font-size:1.45rem}.pageActions{width:100%}.settingsGrid,.variantAxes{grid-template-columns:1fr}.baseProductFields{grid-template-columns:repeat(2,minmax(0,1fr))}.settingsWide{grid-column:auto}}
+@media(max-width:760px){.shell{display:block}.sidebar{position:static;height:auto;gap:14px;padding:12px 14px}.brand{padding:0 4px}.brand img{width:34px;height:34px}.navCaption,.sidebarFoot{display:none}.tabs{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tab{flex:0 0 auto;min-height:38px;padding:7px 10px;font-size:.82rem}.top{position:static;min-height:56px;padding:9px 16px}.topIdentity{display:none}.main{padding:21px 16px 36px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.pageHeader{align-items:flex-start;flex-direction:column;margin-bottom:20px}.pageHeader h1{font-size:1.45rem}.pageActions{width:100%}.settingsGrid,.variantAxes{grid-template-columns:1fr}.bestRouteResults{grid-template-columns:repeat(2,minmax(0,1fr))}.baseProductFields{grid-template-columns:repeat(2,minmax(0,1fr))}.settingsWide{grid-column:auto}}
 @media(max-width:480px){.main{padding-inline:12px}.stat{padding:12px}.statValue{font-size:1.35rem}.statIcon{width:30px;height:30px}.table td,.table th{padding:10px}.two,.baseProductFields{grid-template-columns:1fr}.categoryAdd{grid-template-columns:1fr}.categoryAdd button{width:100%}.act{gap:4px}.inline{flex-wrap:wrap}}

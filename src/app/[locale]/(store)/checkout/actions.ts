@@ -7,6 +7,7 @@ import { getProduct } from "@/lib/data/catalog";
 import { uploadTransferReceipt } from "@/lib/data/cloudinary";
 import { getSettings } from "@/lib/data/db";
 import type { OrderItem, OrderSummary } from "@/lib/orders";
+import bestRouteAreaCatalog from "@/lib/integrations/best-route-areas.json";
 
 export type PlaceOrderInput = {
   customer: { name: string; phone: string; city: string; address: string; notes?: string };
@@ -43,7 +44,9 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   };
   if (customer.name.length < 2) return { ok: false, error: "أدخل الاسم الكامل." };
   if (!/^[0-9+\s-]{8,20}$/.test(customer.phone)) return { ok: false, error: "رقم الهاتف غير صحيح." };
-  if (customer.city.length < 2 || customer.address.length < 4) return { ok: false, error: "أدخل المدينة والعنوان بالتفصيل." };
+  if (!bestRouteAreaCatalog.areas.some((area) => area.name === customer.city) || customer.address.length < 4) {
+    return { ok: false, error: "اختر المدينة أو المنطقة من القائمة وأدخل العنوان بالتفصيل." };
+  }
   const st = await getSettings();
   if ((input.payment !== "cod" && input.payment !== "bank") || !st[input.payment]) return { ok: false, error: "اختر طريقة الدفع." };
   const areaId = clean(input.deliveryAreaId, 100);
