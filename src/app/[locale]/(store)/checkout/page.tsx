@@ -1,6 +1,8 @@
+import { auth } from "@/auth";
 import { CheckoutForm } from "@/components/storefront/CheckoutForm";
 import s from "@/components/storefront/storefront.module.css";
 import { getSettings } from "@/lib/data/db";
+import { prisma } from "@/lib/data/prisma";
 import bestRouteAreaCatalog from "@/lib/integrations/best-route-areas.json";
 import { translate } from "@/lib/i18n";
 
@@ -8,7 +10,16 @@ export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage({ params }: { params: { locale: string } }) {
   const tr = (text: string) => translate(params.locale, text);
-  const settings = await getSettings(params.locale);
+  const session = await auth();
+  const [settings, customer] = await Promise.all([
+    getSettings(params.locale),
+    session?.user?.role === "CUSTOMER" && session.user.id
+      ? prisma.customerUser.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, phone: true, city: true, address: true, deliveryAreaName: true },
+      })
+      : Promise.resolve(null),
+  ]);
   const { deliveryAreas, cod, bank } = settings;
   const bankDetails = [
     settings.bankAccountName && `${tr("اسم صاحب الحساب:")} ${settings.bankAccountName}`,
@@ -25,7 +36,13 @@ export default async function CheckoutPage({ params }: { params: { locale: strin
           <li><b>03</b><span>{tr("التأكيد")}</span></li>
         </ol>
       </header>
-      <CheckoutForm locale={params.locale} areas={deliveryAreas} courierAreas={bestRouteAreaCatalog.areas.map((area) => area.name)} methods={{ cod, bank, bankDetails }} />
+      <CheckoutForm
+        locale={params.locale}
+        areas={deliveryAreas}
+        courierAreas={bestRouteAreaCatalog.areas.map((area) => area.name)}
+        customer={customer ?? undefined}
+        methods={{ cod, bank, bankDetails }}
+      />
     </main>
   );
 }

@@ -10,7 +10,7 @@ export type Settings = {
   bankAccountName: string; bankIban: string; bankAccountNumber: string;
   deliveryAreas: DeliveryArea[];
 };
-export type DeliveryArea = { id: string; name: string; fee: number; translations: string };
+export type DeliveryArea = { id: string; value: string; name: string; fee: number; translations: string };
 export type Content = { about: string; delivery: string; faq: [string, string][] };
 export type StoredContent = Content & { translations: Record<string, { about: string; delivery: string; faq: [string, string][] }> };
 
@@ -35,11 +35,11 @@ export async function getSettings(locale = "ar"): Promise<Settings> {
     bankAccountNumber: row?.bankAccountNumber ?? "",
     lowStockThreshold: row?.lowStockThreshold ?? 5,
     deliveryAreas: areas.length
-      ? areas.map((area) => ({ id: area.id, name: localizedValue(area.translations, locale, area.name), fee: Number(area.fee), translations: area.translations }))
+      ? areas.map((area) => ({ id: area.id, value: area.name, name: localizedValue(area.translations, locale, area.name), fee: Number(area.fee), translations: area.translations }))
       : [
-        { id: "west-bank", name: translate(locale, "الضفة"), fee: 20, translations: "{}" },
-        { id: "jerusalem", name: translate(locale, "القدس"), fee: 30, translations: "{}" },
-        { id: "inside", name: translate(locale, "الداخل"), fee: 70, translations: "{}" },
+        { id: "west-bank", value: "الضفة", name: translate(locale, "الضفة"), fee: 20, translations: "{}" },
+        { id: "jerusalem", value: "القدس", name: translate(locale, "القدس"), fee: 30, translations: "{}" },
+        { id: "inside", value: "الداخل", name: translate(locale, "الداخل"), fee: 70, translations: "{}" },
       ],
   };
 }

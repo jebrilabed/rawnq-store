@@ -246,7 +246,7 @@ export async function saveSettingsAction(f: FormData) {
     const translations = Object.fromEntries(Object.entries(localizedNames).map(([locale, values]) => [
       locale, String(values[index] ?? "").trim().slice(0, 80),
     ]));
-    return { id: `area-${index}`, name, fee, translations: JSON.stringify(translations) };
+    return { id: `area-${index}`, value: name, name, fee, translations: JSON.stringify(translations) };
   });
   if (deliveryAreas.some((area) => area === null)) return fail("/admin/settings", "تحقق من أسماء المناطق ورسوم التوصيل، وتجنب تكرار المنطقة.");
   const phone = text(f, "phone", 30);
@@ -266,7 +266,7 @@ export async function saveSettingsAction(f: FormData) {
     storeName: text(f, "storeName", 80), phone, whatsapp: phone, instagram: text(f, "instagram", 60),
     shippingFee: deliveryAreas[0]!.fee, freeShippingFrom: null, cod: f.get("cod") === "on", bank: bankEnabled,
     bankDetails, bankAccountName, bankIban, bankAccountNumber,
-    lowStockThreshold: low, deliveryAreas: deliveryAreas as { id: string; name: string; fee: number; translations: string }[],
+    lowStockThreshold: low, deliveryAreas: deliveryAreas as { id: string; value: string; name: string; fee: number; translations: string }[],
   });
   refresh(); redirect("/admin/settings?saved=1");
 }

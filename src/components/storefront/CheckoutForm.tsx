@@ -12,16 +12,23 @@ import { Spinner } from "@/components/ui/LoadingState";
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
 
-type Props = { locale: string; areas: DeliveryArea[]; courierAreas: string[]; methods: { cod: boolean; bank: boolean; bankDetails: string } };
+type Props = {
+  locale: string;
+  areas: DeliveryArea[];
+  courierAreas: string[];
+  customer?: { name: string; phone: string; city: string; address: string; deliveryAreaName: string | null };
+  methods: { cod: boolean; bank: boolean; bankDetails: string };
+};
 
-export function CheckoutForm({ locale, areas, courierAreas, methods }: Props) {
+export function CheckoutForm({ locale, areas, courierAreas, customer, methods }: Props) {
   const tr = (text: string) => translate(locale, text);
   const { lines, subtotal, clear } = useCart();
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const submitting = useRef(false);
   const [error, setError] = useState("");
-  const [deliveryAreaId, setDeliveryAreaId] = useState(areas[0]?.id ?? "");
+  const preferredArea = areas.find((area) => area.value === customer?.deliveryAreaName);
+  const [deliveryAreaId, setDeliveryAreaId] = useState(preferredArea?.id ?? areas[0]?.id ?? "");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptUrl, setReceiptUrl] = useState("");
   const [receiptError, setReceiptError] = useState("");
@@ -98,13 +105,13 @@ export function CheckoutForm({ locale, areas, courierAreas, methods }: Props) {
           </div>
           <div className={s.checkoutInputGrid}>
             <label className={s.checkoutLabel}>{tr("الاسم الكامل")}
-              <input className={s.input} name="name" placeholder={tr("الاسم الكامل")} required autoComplete="name" />
+              <input className={s.input} name="name" placeholder={tr("الاسم الكامل")} defaultValue={customer?.name} required autoComplete="name" />
             </label>
             <label className={s.checkoutLabel}>{tr("رقم الهاتف")}
-              <input className={`${s.input} ${s.phoneInput}`} name="phone" type="tel" placeholder="05xxxxxxxx" required autoComplete="tel" />
+              <input className={`${s.input} ${s.phoneInput}`} name="phone" type="tel" placeholder="05xxxxxxxx" defaultValue={customer?.phone} required autoComplete="tel" />
             </label>
             <label className={s.checkoutLabel}>{tr("المدينة / المنطقة")}
-              <select className={s.input} name="city" defaultValue="" required>
+              <select className={s.input} name="city" defaultValue={courierAreas.includes(customer?.city ?? "") ? customer?.city : ""} required>
                 <option value="" disabled>{tr("اختر المدينة أو المنطقة")}</option>
                 {courierAreas.map((city) => <option key={city} value={city}>{city}</option>)}
               </select>
@@ -115,7 +122,7 @@ export function CheckoutForm({ locale, areas, courierAreas, methods }: Props) {
               </select>
             </label>
             <label className={`${s.checkoutLabel} ${s.checkoutWide}`}>{tr("العنوان بالتفصيل")}
-              <textarea className={`${s.input} ${s.checkoutAddress}`} name="address" placeholder={tr("الشارع، الحي، وأقرب معلم")} required />
+              <textarea className={`${s.input} ${s.checkoutAddress}`} name="address" placeholder={tr("الشارع، الحي، وأقرب معلم")} defaultValue={customer?.address} required />
             </label>
             <label className={`${s.checkoutLabel} ${s.checkoutWide}`}>{tr("ملاحظات التوصيل")} <span className={s.optionalLabel}>{tr("اختياري")}</span>
               <textarea className={`${s.input} ${s.checkoutNotes}`} name="notes" rows={2} placeholder={tr("أي تفاصيل تساعدنا في الوصول إليك")} />

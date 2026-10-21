@@ -154,6 +154,7 @@ model CustomerUser {
   phone        String
   city         String
   address      String
+  deliveryAreaName String?
   orders       StoreOrder[]
   favorites    FavoriteProduct[]
   role         String   @default("CUSTOMER")

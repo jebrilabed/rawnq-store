@@ -30,7 +30,7 @@ function instagramUrl(value: string) {
     : null;
 }
 
-export async function Footer({ locale }: { locale: string }) {
+export async function Footer({ locale, userRole }: { locale: string; userRole?: string }) {
   const tr = (text: string) => translate(locale, text);
   const { storeName, phone, whatsapp, instagram } = await getSettings();
   const contactPhone = phone.trim() || whatsapp.trim();
@@ -45,7 +45,7 @@ export async function Footer({ locale }: { locale: string }) {
           <h4>{tr("روابط")}</h4>
           <ul>
             <li><Link href={`/${locale}/products`}>{tr("جميع المنتجات")}</Link></li>
-            <li><Link href={`/${locale}/orders`}>{tr("طلباتي")}</Link></li>
+            {userRole === "CUSTOMER" && <li><Link href={`/${locale}/orders`}>{tr("طلباتي")}</Link></li>}
             <li><Link href={`/${locale}/page/about`}>{tr("من نحن")}</Link></li>
             <li><Link href={`/${locale}/page/faq`}>{tr("الأسئلة الشائعة")}</Link></li>
             <li><Link href={`/${locale}/page/delivery`}>{tr("التوصيل والاسترجاع")}</Link></li>

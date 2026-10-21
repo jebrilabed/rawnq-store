@@ -17,6 +17,9 @@ test("store localization supports all configured locales and proper text directi
   assert.equal(localeDirection("en"), "ltr");
   assert.equal(localeDirection("ru"), "ltr");
   assert.equal(translate("en", "تسوّق حسب القسم"), "Shop by category");
+  assert.equal(translate("en", "ملفي الشخصي"), "My profile");
+  assert.equal(translate("he", "لوحة التحكم"), "לוח הבקרה");
+  assert.equal(translate("ru", "بيانات الحساب"), "Данные аккаунта");
   assert.equal(localizedValue('{"ru":"Кухонная утварь"}', "ru", "أدوات مطبخ"), "Кухонная утварь");
 });
 

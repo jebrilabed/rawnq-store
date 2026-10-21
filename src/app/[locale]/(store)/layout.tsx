@@ -21,9 +21,9 @@ export default async function StoreLayout({ children, params }: { children: Reac
     <CartProvider>
       <FavoritesProvider key={customerUserId ?? "guest"} initialIds={initialIds} authenticated={Boolean(customerUserId)}>
         <div className={s.storeShell}>
-          <Header locale={params.locale} storeName={settings.storeName} />
+          <Header locale={params.locale} storeName={settings.storeName} userRole={session?.user?.role} />
           <div className={s.storeMain}>{children}</div>
-          <Footer locale={params.locale} />
+          <Footer locale={params.locale} userRole={session?.user?.role} />
         </div>
       </FavoritesProvider>
     </CartProvider>
