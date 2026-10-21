@@ -6,6 +6,19 @@ const { hashPassword, verifyPassword } = loadTypeScript(new URL("../src/lib/auth
 const { addTokenToSession, addUserToToken } = loadTypeScript(new URL("../src/lib/auth/session.ts", import.meta.url));
 const { shippingFor } = loadTypeScript(new URL("../src/lib/pricing.ts", import.meta.url));
 const { parseCart } = loadTypeScript(new URL("../src/lib/cart.ts", import.meta.url));
+const { LOCALES, isLocale, localeDirection, localizedValue, translate } = loadTypeScript(new URL("../src/lib/i18n.ts", import.meta.url));
+
+test("store localization supports all configured locales and proper text direction", () => {
+  assert.deepEqual(LOCALES, ["ar", "en", "he", "ru"]);
+  assert.equal(isLocale("he"), true);
+  assert.equal(isLocale("fr"), false);
+  assert.equal(localeDirection("ar"), "rtl");
+  assert.equal(localeDirection("he"), "rtl");
+  assert.equal(localeDirection("en"), "ltr");
+  assert.equal(localeDirection("ru"), "ltr");
+  assert.equal(translate("en", "تسوّق حسب القسم"), "Shop by category");
+  assert.equal(localizedValue('{"ru":"Кухонная утварь"}', "ru", "أدوات مطبخ"), "Кухонная утварь");
+});
 
 test("password hashes use unique salts and verify only the matching password", async () => {
   const first = await hashPassword("correct horse battery staple");

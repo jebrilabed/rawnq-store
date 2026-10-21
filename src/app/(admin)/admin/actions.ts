@@ -11,6 +11,7 @@ import { checkBestRouteConnection } from "@/lib/integrations/best-route";
 import { BestRouteRejectedError, createBestRouteOrder } from "@/lib/integrations/best-route";
 import { prisma } from "@/lib/data/prisma";
 import bestRouteAreaCatalog from "@/lib/integrations/best-route-areas.json";
+import { saveStoreContent } from "@/lib/data/db";
 
 const text = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
 const num = (f: FormData, k: string) => { const v = text(f, k, 20); return v === "" ? NaN : Number(v); };
@@ -53,7 +54,13 @@ export async function saveProductAction(f: FormData) {
   const compare = hasVariants ? NaN : num(f, "comparePrice");
   if (!hasVariants && text(f, "comparePrice", 20) && (!Number.isFinite(compare) || compare <= 0 || compare > 99_999_999.99)) return fail(back, "سعر المقارنة غير صحيح.");
   const err = await admin.saveProduct({
-    id, name: text(f, "name", 120), description: text(f, "description", 1000), categorySlug: text(f, "categorySlug", 80),
+    id, name: text(f, "name", 120), description: text(f, "description", 1000),
+    translations: {
+      en: text(f, "name_en", 120), he: text(f, "name_he", 120), ru: text(f, "name_ru", 120),
+      en_description: text(f, "description_en", 1000), he_description: text(f, "description_he", 1000),
+      ru_description: text(f, "description_ru", 1000),
+    },
+    categorySlug: text(f, "categorySlug", 80),
     price, comparePrice: !hasVariants && Number.isFinite(compare) && compare > 0 ? compare : undefined,
     stock, image: text(f, "image", 500), published: f.get("published") === "on", variants,
   });
@@ -76,18 +83,47 @@ export async function adminLogoutAction() { await signOut({ redirectTo: "/ar/log
 
 export async function addCategoryAction(f: FormData) {
   await requireAdmin();
-  const err = await admin.addCategory(text(f, "name", 60)); if (err) return fail("/admin/categories", err);
+  const err = await admin.addCategory(text(f, "name", 60), { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) }); if (err) return fail("/admin/categories", err);
   refresh(); redirect("/admin/categories");
 }
 export async function renameCategoryAction(f: FormData) {
   await requireAdmin();
-  const err = await admin.renameCategory(text(f, "slug", 80), text(f, "name", 60)); if (err) return fail("/admin/categories", err);
+  const err = await admin.renameCategory(text(f, "slug", 80), text(f, "name", 60), { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) }); if (err) return fail("/admin/categories", err);
   refresh(); redirect("/admin/categories");
 }
 export async function deleteCategoryAction(f: FormData) {
   await requireAdmin();
   const err = await admin.deleteCategory(text(f, "slug", 80)); if (err) return fail("/admin/categories", err);
   refresh(); redirect("/admin/categories");
+}
+
+export async function saveStoreContentAction(f: FormData) {
+  await requireAdmin();
+  const faqCount = num(f, "faqCount");
+  if (faqCount < 1 || faqCount > 20) return fail("/admin/content", "أضف سؤالاً واحداً على الأقل وبحد أقصى 20 سؤالاً.");
+  const faqFor = (locale: string) => Array.from({ length: faqCount }, (_, index) => [
+    text(f, `${locale}_faq_q_${index}`, 300),
+    text(f, `${locale}_faq_a_${index}`, 2000),
+  ] as [string, string]);
+  const arabicFaq = faqFor("ar");
+  if (arabicFaq.some(([question, answer]) => !question || !answer)) return fail("/admin/content", "أكمل جميع الأسئلة والأجوبة العربية.");
+  const translations: Record<string, { about: string; delivery: string; faq: [string, string][] }> = {};
+  for (const locale of ["en", "he", "ru"]) {
+    const faq = faqFor(locale);
+    translations[locale] = {
+      about: text(f, `${locale}_about`, 5000),
+      delivery: text(f, `${locale}_delivery`, 5000),
+      faq: faq.every(([question, answer]) => question && answer) ? faq : [],
+    };
+  }
+  await saveStoreContent({
+    about: text(f, "ar_about", 5000),
+    delivery: text(f, "ar_delivery", 5000),
+    faq: arabicFaq,
+    translations,
+  });
+  refresh();
+  redirect("/admin/content?saved=1");
 }
 
 export async function updateOrderStatusAction(orderNumber: string, status: string) {
@@ -193,7 +229,13 @@ export async function saveSettingsAction(f: FormData) {
   if (f.get("cod") !== "on" && f.get("bank") !== "on") return fail("/admin/settings", "فعّل طريقة دفع واحدة على الأقل.");
   const names = f.getAll("areaName");
   const fees = f.getAll("areaFee");
+  const localizedNames = {
+    en: f.getAll("areaName_en"),
+    he: f.getAll("areaName_he"),
+    ru: f.getAll("areaName_ru"),
+  };
   if (names.length < 1 || names.length > 50 || names.length !== fees.length) return fail("/admin/settings", "أضف منطقة توصيل واحدة على الأقل.");
+  if (Object.values(localizedNames).some((values) => values.length !== names.length)) return fail("/admin/settings", "تحقق من ترجمات أسماء مناطق التوصيل.");
   const areaNames = new Set<string>();
   const deliveryAreas = names.map((value, index) => {
     const name = String(value).trim().slice(0, 80);
@@ -201,7 +243,10 @@ export async function saveSettingsAction(f: FormData) {
     const normalizedName = name.toLocaleLowerCase();
     if (name.length < 2 || areaNames.has(normalizedName) || !validMoney(fee, true)) return null;
     areaNames.add(normalizedName);
-    return { id: `area-${index}`, name, fee };
+    const translations = Object.fromEntries(Object.entries(localizedNames).map(([locale, values]) => [
+      locale, String(values[index] ?? "").trim().slice(0, 80),
+    ]));
+    return { id: `area-${index}`, name, fee, translations: JSON.stringify(translations) };
   });
   if (deliveryAreas.some((area) => area === null)) return fail("/admin/settings", "تحقق من أسماء المناطق ورسوم التوصيل، وتجنب تكرار المنطقة.");
   const phone = text(f, "phone", 30);
@@ -221,9 +266,7 @@ export async function saveSettingsAction(f: FormData) {
     storeName: text(f, "storeName", 80), phone, whatsapp: phone, instagram: text(f, "instagram", 60),
     shippingFee: deliveryAreas[0]!.fee, freeShippingFrom: null, cod: f.get("cod") === "on", bank: bankEnabled,
     bankDetails, bankAccountName, bankIban, bankAccountNumber,
-    lowStockThreshold: low, deliveryAreas: deliveryAreas as { id: string; name: string; fee: number }[],
+    lowStockThreshold: low, deliveryAreas: deliveryAreas as { id: string; name: string; fee: number; translations: string }[],
   });
   refresh(); redirect("/admin/settings?saved=1");
 }
-
-

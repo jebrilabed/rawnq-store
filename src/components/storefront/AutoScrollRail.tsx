@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import s from "./storefront.module.css";
 
-export function AutoScrollRail({ children, label }: { children: React.ReactNode; label: string }) {
+export function AutoScrollRail({ children, label, direction = "rtl" }: { children: React.ReactNode; label: string; direction?: "rtl" | "ltr" }) {
   const viewport = useRef<HTMLDivElement>(null);
   const clone = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -29,8 +29,8 @@ export function AutoScrollRail({ children, label }: { children: React.ReactNode;
     <section className={`${s.rail} ${dragging ? s.railDragging : ""}`} aria-label={label}>
       <div className={s.railViewport} ref={viewport} dir="ltr" onPointerDown={startDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
         <div className={s.railTrack}>
-          <div className={s.railGroup} dir="rtl">{children}</div>
-          <div className={s.railGroup} dir="rtl" aria-hidden="true" ref={clone}>{children}</div>
+          <div className={s.railGroup} dir={direction}>{children}</div>
+          <div className={s.railGroup} dir={direction} aria-hidden="true" ref={clone}>{children}</div>
         </div>
       </div>
     </section>

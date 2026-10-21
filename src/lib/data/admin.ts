@@ -116,6 +116,7 @@ export async function getCustomerOrder(customerUserId: string, orderNumber: stri
 
 export type ProductInput = {
   id?: string; name: string; description: string; categorySlug: string; price: number; comparePrice?: number;
+  translations?: Record<string, string>;
   stock: number; image: string; published: boolean; variants: Variant[];
 };
 
@@ -146,6 +147,7 @@ export async function saveProduct(input: ProductInput): Promise<string | null> {
   if (!isSafeProductImage(input.image)) return "رابط الصورة غير صالح. استخدم صورة محلية أو رابط Cloudinary آمن.";
   const data = {
     name: input.name, description: input.description, categorySlug: input.categorySlug,
+    translations: JSON.stringify(input.translations ?? {}),
     price: input.price, comparePrice: input.comparePrice ?? null, stock: input.stock,
     image: input.image, published: input.published,
     variants: { deleteMany: {}, create: input.variants.map((variant) => ({ color: variant.color ?? null, size: variant.size ?? null, stock: variant.stock, price: variant.price ?? null })) },
@@ -171,19 +173,19 @@ export async function setStock(id: string, variantId: string | null, qty: number
   else await prisma.product.updateMany({ where: { id }, data: { stock: qty } });
 }
 
-export async function addCategory(name: string): Promise<string | null> {
+export async function addCategory(name: string, translations: Record<string, string> = {}): Promise<string | null> {
   if (name.length < 2) return "أدخل اسم القسم.";
   if (await prisma.category.findFirst({ where: { name } })) return "القسم موجود مسبقاً.";
   const base = slugify(name, "category"); let slug = base;
   for (let index = 2; await prisma.category.findUnique({ where: { slug } }); index++) slug = `${base}-${index}`;
-  await prisma.category.create({ data: { slug, name } });
+  await prisma.category.create({ data: { slug, name, translations: JSON.stringify(translations) } });
   return null;
 }
 
-export async function renameCategory(slug: string, name: string): Promise<string | null> {
+export async function renameCategory(slug: string, name: string, translations: Record<string, string> = {}): Promise<string | null> {
   if (name.length < 2) return "أدخل اسم القسم.";
   if (await prisma.category.findFirst({ where: { name, slug: { not: slug } } })) return "القسم موجود مسبقاً.";
-  await prisma.category.updateMany({ where: { slug }, data: { name } });
+  await prisma.category.updateMany({ where: { slug }, data: { name, translations: JSON.stringify(translations) } });
   return null;
 }
 

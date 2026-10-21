@@ -3,12 +3,13 @@ import { useState } from "react";
 import { Heart } from "lucide-react";
 import { useFavorites } from "./FavoritesProvider";
 import s from "./storefront.module.css";
+import { translate } from "@/lib/i18n";
 
-export function FavoriteButton({ productId, productName, compact = false, overlay = false }: { productId: string; productName: string; compact?: boolean; overlay?: boolean }) {
+export function FavoriteButton({ productId, productName, locale = "ar", compact = false, overlay = false }: { productId: string; productName: string; locale?: string; compact?: boolean; overlay?: boolean }) {
   const { isFavorite, ready, toggle } = useFavorites();
   const [pending, setPending] = useState(false);
   const selected = isFavorite(productId);
-  const label = selected ? `إزالة ${productName} من المفضلة` : `إضافة ${productName} إلى المفضلة`;
+  const label = `${translate(locale, selected ? "إزالة من المفضلة" : "إضافة إلى المفضلة")}: ${productName}`;
 
   async function onClick() {
     if (!ready || pending) return;

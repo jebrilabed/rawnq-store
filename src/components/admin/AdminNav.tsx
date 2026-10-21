@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, LayoutDashboard, Package, Settings, ShoppingBag, Tags } from "lucide-react";
+import { Boxes, FileText, LayoutDashboard, Package, Settings, ShoppingBag, Tags } from "lucide-react";
 import s from "./admin.module.css";
 
 const TABS = [
   ["/admin", "الرئيسية", LayoutDashboard], ["/admin/products", "المنتجات", Package], ["/admin/categories", "الأقسام", Tags],
   ["/admin/orders", "الطلبات", ShoppingBag], ["/admin/inventory", "المخزون", Boxes], ["/admin/settings", "الإعدادات", Settings],
+  ["/admin/content", "محتوى المتجر", FileText],
 ] as const;
 
 export function AdminNav() {

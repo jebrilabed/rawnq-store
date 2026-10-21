@@ -10,9 +10,10 @@ datasource db {
 }
 
 model Category {
-  slug     String    @id
-  name     String
-  products Product[]
+  slug         String    @id
+  name         String
+  translations String    @default("{}")
+  products     Product[]
 }
 
 model Product {
@@ -20,6 +21,7 @@ model Product {
   slug         String       @unique
   name         String
   description  String       @default("")
+  translations String       @default("{}")
   price        Decimal      @db.Decimal(10, 2)
   comparePrice Decimal?     @db.Decimal(10, 2)
   image        String
@@ -118,20 +120,22 @@ model StoreSettings {
 }
 
 model DeliveryArea {
-  id        String   @id @default(cuid())
-  name      String
-  fee       Decimal  @db.Decimal(10, 2)
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  name         String
+  translations String   @default("{}")
+  fee          Decimal  @db.Decimal(10, 2)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
 
   @@index([sortOrder, name])
 }
 
 model StoreContent {
-  id       Int      @id @default(1)
-  about    String   @default("")
-  delivery String   @default("")
-  faq      Json     @default("[]")
+  id           Int      @id @default(1)
+  about        String   @default("")
+  delivery     String   @default("")
+  faq          Json     @default("[]")
+  translations String   @default("{}")
 }
 
 model AdminUser {

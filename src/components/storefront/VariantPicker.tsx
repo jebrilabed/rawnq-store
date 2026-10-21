@@ -5,10 +5,12 @@ import { formatPrice } from "@/lib/format";
 import type { Product } from "@/lib/types";
 import { useCart } from "./CartProvider";
 import s from "./storefront.module.css";
+import { translate } from "@/lib/i18n";
 
 const unique = (xs: (string | undefined)[]) => Array.from(new Set(xs.filter(Boolean))) as string[];
 
-export function VariantPicker({ product }: { product: Product }) {
+export function VariantPicker({ product, locale = "ar" }: { product: Product; locale?: string }) {
+  const tr = (text: string) => translate(locale, text);
   const { add } = useCart();
   const colors = useMemo(() => unique(product.variants.map((v) => v.color)), [product]);
   const sizes = useMemo(() => unique(product.variants.map((v) => v.size)), [product]);
@@ -34,17 +36,17 @@ export function VariantPicker({ product }: { product: Product }) {
     setTimeout(() => setAdded(false), 1400);
   }
 
-  const label = !ready ? "اختر الخيارات" : stock <= 0 ? "غير متوفر" : added ? "تمت الإضافة" : "أضف إلى السلة";
+  const label = !ready ? tr("اختر الخيارات") : stock <= 0 ? tr("غير متوفر") : added ? tr("تمت الإضافة") : tr("أضف إلى السلة");
 
   return (
     <>
       <div className={s.price} style={{ fontSize: "1.5rem" }}>
-        {formatPrice(price)}
-        {product.comparePrice && !variant?.price && <s>{formatPrice(product.comparePrice)}</s>}
+        {formatPrice(price, locale)}
+        {product.comparePrice && !variant?.price && <s>{formatPrice(product.comparePrice, locale)}</s>}
       </div>
       {colors.length > 0 && (
         <div className={s.group}>
-          <b>اللون</b>
+          <b>{tr("اللون")}</b>
           <div className={s.chips}>
             {colors.map((c) => (
               <button key={c} className={s.chip} aria-pressed={color === c} disabled={!colorAvailable(c)} onClick={() => { setColor(c); setQuantity(1); }}>{c}</button>
@@ -54,7 +56,7 @@ export function VariantPicker({ product }: { product: Product }) {
       )}
       {sizes.length > 0 && (
         <div className={s.group}>
-          <b>الحجم</b>
+          <b>{tr("الحجم")}</b>
           <div className={s.chips}>
             {sizes.map((z) => (
               <button key={z} className={s.chip} aria-pressed={size === z} disabled={!sizeAvailable(z)} onClick={() => { setSize(z); setQuantity(1); }}>{z}</button>
@@ -62,17 +64,17 @@ export function VariantPicker({ product }: { product: Product }) {
           </div>
         </div>
       )}
-      {ready && stock > 0 && stock <= 5 && <p className={s.muted}>المتوفر: {stock} فقط</p>}
+      {ready && stock > 0 && stock <= 5 && <p className={s.muted}>{tr("المتوفر:")} {stock}</p>}
       <div className={s.productPurchase}>
         <label className={s.productQuantity}>
-          <span>الكمية</span>
+          <span>{tr("الكمية")}</span>
           <span className={s.quantityStepper}>
-            <button type="button" onClick={() => setQuantity((current) => Math.max(1, current - 1))} disabled={!ready || quantity <= 1} aria-label="تقليل الكمية"><Minus size={15} /></button>
-            <input aria-label="الكمية المطلوبة" type="number" min={1} max={Math.max(1, quantityLimit)} value={quantity} disabled={!ready || stock <= 0} onChange={(event) => {
+            <button type="button" onClick={() => setQuantity((current) => Math.max(1, current - 1))} disabled={!ready || quantity <= 1} aria-label={tr("إنقاص الكمية")}><Minus size={15} /></button>
+            <input aria-label={tr("الكمية المطلوبة")} type="number" min={1} max={Math.max(1, quantityLimit)} value={quantity} disabled={!ready || stock <= 0} onChange={(event) => {
               const value = Number(event.target.value);
               if (Number.isInteger(value) && value >= 1) setQuantity(Math.min(quantityLimit, value));
             }} />
-            <button type="button" onClick={() => setQuantity((current) => Math.min(quantityLimit, current + 1))} disabled={!ready || quantity >= quantityLimit} aria-label="زيادة الكمية"><Plus size={15} /></button>
+            <button type="button" onClick={() => setQuantity((current) => Math.min(quantityLimit, current + 1))} disabled={!ready || quantity >= quantityLimit} aria-label={tr("زيادة الكمية")}><Plus size={15} /></button>
           </span>
         </label>
         <button className={`${s.btnWide} ${s.productAddButton}`} disabled={!ready || stock <= 0} onClick={addToCart}>

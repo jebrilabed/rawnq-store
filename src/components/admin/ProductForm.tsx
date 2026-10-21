@@ -6,12 +6,27 @@ import { ProductOptionsEditor } from "./ProductOptionsEditor";
 import s from "./admin.module.css";
 
 export function ProductForm({ product, categories, error }: { product?: Product; categories: Category[]; error?: string }) {
+  let translations: Record<string, string> = {};
+  try {
+    const parsed: unknown = product?.translations ? JSON.parse(product.translations) : {};
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) translations = parsed as Record<string, string>;
+  } catch (cause) {
+    console.error("Invalid product translation data.", cause);
+  }
   return (
     <form action={saveProductAction} className={s.form}>
       {error && <p role="alert" className={s.error}>{error}</p>}
       {product && <input type="hidden" name="id" value={product.id} />}
       <label className={s.label}>اسم المنتج<input className={s.field} name="name" defaultValue={product?.name} required maxLength={120} /></label>
       <label className={s.label}>الوصف<textarea className={s.field} name="description" rows={3} defaultValue={product?.description} maxLength={1000} /></label>
+      <details className={s.localizedFields}><summary>ترجمات المنتج (اختيارية، تُعرض عند توفرها)</summary>
+        <label className={s.label}>الاسم بالإنجليزية<input className={s.field} name="name_en" defaultValue={translations.en} maxLength={120} /></label>
+        <label className={s.label}>English description<textarea className={s.field} name="description_en" rows={2} defaultValue={translations.en_description} maxLength={1000} /></label>
+        <label className={s.label}>שם המוצר בעברית<input className={s.field} name="name_he" defaultValue={translations.he} maxLength={120} /></label>
+        <label className={s.label}>תיאור בעברית<textarea className={s.field} name="description_he" rows={2} defaultValue={translations.he_description} maxLength={1000} /></label>
+        <label className={s.label}>Название товара по-русски<input className={s.field} name="name_ru" defaultValue={translations.ru} maxLength={120} /></label>
+        <label className={s.label}>Описание на русском<textarea className={s.field} name="description_ru" rows={2} defaultValue={translations.ru_description} maxLength={1000} /></label>
+      </details>
       <div className={s.two}>
         <label className={s.label}>القسم
           <select className={s.field} name="categorySlug" defaultValue={product?.categorySlug} required>
