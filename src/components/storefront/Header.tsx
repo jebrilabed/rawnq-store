@@ -44,8 +44,8 @@ export function Header({ locale, storeName, userRole }: { locale: string; storeN
             {links.map((l) => <Link key={l.href} href={l.href}>{l.label}</Link>)}
           </nav>
           <LanguageSwitcher locale={locale} />
-          <Link href={accountHref} className={s.iconBtn} aria-label={accountLabel}>
-            {userRole === "ADMIN" ? <LayoutDashboard size={22} /> : <User size={22} />}
+          <Link href={accountHref} className={`${s.iconBtn} ${!userRole ? s.loginBtn : ""}`} aria-label={accountLabel}>
+            {userRole === "ADMIN" ? <LayoutDashboard size={22} /> : userRole === "CUSTOMER" ? <User size={22} /> : accountLabel}
           </Link>
           <Link href={`${base}/favorites`} className={s.iconBtn} aria-label={`${tr("المفضلة")}، ${favorites.count}`}>
             <Heart size={21} />

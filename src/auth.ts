@@ -5,6 +5,7 @@ import { verifyPassword } from "@/lib/auth/password";
 import { addTokenToSession, addUserToToken } from "@/lib/auth/session";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: { signIn: "/ar/login" },
   providers: [Credentials({
