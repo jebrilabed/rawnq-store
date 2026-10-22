@@ -48,13 +48,29 @@ export async function saveProductAction(f: FormData) {
   if (typeof variants === "string") return fail(back, variants);
   if (hasVariants && variants.length === 0) return fail(back, "أضف لوناً أو حجماً واحداً على الأقل.");
   if (hasVariants && variants.some((variant) => variant.price == null)) return fail(back, "أدخل سعر كل خيار في الجدول.");
-  const image = text(f, "image", 500);
-  if (!image) return fail(back, "اختر صورة المنتج وارفعها أولاً.");
+  const currentImage = text(f, "image", 500);
+  const imageFile = f.get("productImage");
+  if (imageFile && typeof imageFile !== "string" && imageFile.size) {
+    if (!["image/avif", "image/gif", "image/jpeg", "image/png", "image/webp"].includes(imageFile.type) || imageFile.size > 5 * 1024 * 1024) {
+      return fail(back, "الصورة يجب أن تكون JPEG أو PNG أو WebP أو GIF أو AVIF وأقل من 5 ميغابايت.");
+    }
+  } else if (!currentImage) {
+    return fail(back, "اختر صورة المنتج من جهازك أولاً.");
+  }
   const stock = hasVariants ? variants.reduce((sum, variant) => sum + variant.stock, 0) : num(f, "stock");
   if (!Number.isInteger(stock) || stock < 0 || stock > 2_147_483_647) return fail(back, "كمية المخزون غير صحيحة.");
   const price = hasVariants ? Math.min(...variants.map((variant) => variant.price as number)) : num(f, "price");
   const compare = hasVariants ? NaN : num(f, "comparePrice");
   if (!hasVariants && text(f, "comparePrice", 20) && (!Number.isFinite(compare) || compare <= 0 || compare > 99_999_999.99)) return fail(back, "سعر المقارنة غير صحيح.");
+  let image = currentImage;
+  if (imageFile && typeof imageFile !== "string" && imageFile.size) {
+    try {
+      image = await uploadProductImage(imageFile);
+    } catch (error) {
+      console.error("Failed to upload product image.", error);
+      return fail(back, "تعذر رفع الصورة. تحقق من إعدادات التخزين وحاول مرة أخرى.");
+    }
+  }
   const err = await admin.saveProduct({
     id, name: text(f, "name", 120), description: text(f, "description", 1000),
     translations: {
@@ -71,15 +87,6 @@ export async function saveProductAction(f: FormData) {
 }
 export async function togglePublishedAction(f: FormData) { await requireAdmin(); await admin.togglePublished(text(f, "id", 80)); refresh(); }
 export async function deleteProductAction(f: FormData) { await requireAdmin(); await admin.deleteProduct(text(f, "id", 80)); refresh(); }
-
-export async function uploadProductImageAction(f: FormData): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
-  await requireAdmin();
-  const file = f.get("image");
-  if (!file || typeof file === "string" || !file.size) return { ok: false, error: "اختر صورة أولاً." };
-  if (!["image/avif", "image/gif", "image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) return { ok: false, error: "الصورة يجب أن تكون JPEG أو PNG أو WebP أو GIF أو AVIF وأقل من 5 ميغابايت." };
-  try { return { ok: true, url: await uploadProductImage(file) }; }
-  catch { return { ok: false, error: "تعذر رفع الصورة إلى Cloudinary." }; }
-}
 
 export async function adminLogoutAction() { await signOut({ redirectTo: "/ar/login" }); }
 

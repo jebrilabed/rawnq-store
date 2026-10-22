@@ -150,13 +150,23 @@ export async function saveProduct(input: ProductInput): Promise<string | null> {
     translations: JSON.stringify(input.translations ?? {}),
     price: input.price, comparePrice: input.comparePrice ?? null, stock: input.stock,
     image: input.image, published: input.published,
-    variants: { deleteMany: {}, create: input.variants.map((variant) => ({ color: variant.color ?? null, size: variant.size ?? null, stock: variant.stock, price: variant.price ?? null })) },
   };
-  if (input.id) await prisma.product.update({ where: { id: input.id }, data });
+  const variants = input.variants.map((variant) => ({
+    color: variant.color ?? null,
+    size: variant.size ?? null,
+    stock: variant.stock,
+    price: variant.price ?? null,
+  }));
+  if (input.id) {
+    await prisma.product.update({
+      where: { id: input.id },
+      data: { ...data, variants: { deleteMany: {}, create: variants } },
+    });
+  }
   else {
     const base = slugify(input.name, "product"); let slug = base;
     for (let index = 2; await prisma.product.findUnique({ where: { slug } }); index++) slug = `${base}-${index}`;
-    await prisma.product.create({ data: { ...data, slug } });
+    await prisma.product.create({ data: { ...data, slug, variants: { create: variants } } });
   }
   return null;
 }
