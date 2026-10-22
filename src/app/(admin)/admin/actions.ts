@@ -48,6 +48,8 @@ export async function saveProductAction(f: FormData) {
   if (typeof variants === "string") return fail(back, variants);
   if (hasVariants && variants.length === 0) return fail(back, "أضف لوناً أو حجماً واحداً على الأقل.");
   if (hasVariants && variants.some((variant) => variant.price == null)) return fail(back, "أدخل سعر كل خيار في الجدول.");
+  const image = text(f, "image", 500);
+  if (!image) return fail(back, "اختر صورة المنتج وارفعها أولاً.");
   const stock = hasVariants ? variants.reduce((sum, variant) => sum + variant.stock, 0) : num(f, "stock");
   if (!Number.isInteger(stock) || stock < 0 || stock > 2_147_483_647) return fail(back, "كمية المخزون غير صحيحة.");
   const price = hasVariants ? Math.min(...variants.map((variant) => variant.price as number)) : num(f, "price");
@@ -62,7 +64,7 @@ export async function saveProductAction(f: FormData) {
     },
     categorySlug: text(f, "categorySlug", 80),
     price, comparePrice: !hasVariants && Number.isFinite(compare) && compare > 0 ? compare : undefined,
-    stock, image: text(f, "image", 500), published: f.get("published") === "on", variants,
+    stock, image, published: f.get("published") === "on", variants,
   });
   if (err) return fail(back, err);
   refresh(); redirect("/admin/products");

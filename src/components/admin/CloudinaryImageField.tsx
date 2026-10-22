@@ -45,11 +45,7 @@ export function CloudinaryImageField({ initial }: { initial: string }) {
   return (
     <div className={s.label}>
       الصورة
-      <input className={s.field} name="image" value={image} onChange={(event) => {
-        setImage(event.target.value);
-        setFile(null);
-        if (fileInput.current) fileInput.current.value = "";
-      }} placeholder="رابط الصورة أو ارفع صورة إلى Cloudinary" required />
+      <input type="hidden" name="image" value={image} />
       <div className={s.inline}>
         <input ref={fileInput} className={s.field} type="file" accept="image/*" onChange={(event) => {
           setFile(event.target.files?.[0] ?? null);
@@ -59,6 +55,7 @@ export function CloudinaryImageField({ initial }: { initial: string }) {
           {busy ? <span className={s.actionPending}><Spinner /> جارٍ الرفع…</span> : "رفع الصورة"}
         </button>
       </div>
+      <small className={s.muted}>اختر صورة من جهازك ثم ارفعها. الحد الأقصى 5 ميغابايت.</small>
       {(filePreview || image) && (
         <div className={s.imagePreview}>
           <Image src={filePreview || image} alt="معاينة صورة المنتج" width={480} height={320} unoptimized />
