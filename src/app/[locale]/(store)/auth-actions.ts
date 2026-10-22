@@ -3,7 +3,7 @@ import { AuthError } from "next-auth";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { auth, signIn } from "@/auth";
+import { auth, signIn, signOut } from "@/auth";
 import { hashPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/data/prisma";
 import { getSettings } from "@/lib/data/db";
@@ -95,4 +95,13 @@ export async function updateCustomerProfileAction(form: FormData) {
   revalidatePath(`/${locale}/profile`);
   revalidatePath(`/${locale}/checkout`);
   redirect(`/${locale}/profile?saved=1`);
+}
+
+export async function customerLogoutAction(form: FormData) {
+  const session = await auth();
+  if (session?.user?.role !== "CUSTOMER" || !session.user.id) redirect("/ar/login");
+
+  const requestedLocale = text(form, "locale", 12);
+  const locale = isLocale(requestedLocale) ? requestedLocale : "ar";
+  await signOut({ redirectTo: `/${locale}/login` });
 }

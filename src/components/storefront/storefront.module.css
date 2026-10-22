@@ -318,6 +318,9 @@
 .profileDetail b{overflow-wrap:anywhere;font-size:.9rem;font-weight:650}
 .profileOrdersLink{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;margin-top:18px;padding:9px 15px;border-radius:8px;background:var(--teal);color:#fff;font-size:.88rem;font-weight:700;transition:background .18s,transform .18s}
 .profileOrdersLink:hover{transform:translateY(-1px);background:var(--teal-dark)}
+.profileActions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.profileLogout{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;margin-top:18px;padding:9px 15px;border:1px solid #e2d5d1;border-radius:8px;background:#fff;color:#9a4139;font:inherit;font-size:.88rem;font-weight:700;transition:background .18s,border-color .18s}
+.profileLogout:hover{border-color:#c98278;background:#fbf4f2}
 @media(max-width:480px){.contentHero{border-radius:15px}.contentHeroRow{gap:12px}.contentHeroIcon{flex-basis:52px;width:52px;height:52px;border-radius:16px}.contentHeroIcon svg{width:25px;height:25px}.faqCard summary{grid-template-columns:34px minmax(0,1fr) 30px;gap:9px;padding-inline:12px}.faqNumber{width:30px;height:30px}.faqAnswer{margin-inline:12px}}
 @media(max-width:560px){.profileHero{gap:13px}.profileAvatar{flex-basis:52px;width:52px;height:52px;border-radius:16px}.profileDetails{grid-template-columns:1fr}}
 a.line{transition:border-color .2s}

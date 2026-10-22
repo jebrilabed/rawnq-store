@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Mail, ShoppingBag, UserRound } from "lucide-react";
-import { updateCustomerProfileAction } from "../auth-actions";
+import { LogOut, Mail, ShoppingBag, UserRound } from "lucide-react";
+import { customerLogoutAction, updateCustomerProfileAction } from "../auth-actions";
 import { auth } from "@/auth";
 import s from "@/components/storefront/storefront.module.css";
 import { getSettings } from "@/lib/data/db";
@@ -73,10 +73,19 @@ export default async function ProfilePage({ params, searchParams }: { params: { 
           </div>
           <button className={s.btn}>{tr("حفظ البيانات")}</button>
         </form>
-        <Link className={s.profileOrdersLink} href={`/${params.locale}/orders`}>
-          <ShoppingBag size={18} aria-hidden="true" />
-          {tr("طلباتي")}
-        </Link>
+        <div className={s.profileActions}>
+          <Link className={s.profileOrdersLink} href={`/${params.locale}/orders`}>
+            <ShoppingBag size={18} aria-hidden="true" />
+            {tr("طلباتي")}
+          </Link>
+          <form action={customerLogoutAction}>
+            <input type="hidden" name="locale" value={params.locale} />
+            <button className={s.profileLogout} type="submit">
+              <LogOut size={18} aria-hidden="true" />
+              {tr("تسجيل الخروج")}
+            </button>
+          </form>
+        </div>
       </section>
     </main>
   );
