@@ -47,7 +47,7 @@ export function BestRouteOrderButton({ orderNumber, payment, orderStatus, shipme
     <section className={s.bestRouteShipment} aria-labelledby="best-route-shipment-heading">
       <div className={s.bestRouteHeading}>
         <div><h2 id="best-route-shipment-heading">الشحن عبر Best Route</h2>
-          <p>الإرسال يدوي من هذه الصفحة؛ قيمة البضاعة هي المجموع الفرعي ورسوم التوصيل تُحدد حسب طريقة الدفع.</p>
+          <p>يُرسل الطلب تلقائياً عند تسجيله؛ يمكنك إعادة المحاولة هنا إذا تعذر الإرسال. قيمة البضاعة هي المجموع الفرعي ورسوم التوصيل تُحدد حسب طريقة الدفع.</p>
         </div>
         {alreadySent && <b className={s.bestRouteOk}>تم الإرسال</b>}
       </div>

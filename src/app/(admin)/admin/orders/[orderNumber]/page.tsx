@@ -7,6 +7,7 @@ import { getBestRouteShipment, getOrder } from "@/lib/data/admin";
 import { BestRouteOrderButton } from "@/components/admin/BestRouteOrderButton";
 import { formatPrice } from "@/lib/format";
 import { PAYMENT_LABEL } from "@/lib/orders";
+import { OrderStatusTracking } from "@/components/ui/OrderStatusTracking";
 
 export default async function OrderAdmin({ params }: { params: { orderNumber: string } }) {
   const [o, shipment] = await Promise.all([getOrder(params.orderNumber), getBestRouteShipment(params.orderNumber)]);
@@ -19,6 +20,7 @@ export default async function OrderAdmin({ params }: { params: { orderNumber: st
       </header>
       {shipment && <BestRouteOrderButton orderNumber={o.orderNumber} payment={o.payment} orderStatus={o.status}
         shipment={shipment} orderTypeConfigured={Boolean(process.env.BEST_ROUTE_ORDER_TYPE_ID?.trim())} />}
+      <OrderStatusTracking status={o.status} history={o.statusHistory} locale="ar" />
       <div className={s.sectionHead}><div><h2>المنتجات</h2><p>{o.items.length} صنف في هذا الطلب</p></div></div>
       <div className={s.tableWrap}><table className={s.table}>
         <thead><tr><th>المنتج</th><th>الخيار</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th></tr></thead>

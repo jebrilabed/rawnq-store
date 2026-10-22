@@ -5,12 +5,13 @@ import { getSettings, type Settings, saveSettings as persistSettings } from "./d
 
 export const stockOf = (product: { stock: number; variants: { stock: number }[] }) => product.variants.length ? product.variants.reduce((total, variant) => total + variant.stock, 0) : product.stock;
 
-function toOrder(row: { orderNumber: string; createdAt: Date; status: string; customerName: string; phone: string; city: string; address: string; notes: string | null; payment: string; deliveryAreaName: string | null; paymentReceiptUrl: string | null; subtotal: { toNumber(): number }; shipping: { toNumber(): number }; total: { toNumber(): number }; items: { slug: string; name: string; image: string; option: string | null; qty: number; unitPrice: { toNumber(): number } }[] }): OrderSummary {
+function toOrder(row: { orderNumber: string; createdAt: Date; status: string; customerName: string; phone: string; city: string; address: string; notes: string | null; payment: string; deliveryAreaName: string | null; paymentReceiptUrl: string | null; subtotal: { toNumber(): number }; shipping: { toNumber(): number }; total: { toNumber(): number }; items: { slug: string; name: string; image: string; option: string | null; qty: number; unitPrice: { toNumber(): number } }[]; statusHistory: { status: string; createdAt: Date }[] }): OrderSummary {
   return {
     orderNumber: row.orderNumber, createdAt: row.createdAt.toISOString(), status: row.status as OrderStatus,
     customer: { name: row.customerName, phone: row.phone, city: row.city, address: row.address, notes: row.notes ?? undefined },
     payment: row.payment as "cod" | "bank", deliveryAreaName: row.deliveryAreaName ?? undefined,
     paymentReceiptUrl: row.paymentReceiptUrl ?? undefined,
+    statusHistory: row.statusHistory.map((entry) => ({ status: entry.status as OrderStatus, createdAt: entry.createdAt.toISOString() })),
     items: row.items.map((item) => ({ slug: item.slug, name: item.name, image: item.image, option: item.option ?? undefined, qty: item.qty, unitPrice: item.unitPrice.toNumber() })),
     subtotal: row.subtotal.toNumber(), shipping: row.shipping.toNumber(), total: row.total.toNumber(),
   };
@@ -75,7 +76,10 @@ export async function getRecentOrders(take = 5): Promise<OrderListRow[]> {
 }
 
 export async function getOrder(orderNumber: string) {
-  const row = await prisma.storeOrder.findUnique({ where: { orderNumber }, include: { items: true } });
+  const row = await prisma.storeOrder.findUnique({
+    where: { orderNumber },
+    include: { items: true, statusHistory: { orderBy: { createdAt: "asc" } } },
+  });
   return row ? toOrder(row) : undefined;
 }
 
@@ -109,7 +113,8 @@ export async function getCustomerOrders(customerUserId: string): Promise<Custome
 
 export async function getCustomerOrder(customerUserId: string, orderNumber: string) {
   const row = await prisma.storeOrder.findFirst({
-    where: { customerUserId, orderNumber }, include: { items: true },
+    where: { customerUserId, orderNumber },
+    include: { items: true, statusHistory: { orderBy: { createdAt: "asc" } } },
   });
   return row ? toOrder(row) : undefined;
 }
@@ -206,7 +211,12 @@ export async function deleteCategory(slug: string): Promise<string | null> {
 }
 
 export async function setOrderStatus(orderNumber: string, status: OrderStatus) {
-  await prisma.storeOrder.updateMany({ where: { orderNumber }, data: { status } });
+  await prisma.$transaction(async (tx) => {
+    const order = await tx.storeOrder.findUnique({ where: { orderNumber }, select: { id: true, status: true } });
+    if (!order || order.status === status) return;
+    await tx.storeOrder.update({ where: { id: order.id }, data: { status } });
+    await tx.orderStatusHistory.create({ data: { orderId: order.id, status } });
+  });
 }
 
 export async function saveSettings(settings: Settings) { await persistSettings(settings); }
@@ -232,6 +242,7 @@ export async function commitOrder(order: OrderSummary, customerUserId?: string) 
       deliveryAreaName: order.deliveryAreaName, paymentReceiptUrl: order.paymentReceiptUrl,
       subtotal: order.subtotal, shipping: order.shipping, total: order.total,
       items: { create: order.items.map((item) => ({ ...item, option: item.option ?? null })) },
+      statusHistory: { create: { status: order.status, createdAt: new Date(order.createdAt) } },
     } });
   });
 }

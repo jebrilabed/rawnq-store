@@ -8,9 +8,7 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import type { Variant } from "@/lib/types";
 import { uploadProductImage } from "@/lib/data/cloudinary";
 import { checkBestRouteConnection } from "@/lib/integrations/best-route";
-import { BestRouteRejectedError, createBestRouteOrder } from "@/lib/integrations/best-route";
-import { prisma } from "@/lib/data/prisma";
-import bestRouteAreaCatalog from "@/lib/integrations/best-route-areas.json";
+import { sendBestRouteOrder } from "@/lib/integrations/best-route-orders";
 import { saveStoreContent } from "@/lib/data/db";
 
 const text = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
@@ -149,76 +147,10 @@ export async function checkBestRouteConnectionAction() {
 
 export async function sendBestRouteOrderAction(orderNumber: string, bankPaymentConfirmed: boolean) {
   await requireAdmin();
-  const order = await prisma.storeOrder.findUnique({ where: { orderNumber }, include: { items: true } });
-  if (!order) return { ok: false as const, state: "NOT_SENT", error: "لم أجد الطلب." };
-  if (order.status === "CANCELLED") return { ok: false as const, state: order.bestRouteState, error: "لا يمكن إرسال طلب ملغي." };
-  if (order.bestRouteState === "SENT") return { ok: false as const, state: "SENT", error: "تم إرسال هذا الطلب مسبقاً." };
-  if (order.bestRouteState === "SENDING" || order.bestRouteState === "UNKNOWN") {
-    return { ok: false as const, state: order.bestRouteState, error: "نتيجة الإرسال غير محسومة. تحقق في لوحة Best Route بالمرجع قبل أي إعادة محاولة." };
-  }
-  if (!process.env.BEST_ROUTE_LOGIN?.trim() || !process.env.BEST_ROUTE_PASSWORD) {
-    return { ok: false as const, state: order.bestRouteState, error: "أضف بيانات BEST_ROUTE_LOGIN وBEST_ROUTE_PASSWORD إلى إعدادات الخادم." };
-  }
-  if (!process.env.BEST_ROUTE_ORDER_TYPE_ID?.trim()) {
-    return { ok: false as const, state: order.bestRouteState, error: "حدد BEST_ROUTE_ORDER_TYPE_ID بعد فحص قائمة أنواع الطلبات." };
-  }
-  if (!bestRouteAreaCatalog.areas.some((area) => area.name === order.city)) {
-    return { ok: false as const, state: order.bestRouteState, error: "مدينة الطلب غير موجودة في قائمة Best Route. راجع الطلب قبل الإرسال." };
-  }
-  if (order.payment === "bank" && bankPaymentConfirmed !== true) {
-    return { ok: false as const, state: order.bestRouteState, error: "أكد استلام التحويل البنكي قبل إرسال الشحنة كمدفوعة." };
-  }
-
-  const claimed = await prisma.storeOrder.updateMany({
-    where: { orderNumber, bestRouteState: { in: ["NOT_SENT", "REJECTED"] } },
-    data: { bestRouteState: "SENDING", bestRouteError: null, bestRouteUpdatedAt: new Date() },
-  });
-  if (claimed.count !== 1) return { ok: false as const, state: "SENDING", error: "هناك محاولة إرسال أخرى لهذا الطلب." };
-
-  const deliveryFeeOnCustomer = order.payment === "cod";
-  const deliveryFeeOnSender = order.payment === "bank";
-  const productNote = order.items.map((item) => `${item.name}${item.option ? ` (${item.option})` : ""} × ${item.qty}`).join("، ").slice(0, 1500);
-  try {
-    const result = await createBestRouteOrder({
-      customer_name: order.customerName,
-      customer_mobile: order.phone,
-      customer_area: order.city,
-      customer_address: [order.deliveryAreaName, order.address].filter(Boolean).join("، ").slice(0, 500),
-      reference_id: order.orderNumber,
-      cost: Number(order.subtotal),
-      note: order.notes ?? "",
-      paid: order.payment === "bank",
-      delivery_fee_on_customer: deliveryFeeOnCustomer,
-      delivery_fee_on_sender: deliveryFeeOnSender,
-      product_note: productNote,
-    });
-    await prisma.storeOrder.update({
-      where: { orderNumber },
-      data: { bestRouteState: "SENT", bestRouteOrderId: result.orderId ?? null, bestRouteError: null, bestRouteUpdatedAt: new Date() },
-    });
-    revalidatePath(`/admin/orders/${orderNumber}`);
-    revalidatePath("/admin/orders");
-    return { ok: true as const, state: "SENT", orderId: result.orderId, referenceId: order.orderNumber };
-  } catch (error) {
-    const state = error instanceof BestRouteRejectedError ? "REJECTED" : "UNKNOWN";
-    let message = error instanceof Error ? error.message : "تعذر إرسال الشحنة.";
-    for (const secret of [process.env.BEST_ROUTE_LOGIN, process.env.BEST_ROUTE_PASSWORD]) {
-      if (secret) message = message.replaceAll(secret, "[مخفي]");
-    }
-    message = message.slice(0, 220);
-    await prisma.storeOrder.update({
-      where: { orderNumber },
-      data: { bestRouteState: state, bestRouteError: message, bestRouteUpdatedAt: new Date() },
-    });
-    revalidatePath(`/admin/orders/${orderNumber}`);
-    return {
-      ok: false as const,
-      state,
-      error: state === "UNKNOWN"
-        ? "انقطع الاتصال بعد بدء الإرسال؛ تحقق في لوحة Best Route باستخدام رقم المرجع قبل إعادة المحاولة."
-        : `رفض Best Route الطلب: ${message}`,
-    };
-  }
+  const result = await sendBestRouteOrder(orderNumber, { bankPaymentConfirmed });
+  revalidatePath(`/admin/orders/${orderNumber}`);
+  revalidatePath("/admin/orders");
+  return result;
 }
 
 export async function updateStockAction(f: FormData) {

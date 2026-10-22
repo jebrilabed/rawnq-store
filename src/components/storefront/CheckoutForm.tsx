@@ -85,7 +85,7 @@ export function CheckoutForm({ locale, areas, courierAreas, customer, methods }:
       if (!res.ok) { setError(tr(res.error)); return; }
       saveOrder(res.order);
       clear();
-      router.push(`/${locale}/order-confirmation/${res.order.orderNumber}`);
+      router.push(`/${locale}/order-confirmation/${res.order.orderNumber}${res.deliverySent ? "" : "?delivery=pending"}`);
     } catch {
       setError(tr("تعذر إرسال الطلب. حاول مرة أخرى."));
     } finally {

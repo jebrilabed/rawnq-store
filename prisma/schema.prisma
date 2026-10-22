@@ -84,10 +84,21 @@ model StoreOrder {
   shipping    Decimal     @db.Decimal(10, 2)
   total       Decimal     @db.Decimal(10, 2)
   items       OrderItem[]
+  statusHistory OrderStatusHistory[]
 
   @@index([createdAt])
   @@index([status])
   @@index([customerUserId, createdAt])
+}
+
+model OrderStatusHistory {
+  id        String     @id @default(cuid())
+  orderId   String
+  order     StoreOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    String
+  createdAt DateTime   @default(now())
+
+  @@index([orderId, createdAt])
 }
 
 model OrderItem {

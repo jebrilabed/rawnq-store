@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import { PAYMENT_LABEL, STATUS_LABEL, readOrders, type CustomerOrderListItem, type OrderSummary } from "@/lib/orders";
+import { OrderStatusTracking } from "@/components/ui/OrderStatusTracking";
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
 
@@ -44,7 +45,9 @@ export function OrdersList({ locale, orders }: { locale: string; orders: Custome
   );
 }
 
-export function OrderDetail({ locale, orderNumber, order, confirmation }: { locale: string; orderNumber: string; order?: OrderSummary; confirmation?: boolean }) {
+export function OrderDetail({ locale, orderNumber, order, confirmation, deliveryPending }: {
+  locale: string; orderNumber: string; order?: OrderSummary; confirmation?: boolean; deliveryPending?: boolean;
+}) {
   const tr = (text: string) => translate(locale, text);
   if (!order) {
     return (
@@ -62,10 +65,13 @@ export function OrderDetail({ locale, orderNumber, order, confirmation }: { loca
           <CheckCircle2 size={48} color="var(--teal)" />
           <h2>{tr("تم استلام طلبك")}</h2>
           <p>{tr("رقم الطلب:")} <b>{o.orderNumber}</b></p>
-          <p className={s.muted}>{tr("سنتواصل معك قريباً لتأكيد التوصيل.")}</p>
+          <p className={s.muted}>{deliveryPending
+            ? tr("تم استلام طلبك، لكن تعذر تأكيد إرسال طلب التوصيل تلقائياً. سنتواصل معك قريباً.")
+            : tr("سنتواصل معك قريباً لتأكيد التوصيل.")}</p>
         </div>
       )}
       {!confirmation && <p className={s.muted}>{fmtDate(o.createdAt, locale)} · <span className={s.pill}>{tr(STATUS_LABEL[o.status])}</span></p>}
+      <OrderStatusTracking status={o.status} history={o.statusHistory} locale={locale} />
       {o.items.map((i, k) => (
         <div key={k} className={s.line}>
           <Image src={i.image} alt="" width={64} height={64} />
@@ -92,9 +98,11 @@ export function OrderDetail({ locale, orderNumber, order, confirmation }: { loca
   );
 }
 
-export function OrderConfirmation({ locale, orderNumber, initialOrder }: { locale: string; orderNumber: string; initialOrder?: OrderSummary }) {
+export function OrderConfirmation({ locale, orderNumber, initialOrder, deliveryPending }: {
+  locale: string; orderNumber: string; initialOrder?: OrderSummary; deliveryPending?: boolean;
+}) {
   const localOrders = useOrders();
   if (!initialOrder && !localOrders) return null;
   const order = initialOrder ?? localOrders?.find((item) => item.orderNumber === orderNumber);
-  return <OrderDetail locale={locale} orderNumber={orderNumber} order={order} confirmation />;
+  return <OrderDetail locale={locale} orderNumber={orderNumber} order={order} confirmation deliveryPending={deliveryPending} />;
 }

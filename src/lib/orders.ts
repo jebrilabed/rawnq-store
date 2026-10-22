@@ -3,8 +3,10 @@ export const STATUS_LABEL: Record<OrderStatus, string> = {
   NEW: "جديد", PROCESSING: "قيد التجهيز", SHIPPED: "خرج للتوصيل", DONE: "مكتمل", CANCELLED: "ملغي",
 };
 export type OrderItem = { slug: string; name: string; image: string; option?: string; qty: number; unitPrice: number };
+export type OrderStatusHistoryEntry = { status: OrderStatus; createdAt: string };
 export type OrderSummary = {
   orderNumber: string; createdAt: string; status: OrderStatus;
+  statusHistory?: OrderStatusHistoryEntry[];
   customer: { name: string; phone: string; city: string; address: string; notes?: string };
   payment: "cod" | "bank"; deliveryAreaName?: string; paymentReceiptUrl?: string;
   items: OrderItem[]; subtotal: number; shipping: number; total: number;

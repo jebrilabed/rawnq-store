@@ -6,6 +6,7 @@ import { commitOrder, OrderCommitError } from "@/lib/data/admin";
 import { getProduct } from "@/lib/data/catalog";
 import { uploadTransferReceipt } from "@/lib/data/cloudinary";
 import { getSettings } from "@/lib/data/db";
+import { sendBestRouteOrder } from "@/lib/integrations/best-route-orders";
 import type { OrderItem, OrderSummary } from "@/lib/orders";
 import bestRouteAreaCatalog from "@/lib/integrations/best-route-areas.json";
 
@@ -16,7 +17,7 @@ export type PlaceOrderInput = {
   paymentReceiptUrl?: string;
   lines: { slug: string; option?: string; qty: number }[];
 };
-export type PlaceOrderResult = { ok: true; order: OrderSummary } | { ok: false; error: string };
+export type PlaceOrderResult = { ok: true; order: OrderSummary; deliverySent: boolean } | { ok: false; error: string };
 
 const clean = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 const newOrderNumber = () => `RQ-${randomInt(100000, 1000000)}`;
@@ -89,10 +90,12 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
 
   const subtotal = items.reduce((n, i) => n + i.qty * i.unitPrice, 0);
   const shipping = deliveryArea.fee;
+  const createdAt = new Date().toISOString();
   const order: OrderSummary = {
     orderNumber: newOrderNumber(),
-    createdAt: new Date().toISOString(),
-    status: "NEW", customer, payment: input.payment, deliveryAreaName: deliveryArea.name,
+    createdAt,
+    status: "NEW", statusHistory: [{ status: "NEW", createdAt }],
+    customer, payment: input.payment, deliveryAreaName: deliveryArea.name,
     paymentReceiptUrl: input.payment === "bank" ? paymentReceiptUrl : undefined, items,
     subtotal, shipping, total: subtotal + shipping,
   };
@@ -100,7 +103,15 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       await commitOrder(order, customerUserId);
-      return { ok: true, order };
+      let deliverySent = false;
+      try {
+        const shipment = await sendBestRouteOrder(order.orderNumber, { allowUnconfirmedBankPayment: true });
+        deliverySent = shipment.ok;
+        if (!shipment.ok) console.error(`Best Route auto-send failed for ${order.orderNumber}: ${shipment.error}`);
+      } catch (error) {
+        console.error(`Could not submit order ${order.orderNumber} to Best Route.`, error);
+      }
+      return { ok: true, order, deliverySent };
     } catch (error) {
       // The public order number is short for readability; retry the rare unique-key collision.
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002" && attempt < 4) {
