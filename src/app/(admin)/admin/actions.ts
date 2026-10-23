@@ -13,8 +13,39 @@ import { saveStoreContent } from "@/lib/data/db";
 
 const text = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
 const num = (f: FormData, k: string) => { const v = text(f, k, 20); return v === "" ? NaN : Number(v); };
-const refresh = () => revalidatePath("/", "layout");
 const fail = (path: string, msg: string): never => redirect(`${path}?error=${encodeURIComponent(msg)}`);
+
+// Targeted revalidations — only invalidate pages that actually changed.
+const LOCALES = ["ar", "en", "he", "ru"] as const;
+function revalidateProductPages(productSlug?: string) {
+  for (const locale of LOCALES) {
+    revalidatePath(`/${locale}`, "page");              // homepage (best-sellers + new arrivals)
+    revalidatePath(`/${locale}/products`, "page");     // product listing
+    if (productSlug) revalidatePath(`/${locale}/products/${productSlug}`, "page"); // product detail
+  }
+  revalidatePath("/admin/products", "page");           // admin product list
+  revalidatePath("/admin", "page");                    // admin dashboard stats
+}
+function revalidateCategoryPages() {
+  for (const locale of LOCALES) {
+    revalidatePath(`/${locale}`, "page");              // homepage (category rail)
+    revalidatePath(`/${locale}/products`, "page");     // products filtered by category
+    revalidatePath(`/${locale}/categories`, "layout"); // category pages
+  }
+  revalidatePath("/admin/categories", "page");         // admin category list
+}
+function revalidateSettingsPages() {
+  for (const locale of LOCALES) {
+    revalidatePath(`/${locale}`, "layout");            // header/footer store name
+    revalidatePath(`/${locale}/checkout`, "page");     // shipping areas
+  }
+  revalidatePath("/admin/settings", "page");
+  revalidatePath("/admin", "page");
+}
+function revalidateInventoryPages() {
+  revalidatePath("/admin/inventory", "page");
+  revalidatePath("/admin", "page");
+}
 
 function parseVariants(raw: string): Variant[] | string {
   let rows: unknown;
@@ -81,10 +112,10 @@ export async function saveProductAction(f: FormData) {
     stock, image, published: f.get("published") === "on", variants,
   });
   if (err) return fail(back, err);
-  refresh(); redirect("/admin/products");
+  revalidateProductPages(); redirect("/admin/products");
 }
-export async function togglePublishedAction(f: FormData) { await requireAdmin(); await admin.togglePublished(text(f, "id", 80)); refresh(); }
-export async function deleteProductAction(f: FormData) { await requireAdmin(); await admin.deleteProduct(text(f, "id", 80)); refresh(); }
+export async function togglePublishedAction(f: FormData) { await requireAdmin(); await admin.togglePublished(text(f, "id", 80)); revalidateProductPages(); }
+export async function deleteProductAction(f: FormData) { await requireAdmin(); await admin.deleteProduct(text(f, "id", 80)); revalidateProductPages(); }
 
 export async function adminLogoutAction() { await signOut({ redirectTo: "/ar/login" }); }
 
@@ -95,17 +126,17 @@ export async function addCategoryAction(f: FormData) {
     { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) },
     text(f, "parentSlug", 80) || undefined,
   ); if (err) return fail("/admin/categories", err);
-  refresh(); redirect("/admin/categories");
+  revalidateCategoryPages(); redirect("/admin/categories");
 }
 export async function renameCategoryAction(f: FormData) {
   await requireAdmin();
   const err = await admin.renameCategory(text(f, "slug", 80), text(f, "name", 60), { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) }); if (err) return fail("/admin/categories", err);
-  refresh(); redirect("/admin/categories");
+  revalidateCategoryPages(); redirect("/admin/categories");
 }
 export async function deleteCategoryAction(f: FormData) {
   await requireAdmin();
   const err = await admin.deleteCategory(text(f, "slug", 80)); if (err) return fail("/admin/categories", err);
-  refresh(); redirect("/admin/categories");
+  revalidateCategoryPages(); redirect("/admin/categories");
 }
 
 export async function saveStoreContentAction(f: FormData) {
@@ -133,7 +164,12 @@ export async function saveStoreContentAction(f: FormData) {
     faq: arabicFaq,
     translations,
   });
-  refresh();
+  for (const locale of LOCALES) {
+    revalidatePath(`/${locale}/page/about`, "page");
+    revalidatePath(`/${locale}/page/delivery`, "page");
+    revalidatePath(`/${locale}/page/faq`, "page");
+  }
+  revalidatePath("/admin/content", "page");
   redirect("/admin/content?saved=1");
 }
 
@@ -141,7 +177,9 @@ export async function updateOrderStatusAction(orderNumber: string, status: strin
   await requireAdmin();
   if (!Object.prototype.hasOwnProperty.call(STATUS_LABEL, status)) return;
   await admin.setOrderStatus(orderNumber, status as OrderStatus);
-  revalidatePath("/admin", "layout");
+  revalidatePath(`/admin/orders/${orderNumber}`, "page");
+  revalidatePath("/admin/orders", "page");
+  revalidatePath("/admin", "page"); // dashboard order count
 }
 
 export async function checkBestRouteConnectionAction() {
@@ -163,7 +201,7 @@ export async function updateStockAction(f: FormData) {
   const qty = num(f, "qty");
   if (!Number.isInteger(qty) || qty < 0 || qty > 2_147_483_647) return;
   await admin.setStock(text(f, "id", 80), vi === "" ? null : vi, qty);
-  refresh();
+  revalidateInventoryPages();
 }
 
 export async function saveSettingsAction(f: FormData) {
@@ -213,5 +251,5 @@ export async function saveSettingsAction(f: FormData) {
     bankDetails, bankAccountName, bankIban, bankAccountNumber,
     lowStockThreshold: low, deliveryAreas: deliveryAreas as { id: string; value: string; name: string; fee: number; translations: string }[],
   });
-  refresh(); redirect("/admin/settings?saved=1");
+  revalidateSettingsPages(); redirect("/admin/settings?saved=1");
 }

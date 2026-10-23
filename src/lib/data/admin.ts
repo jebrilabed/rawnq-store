@@ -154,8 +154,14 @@ export async function saveProduct(input: ProductInput): Promise<string | null> {
   if (input.comparePrice != null && !isMoney(input.comparePrice)) return "سعر المقارنة غير صحيح.";
   if (!Number.isInteger(input.stock) || input.stock < 0 || input.stock > 2_147_483_647) return "كمية المخزون غير صحيحة.";
   if (input.variants.some((variant) => !Number.isInteger(variant.stock) || variant.stock < 0 || variant.stock > 2_147_483_647 || (variant.price != null && !isMoney(variant.price)))) return "تحقق من كميات وأسعار الخيارات.";
-  if (!await prisma.category.findUnique({ where: { slug: input.categorySlug } })) return "اختر قسماً. أضف قسماً من صفحة الأقسام أولاً.";
   if (!isSafeProductImage(input.image)) return "رابط الصورة غير صالح. استخدم صورة محلية أو رابط Cloudinary آمن.";
+  // Validate category in parallel with slug generation for new products.
+  const base = !input.id ? slugify(input.name, "product") : "";
+  const [categoryExists, existingSlug] = await Promise.all([
+    prisma.category.findUnique({ where: { slug: input.categorySlug }, select: { slug: true } }),
+    !input.id ? prisma.product.findUnique({ where: { slug: base }, select: { slug: true } }) : Promise.resolve(null),
+  ]);
+  if (!categoryExists) return "اختر قسماً. أضف قسماً من صفحة الأقسام أولاً.";
   const data = {
     name: input.name, description: input.description, categorySlug: input.categorySlug,
     translations: JSON.stringify(input.translations ?? {}),
@@ -175,8 +181,10 @@ export async function saveProduct(input: ProductInput): Promise<string | null> {
     });
   }
   else {
-    const base = slugify(input.name, "product"); let slug = base;
-    for (let index = 2; await prisma.product.findUnique({ where: { slug } }); index++) slug = `${base}-${index}`;
+    let slug = base;
+    if (existingSlug) {
+      for (let index = 2; await prisma.product.findUnique({ where: { slug } }); index++) slug = `${base}-${index}`;
+    }
     await prisma.product.create({ data: { ...data, slug, variants: { create: variants } } });
   }
   return null;
@@ -184,8 +192,8 @@ export async function saveProduct(input: ProductInput): Promise<string | null> {
 
 export async function deleteProduct(id: string) { await prisma.product.delete({ where: { id } }); }
 export async function togglePublished(id: string) {
-  const product = await prisma.product.findUnique({ where: { id }, select: { published: true } });
-  if (product) await prisma.product.update({ where: { id }, data: { published: !product.published } });
+  // Single atomic round-trip — no prior SELECT needed.
+  await prisma.$executeRaw`UPDATE "Product" SET published = NOT published WHERE id = ${id}`;
 }
 
 export async function setStock(id: string, variantId: string | null, qty: number) {
@@ -196,11 +204,13 @@ export async function setStock(id: string, variantId: string | null, qty: number
 
 export async function addCategory(name: string, translations: Record<string, string> = {}, parentSlug?: string): Promise<string | null> {
   if (name.length < 2) return "أدخل اسم القسم.";
-  if (await prisma.category.findFirst({ where: { name } })) return "القسم موجود مسبقاً.";
-  if (parentSlug) {
-    const parent = await prisma.category.findUnique({ where: { slug: parentSlug }, select: { slug: true } });
-    if (!parent) return "القسم الرئيسي المحدد غير موجود.";
-  }
+  // Run existence checks in parallel to save a round-trip.
+  const [existing, parent] = await Promise.all([
+    prisma.category.findFirst({ where: { name }, select: { slug: true } }),
+    parentSlug ? prisma.category.findUnique({ where: { slug: parentSlug }, select: { slug: true } }) : Promise.resolve(null),
+  ]);
+  if (existing) return "القسم موجود مسبقاً.";
+  if (parentSlug && !parent) return "القسم الرئيسي المحدد غير موجود.";
   const base = slugify(name, "category"); let slug = base;
   for (let index = 2; await prisma.category.findUnique({ where: { slug } }); index++) slug = `${base}-${index}`;
   await prisma.category.create({ data: { slug, name, translations: JSON.stringify(translations), parentSlug: parentSlug || null } });
@@ -215,8 +225,13 @@ export async function renameCategory(slug: string, name: string, translations: R
 }
 
 export async function deleteCategory(slug: string): Promise<string | null> {
-  if (await prisma.product.count({ where: { categorySlug: slug } })) return "انقل منتجات القسم أولاً.";
-  if (await prisma.category.count({ where: { parentSlug: slug } })) return "احذف الأقسام الفرعية أولاً.";
+  // Run both checks in parallel to save a round-trip.
+  const [productCount, childCount] = await Promise.all([
+    prisma.product.count({ where: { categorySlug: slug } }),
+    prisma.category.count({ where: { parentSlug: slug } }),
+  ]);
+  if (productCount) return "انقل منتجات القسم أولاً.";
+  if (childCount) return "احذف الأقسام الفرعية أولاً.";
   await prisma.category.deleteMany({ where: { slug } });
   return null;
 }
