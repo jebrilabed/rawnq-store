@@ -31,15 +31,32 @@ function localizedProductDescription(translations: string | null | undefined, lo
 }
 
 export async function getCategories(locale = "ar"): Promise<Category[]> {
-  const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  const categories = await prisma.category.findMany({ orderBy: [{ parentSlug: "asc" }, { name: "asc" }] });
   return categories.map((category) => ({
     slug: category.slug,
     name: localizedValue(category.translations, locale, category.name),
+    parentSlug: category.parentSlug,
   }));
 }
 
 export async function getProducts(opts: { category?: string; q?: string; locale?: string } = {}): Promise<Product[]> {
   const searchFilters: Prisma.ProductWhereInput[] = [];
+  let categorySlugs: string[] | undefined;
+  if (opts.category) {
+    const categories = await prisma.category.findMany({ select: { slug: true, parentSlug: true } });
+    const descendants = new Set([opts.category]);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const category of categories) {
+        if (category.parentSlug && descendants.has(category.parentSlug) && !descendants.has(category.slug)) {
+          descendants.add(category.slug);
+          changed = true;
+        }
+      }
+    }
+    categorySlugs = [...descendants];
+  }
   if (opts.q) {
     searchFilters.push({ name: { contains: opts.q, mode: "insensitive" } });
     if (opts.locale && opts.locale !== "ar") {
@@ -50,7 +67,7 @@ export async function getProducts(opts: { category?: string; q?: string; locale?
   const rows = await prisma.product.findMany({
     where: {
       published: true,
-      ...(opts.category ? { categorySlug: opts.category } : {}),
+      ...(categorySlugs ? { categorySlug: { in: categorySlugs } } : {}),
       ...(searchFilters.length ? { OR: searchFilters } : {}),
     },
     include: { variants: true }, orderBy: { createdAt: "desc" },

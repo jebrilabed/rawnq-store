@@ -90,7 +90,11 @@ export async function adminLogoutAction() { await signOut({ redirectTo: "/ar/log
 
 export async function addCategoryAction(f: FormData) {
   await requireAdmin();
-  const err = await admin.addCategory(text(f, "name", 60), { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) }); if (err) return fail("/admin/categories", err);
+  const err = await admin.addCategory(
+    text(f, "name", 60),
+    { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) },
+    text(f, "parentSlug", 80) || undefined,
+  ); if (err) return fail("/admin/categories", err);
   refresh(); redirect("/admin/categories");
 }
 export async function renameCategoryAction(f: FormData) {

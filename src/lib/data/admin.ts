@@ -48,7 +48,13 @@ export async function getInventoryProducts() {
 }
 
 export async function getCategoryRows() {
-  return prisma.category.findMany({ include: { _count: { select: { products: true } } }, orderBy: { name: "asc" } });
+  return prisma.category.findMany({
+    include: {
+      parent: { select: { name: true } },
+      _count: { select: { products: true, children: true } },
+    },
+    orderBy: [{ parentSlug: "asc" }, { name: "asc" }],
+  });
 }
 
 export type OrderListRow = { orderNumber: string; status: OrderStatus; customerName: string; total: number; image: string };
@@ -188,12 +194,16 @@ export async function setStock(id: string, variantId: string | null, qty: number
   else await prisma.product.updateMany({ where: { id }, data: { stock: qty } });
 }
 
-export async function addCategory(name: string, translations: Record<string, string> = {}): Promise<string | null> {
+export async function addCategory(name: string, translations: Record<string, string> = {}, parentSlug?: string): Promise<string | null> {
   if (name.length < 2) return "أدخل اسم القسم.";
   if (await prisma.category.findFirst({ where: { name } })) return "القسم موجود مسبقاً.";
+  if (parentSlug) {
+    const parent = await prisma.category.findUnique({ where: { slug: parentSlug }, select: { slug: true } });
+    if (!parent) return "القسم الرئيسي المحدد غير موجود.";
+  }
   const base = slugify(name, "category"); let slug = base;
   for (let index = 2; await prisma.category.findUnique({ where: { slug } }); index++) slug = `${base}-${index}`;
-  await prisma.category.create({ data: { slug, name, translations: JSON.stringify(translations) } });
+  await prisma.category.create({ data: { slug, name, translations: JSON.stringify(translations), parentSlug: parentSlug || null } });
   return null;
 }
 
@@ -206,6 +216,7 @@ export async function renameCategory(slug: string, name: string, translations: R
 
 export async function deleteCategory(slug: string): Promise<string | null> {
   if (await prisma.product.count({ where: { categorySlug: slug } })) return "انقل منتجات القسم أولاً.";
+  if (await prisma.category.count({ where: { parentSlug: slug } })) return "احذف الأقسام الفرعية أولاً.";
   await prisma.category.deleteMany({ where: { slug } });
   return null;
 }

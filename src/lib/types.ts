@@ -1,5 +1,5 @@
 export type Variant = { color?: string; size?: string; stock: number; price?: number };
-export type Category = { slug: string; name: string };
+export type Category = { slug: string; name: string; parentSlug?: string | null };
 export type Product = {
   id: string; slug: string; name: string; description: string;
   translations?: string;

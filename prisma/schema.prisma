@@ -10,10 +10,15 @@ datasource db {
 }
 
 model Category {
-  slug         String    @id
+  slug         String     @id
   name         String
-  translations String    @default("{}")
+  translations String     @default("{}")
+  parentSlug   String?
+  parent       Category?  @relation("CategoryHierarchy", fields: [parentSlug], references: [slug], onDelete: Restrict)
+  children     Category[] @relation("CategoryHierarchy")
   products     Product[]
+
+  @@index([parentSlug])
 }
 
 model Product {

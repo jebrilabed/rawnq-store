@@ -3,6 +3,8 @@ import { ConfirmButton, SubmitButton } from "@/components/admin/Controls";
 import { Plus, Tags } from "lucide-react";
 import s from "@/components/admin/admin.module.css";
 import { getCategoryRows } from "@/lib/data/admin";
+import { orderCategories } from "@/lib/categories";
+import { CategoryPicker } from "@/components/admin/CategoryPicker";
 
 export default async function CategoriesAdmin({ searchParams }: { searchParams: { error?: string } }) {
   const categories = await getCategoryRows();
@@ -15,12 +17,20 @@ export default async function CategoriesAdmin({ searchParams }: { searchParams: 
       return {};
     }
   };
+  const orderedCategories = orderCategories(categories);
+  const mainCategoryCount = categories.filter((category) => !category.parentSlug).length;
   return (
     <>
-      <header className={s.pageHeader}><div><span className={s.eyebrow}>تنظيم الكتالوج</span><h1>الأقسام</h1><p>رتب المنتجات ضمن أقسام واضحة للمتسوقين.</p></div><span className={s.pill}>{categories.length} قسم</span></header>
+      <header className={s.pageHeader}><div><span className={s.eyebrow}>تنظيم الكتالوج</span><h1>الأقسام</h1><p>أنشئ أقسامًا رئيسية وأضف أقسامًا فرعية لتنظيم المنتجات.</p></div><span className={s.pill}>{mainCategoryCount} رئيسي · {categories.length - mainCategoryCount} فرعي</span></header>
       {searchParams.error && <p role="alert" className={s.error}>{searchParams.error}</p>}
       <form action={addCategoryAction} className={s.categoryAdd}>
         <input className={s.field} name="name" placeholder="اسم القسم الجديد" required maxLength={60} />
+        <CategoryPicker
+          categories={categories}
+          name="parentSlug"
+          placeholder="اختر القسم الأب"
+          rootLabel="قسم رئيسي بدون أب"
+        />
         <SubmitButton className={s.btn} pendingLabel="جارٍ الإضافة…"><Plus size={16} /> إضافة قسم</SubmitButton>
         <details className={s.localizedFields}><summary>أسماء القسم بالإنجليزية والعبرية والروسية (اختياري)</summary>
           <input className={s.field} name="name_en" placeholder="English name" maxLength={60} />
@@ -30,11 +40,11 @@ export default async function CategoriesAdmin({ searchParams }: { searchParams: 
       </form>
       {categories.length === 0 ? <div className={s.emptyState}>لا توجد أقسام بعد. أضف أول قسم.</div> : (
         <div className={s.tableWrap}><table className={s.table}>
-          <thead><tr><th>القسم</th><th>المنتجات</th><th>الإجراءات</th></tr></thead>
-          <tbody>{categories.map((c) => (
+          <thead><tr><th>القسم الرئيسي / الفرعي</th><th>المنتجات والأقسام الفرعية</th><th>الإجراءات</th></tr></thead>
+          <tbody>{orderedCategories.map(({ category: c, depth }) => (
             <tr key={c.slug}>
-              <td><div className={s.itemCell}><Tags size={17} className={s.muted} /><b>{c.name}</b></div></td>
-              <td><span className={s.categoryCount}>{c._count.products} منتج</span></td>
+              <td><div className={s.itemCell} style={{ paddingInlineStart: `${depth * 18}px` }}><Tags size={17} className={s.muted} /><div><b>{c.name}</b>{c.parent && <small>فرعي من: {c.parent.name}</small>}</div></div></td>
+              <td><span className={s.categoryCount}>{c._count.products} منتج</span>{c._count.children > 0 && <span className={s.categoryCount}>{c._count.children} فرعي</span>}</td>
               <td><div className={s.cellActions}>
                 <form action={renameCategoryAction} className={s.inline}>
                   <input type="hidden" name="slug" value={c.slug} />

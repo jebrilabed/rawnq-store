@@ -8,10 +8,33 @@
 .logo{display:flex;align-items:center;gap:10px;margin-inline-end:auto;font-weight:700;font-size:1.1rem;letter-spacing:.14em;color:var(--teal)}
 .logo img{border-radius:50%}
 .logoName{max-width:min(42vw,260px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0}
-.nav{display:none;gap:4px}
+.nav{display:none;align-items:center;gap:4px}
 .nav a{position:relative;padding:8px 14px;font-weight:500}
 .nav a::after{content:"";position:absolute;inset-inline:14px;bottom:4px;height:2px;background:var(--gold);transform:scaleX(0);transition:transform .25s}
 .nav a:hover::after{transform:scaleX(1)}
+.categoryMenu{position:relative}
+.categoryMenuTrigger{display:flex;align-items:center;gap:5px;padding:8px 14px;border:0;background:none;color:inherit;font:inherit;font-weight:500;white-space:nowrap}
+.categoryMenuTrigger:hover{color:var(--teal)}
+.categoryDropdown{position:absolute;top:calc(100% + 8px);inset-inline-end:0;z-index:30;width:min(340px,calc(100vw - 32px));max-height:min(70vh,560px);overflow-y:auto;padding:7px;border:1px solid var(--line);border-radius:8px;background:#fff;box-shadow:0 14px 34px #1c24301c}
+.categoryMainList,.categorySubmenuContent,.drawerCategoryBranchList,.drawerCategorySubmenuContent{display:grid;align-content:start;gap:2px;width:100%}
+.categoryMenuItem,.categorySubmenuContent a,.drawerCategorySubmenuContent a{position:relative;display:flex;align-items:center;justify-content:flex-start;gap:12px;box-sizing:border-box;width:100%;min-height:40px;padding:9px 11px;border:0;border-radius:5px;background:transparent;color:var(--ink);font:inherit;font-size:.88rem;text-align:start}
+.nav .categoryDropdown .categoryMenuItem,.nav .categoryDropdown .categorySubmenuContent a{padding:9px 11px}
+.categoryMenuItem>svg{position:absolute;left:11px;flex:0 0 auto;transition:transform .2s ease}
+.categoryMenuItem[aria-expanded="true"]>svg{transform:rotate(180deg)}
+.categoryMenuItem:hover,.categoryMenuItemActive,.categorySubmenuContent a:hover,.drawerCategorySubmenuContent a:hover{background:var(--tile);color:var(--teal)}
+.nav .categoryDropdown a::after{content:none}
+.categorySubmenu,.drawerCategorySubmenu{display:grid;grid-template-rows:0fr;width:100%;animation:categoryExpand .24s ease-out forwards}
+.categorySubmenuContent,.drawerCategorySubmenuContent{min-height:0;overflow:hidden;padding-inline-start:12px}
+@keyframes categoryExpand{to{grid-template-rows:1fr}}
+.drawerCategoryHeading{margin-top:12px;padding:12px 8px 4px;color:var(--teal);font-size:.8rem;font-weight:750}
+.drawerCategoryGroup{border-bottom:1px solid var(--line)}
+.drawer .categoryMenuItem{min-height:44px;padding:12px 8px;border-bottom:1px solid var(--line);border-radius:0;font-weight:600}
+.drawer .categorySubmenuContent a,.drawer .drawerCategorySubmenuContent a{min-height:38px;padding:9px 8px;border:0;color:var(--muted);font-size:.88rem;font-weight:500}
+.drawer .categoryMenuItem>svg{left:8px}
+.categorySubmenuContent .categoryMenuItem,.drawerCategorySubmenuContent .categoryMenuItem{padding-inline-start:9px}
+.categorySubmenuContent .categoryMenuItem>svg,.drawerCategorySubmenuContent .categoryMenuItem>svg{left:8px}
+.categorySubmenuContent .categorySubmenuContent,.drawerCategorySubmenuContent .drawerCategorySubmenuContent{padding-inline-start:12px}
+@media(prefers-reduced-motion:reduce){.categorySubmenu,.drawerCategorySubmenu{animation-duration:.01ms}}
 .iconBtn{position:relative;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;transition:background .2s}
 .iconBtn:hover{background:var(--tile)}
 .loginBtn{width:auto;min-width:44px;padding:0 12px;border-radius:999px;color:var(--teal);font-size:.875rem;font-weight:700;white-space:nowrap}
@@ -43,7 +66,7 @@
 .favoriteDetail span{font-size:.9rem;font-weight:650}
 .menuBtn{composes:iconBtn}
 .scrim{position:fixed;inset:0;background:#0009;z-index:40}
-.drawer{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(84vw,320px);background:#fff;z-index:50;padding:20px;display:flex;flex-direction:column;animation:slide .25s}
+.drawer{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(84vw,320px);overflow-y:auto;background:#fff;z-index:50;padding:20px;display:flex;flex-direction:column;animation:slide .25s}
 .drawer a{padding:14px 8px;border-bottom:1px solid var(--line);font-weight:500}
 @keyframes slide{from{transform:translateX(100%)}}
 .marquee{background:var(--teal);color:#fff;overflow:hidden;white-space:nowrap;direction:ltr;padding:10px 0;font-weight:600;font-size:.9rem}
@@ -61,25 +84,19 @@
 .railHeading h2{margin-top:2px;font-size:1.4rem;line-height:1.3}
 .railHeading>a{flex:0 0 auto;color:var(--teal);font-size:.9rem;font-weight:650}
 .rail{overflow:hidden}
-.railViewport{overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain;scrollbar-width:none;cursor:grab;padding:6px 2px 14px}
+.railViewport{overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain;scrollbar-width:none;cursor:grab;touch-action:pan-y;user-select:none;padding:6px 2px 14px}
 .railViewport::-webkit-scrollbar{display:none}
 .railViewport:active{cursor:grabbing}
 .railTrack{display:flex;align-items:stretch;width:max-content;min-width:100%;will-change:transform;animation:railTicker 52s linear infinite}
 .railGroup{display:flex;flex:0 0 auto;align-items:stretch;gap:14px;width:max-content;padding-inline-end:14px}
 .rail:hover .railTrack,.rail:focus-within .railTrack,.railDragging .railTrack{animation-play-state:paused}
 @keyframes railTicker{to{transform:translateX(-50%)}}
-.categoryCard{flex:0 0 clamp(224px,76vw,270px);min-height:198px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:18px;border:1px solid #e4e8e2;border-radius:10px;background:#fff;scroll-snap-align:start;transition:transform .22s,border-color .22s,box-shadow .22s}
+.categoryCard{position:relative;flex:0 0 clamp(224px,76vw,270px);height:198px;display:grid;place-items:center;overflow:hidden;padding:0;border:1px solid #e4e8e2;border-radius:10px;background:var(--tile);scroll-snap-align:start;transition:transform .22s,border-color .22s,box-shadow .22s}
 .categoryCard:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 10px 24px #1c243014}
-.categorySymbol{width:78px;height:78px;display:grid;place-items:center;border-radius:50%}
-.categorySymbol[data-tone="0"]{background:#e4efeb;color:#185d4b}
-.categorySymbol[data-tone="1"]{background:#f6ecd8;color:#987020}
-.categorySymbol[data-tone="2"]{background:#e8eef3;color:#3f6575}
-.categorySymbol[data-tone="3"]{background:#f4e8e4;color:#a24d38}
-.categorySymbol[data-tone="4"]{background:#e8eee0;color:#547448}
-.categorySymbol[data-tone="5"]{background:#eee8f0;color:#745a78}
-.categorySymbol img{width:68px;height:68px}
-.categoryTitle{font-size:1.08rem;font-weight:750;line-height:1.35}
-.categoryCta{color:var(--muted);font-size:.82rem}
+.categoryImage{position:absolute;inset:0}
+.categoryImage img{object-fit:cover;transition:transform .25s}
+.categoryCard:hover .categoryImage img{transform:scale(1.04)}
+.categoryTitle{padding:16px;color:var(--ink);font-size:1.05rem;font-weight:700;text-align:center}
 .bestSellerCard{flex:0 0 clamp(220px,72vw,260px);scroll-snap-align:start}
 .bestSellerCard .card{height:100%;width:100%}
 .bestSellerEmpty{padding:24px;border:1px dashed var(--line);border-radius:8px;background:#fff;color:var(--muted);text-align:center}
@@ -231,7 +248,7 @@
 .pendingAction{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .btn[aria-busy="true"]{opacity:1;cursor:wait}
 @media (min-width:720px){.grid{grid-template-columns:repeat(3,1fr);gap:16px}.compactPage .grid{gap:12px}.detail{grid-template-columns:1fr 1fr;gap:36px}.footer .wrap{grid-template-columns:2fr 1fr 1fr}}
-@media (min-width:720px){.railSection{padding:40px 0}.categoryCard{flex-basis:220px;min-height:208px;padding:20px}.categorySymbol{width:84px;height:84px}.categorySymbol img{width:72px;height:72px}.bestSellerCard{flex-basis:240px}}
+@media (min-width:720px){.railSection{padding:40px 0}.categoryCard{flex-basis:220px;height:208px}.bestSellerCard{flex-basis:240px}}
 @media (min-width:1000px){.grid{grid-template-columns:repeat(4,1fr)}.compactPage .grid{grid-template-columns:repeat(4,minmax(0,1fr))}.nav{display:flex}.menuBtn{display:none}}
 @media (min-width:1320px){.grid{grid-template-columns:repeat(5,minmax(0,1fr))}.compactPage .grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media (min-width:760px){.cartLayout{grid-template-columns:minmax(0,1fr) minmax(280px,360px)}.compactPage .cartLayout{grid-template-columns:minmax(0,1fr) minmax(280px,320px)}}

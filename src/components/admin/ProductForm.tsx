@@ -4,6 +4,7 @@ import { SubmitButton } from "./Controls";
 import { CloudinaryImageField } from "./CloudinaryImageField";
 import { ProductOptionsEditor } from "./ProductOptionsEditor";
 import s from "./admin.module.css";
+import { CategoryPicker } from "./CategoryPicker";
 
 export function ProductForm({ product, categories, error }: { product?: Product; categories: Category[]; error?: string }) {
   let translations: Record<string, string> = {};
@@ -28,11 +29,9 @@ export function ProductForm({ product, categories, error }: { product?: Product;
         <label className={s.label}>Описание на русском<textarea className={s.field} name="description_ru" rows={2} defaultValue={translations.ru_description} maxLength={1000} /></label>
       </details>
       <div className={s.two}>
-        <label className={s.label}>القسم
-          <select className={s.field} name="categorySlug" defaultValue={product?.categorySlug} required>
-            {categories.map((category) => <option key={category.slug} value={category.slug}>{category.name}</option>)}
-          </select>
-        </label>
+        <div className={s.label}>القسم
+          <CategoryPicker categories={categories} name="categorySlug" value={product?.categorySlug} placeholder="اختر القسم" />
+        </div>
         <ProductOptionsEditor
           initial={product?.variants ?? []}
           initialPrice={product?.price}
