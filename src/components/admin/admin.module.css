@@ -101,6 +101,15 @@
 @keyframes categoryPickerExpand{to{grid-template-rows:1fr}}
 .categoryCount{display:inline-block;margin-inline-end:5px;padding:3px 8px;border-radius:4px;background:#edf1ed;color:#58675e;font-size:.76rem;font-weight:650}
 .subcategoryCell{padding-inline-start:22px}
+.categoryTreeName{display:flex;align-items:center;gap:8px;min-width:220px}
+.categoryTreeToggle,.categoryTreeTogglePlaceholder{display:grid;place-items:center;width:28px;height:28px;flex:0 0 auto}
+.categoryTreeToggle{border:0;border-radius:4px;background:transparent;color:var(--a-green)}
+.categoryTreeToggle:hover{background:var(--a-green-soft)}
+.categoryTreeToggle svg{transition:transform .18s ease}
+.categoryTreeChevronOpen{transform:rotate(180deg)}
+.categoryTranslationRow td{background:#f8faf8}
+.categoryTranslationForm{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;padding:8px 12px}
+.categoryTranslationForm label{display:grid;gap:5px;min-width:180px;color:var(--a-muted);font-size:.78rem;font-weight:650}
 .inventoryTable .table{min-width:680px}
 .stockForm{display:flex;align-items:center;gap:6px}
 .stockInput{width:78px!important;min-height:34px!important;padding:5px 8px!important;text-align:center;font-variant-numeric:tabular-nums}

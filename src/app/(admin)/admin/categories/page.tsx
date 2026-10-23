@@ -1,23 +1,13 @@
-import { addCategoryAction, deleteCategoryAction, renameCategoryAction } from "../actions";
-import { ConfirmButton, SubmitButton } from "@/components/admin/Controls";
-import { Plus, Tags } from "lucide-react";
+import { addCategoryAction } from "../actions";
+import { SubmitButton } from "@/components/admin/Controls";
+import { Plus } from "lucide-react";
 import s from "@/components/admin/admin.module.css";
 import { getCategoryRows } from "@/lib/data/admin";
-import { orderCategories } from "@/lib/categories";
 import { CategoryPicker } from "@/components/admin/CategoryPicker";
+import { CategoriesTable } from "@/components/admin/CategoriesTable";
 
 export default async function CategoriesAdmin({ searchParams }: { searchParams: { error?: string } }) {
   const categories = await getCategoryRows();
-  const translationsOf = (value: string) => {
-    try {
-      const parsed: unknown = JSON.parse(value);
-      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, string> : {};
-    } catch (cause) {
-      console.error("Invalid category translation data.", cause);
-      return {};
-    }
-  };
-  const orderedCategories = orderCategories(categories);
   const mainCategoryCount = categories.filter((category) => !category.parentSlug).length;
   return (
     <>
@@ -39,28 +29,7 @@ export default async function CategoriesAdmin({ searchParams }: { searchParams: 
         </details>
       </form>
       {categories.length === 0 ? <div className={s.emptyState}>لا توجد أقسام بعد. أضف أول قسم.</div> : (
-        <div className={s.tableWrap}><table className={s.table}>
-          <thead><tr><th>القسم الرئيسي / الفرعي</th><th>المنتجات والأقسام الفرعية</th><th>الإجراءات</th></tr></thead>
-          <tbody>{orderedCategories.map(({ category: c, depth }) => (
-            <tr key={c.slug}>
-              <td><div className={s.itemCell} style={{ paddingInlineStart: `${depth * 18}px` }}><Tags size={17} className={s.muted} /><div><b>{c.name}</b>{c.parent && <small>فرعي من: {c.parent.name}</small>}</div></div></td>
-              <td><span className={s.categoryCount}>{c._count.products} منتج</span>{c._count.children > 0 && <span className={s.categoryCount}>{c._count.children} فرعي</span>}</td>
-              <td><div className={s.cellActions}>
-                <form action={renameCategoryAction} className={s.inline}>
-                  <input type="hidden" name="slug" value={c.slug} />
-                  <input className={s.field} name="name" defaultValue={c.name} required maxLength={60} aria-label="اسم القسم" />
-                  <SubmitButton className={s.sm}>حفظ الاسم</SubmitButton>
-                  <details className={s.localizedFields}><summary>ترجمات</summary>
-                    <input className={s.field} name="name_en" defaultValue={translationsOf(c.translations).en} placeholder="English name" maxLength={60} />
-                    <input className={s.field} name="name_he" defaultValue={translationsOf(c.translations).he} placeholder="שם בעברית" maxLength={60} />
-                    <input className={s.field} name="name_ru" defaultValue={translationsOf(c.translations).ru} placeholder="Название на русском" maxLength={60} />
-                  </details>
-                </form>
-                <form action={deleteCategoryAction}><input type="hidden" name="slug" value={c.slug} /><ConfirmButton className={`${s.sm} ${s.danger}`} message="حذف القسم؟">حذف</ConfirmButton></form>
-              </div></td>
-            </tr>
-          ))}</tbody>
-        </table></div>
+        <CategoriesTable categories={categories} />
       )}
     </>
   );
