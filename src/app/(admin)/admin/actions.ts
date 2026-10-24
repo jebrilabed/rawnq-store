@@ -112,10 +112,21 @@ export async function saveProductAction(f: FormData) {
     stock, image, published: f.get("published") === "on", variants,
   });
   if (err) return fail(back, err);
-  revalidateProductPages(); redirect("/admin/products");
+  revalidateProductPages();
+  redirect("/admin/products?saved=" + encodeURIComponent("تم حفظ بيانات المنتج بنجاح."));
 }
-export async function togglePublishedAction(f: FormData) { await requireAdmin(); await admin.togglePublished(text(f, "id", 80)); revalidateProductPages(); }
-export async function deleteProductAction(f: FormData) { await requireAdmin(); await admin.deleteProduct(text(f, "id", 80)); revalidateProductPages(); }
+export async function togglePublishedAction(f: FormData) {
+  await requireAdmin();
+  await admin.togglePublished(text(f, "id", 80));
+  revalidateProductPages();
+  redirect("/admin/products?saved=" + encodeURIComponent("تم تحديث حالة نشر المنتج بنجاح."));
+}
+export async function deleteProductAction(f: FormData) {
+  await requireAdmin();
+  await admin.deleteProduct(text(f, "id", 80));
+  revalidateProductPages();
+  redirect("/admin/products?saved=" + encodeURIComponent("تم حذف المنتج بنجاح."));
+}
 
 export async function adminLogoutAction() { await signOut({ redirectTo: "/ar/login" }); }
 
@@ -126,23 +137,28 @@ export async function addCategoryAction(f: FormData) {
     { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) },
     text(f, "parentSlug", 80) || undefined,
   ); if (err) return fail("/admin/categories", err);
-  revalidateCategoryPages(); redirect("/admin/categories");
+  revalidateCategoryPages();
+  redirect("/admin/categories?saved=" + encodeURIComponent("تمت إضافة القسم بنجاح."));
 }
 export async function renameCategoryAction(f: FormData) {
   await requireAdmin();
   const err = await admin.renameCategory(text(f, "slug", 80), text(f, "name", 60), { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) }); if (err) return fail("/admin/categories", err);
-  revalidateCategoryPages(); redirect("/admin/categories");
+  revalidateCategoryPages();
+  redirect("/admin/categories?saved=" + encodeURIComponent("تم تحديث اسم القسم بنجاح."));
 }
 export async function moveCategoryAction(f: FormData) {
   await requireAdmin();
   const err = await admin.moveCategory(text(f, "slug", 80), text(f, "parentSlug", 80) || undefined); if (err) return fail("/admin/categories", err);
-  revalidateCategoryPages(); redirect("/admin/categories");
+  revalidateCategoryPages();
+  redirect("/admin/categories?saved=" + encodeURIComponent("تم نقل القسم بنجاح."));
 }
 export async function deleteCategoryAction(f: FormData) {
   await requireAdmin();
   const err = await admin.deleteCategory(text(f, "slug", 80)); if (err) return fail("/admin/categories", err);
-  revalidateCategoryPages(); redirect("/admin/categories");
+  revalidateCategoryPages();
+  redirect("/admin/categories?saved=" + encodeURIComponent("تم حذف القسم بنجاح."));
 }
+
 
 export async function saveStoreContentAction(f: FormData) {
   await requireAdmin();

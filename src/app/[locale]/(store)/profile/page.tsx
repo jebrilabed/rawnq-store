@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LogOut, Mail, ShoppingBag, UserRound } from "lucide-react";
 import { customerLogoutAction, updateCustomerProfileAction } from "../auth-actions";
+import { ProfileSubmitButton, ProfileLogoutButton } from "@/components/storefront/ProfileButtons";
 import { auth } from "@/auth";
 import s from "@/components/storefront/storefront.module.css";
 import { getSettings } from "@/lib/data/db";
@@ -71,7 +72,7 @@ export default async function ProfilePage({ params, searchParams }: { params: { 
               <textarea className={`${s.input} ${s.checkoutAddress}`} name="address" defaultValue={customer.address} required minLength={4} maxLength={200} autoComplete="street-address" />
             </label>
           </div>
-          <button className={s.btn}>{tr("حفظ البيانات")}</button>
+          <ProfileSubmitButton locale={params.locale} />
         </form>
         <div className={s.profileActions}>
           <Link className={s.profileOrdersLink} href={`/${params.locale}/orders`}>
@@ -80,13 +81,11 @@ export default async function ProfilePage({ params, searchParams }: { params: { 
           </Link>
           <form action={customerLogoutAction}>
             <input type="hidden" name="locale" value={params.locale} />
-            <button className={s.profileLogout} type="submit">
-              <LogOut size={18} aria-hidden="true" />
-              {tr("تسجيل الخروج")}
-            </button>
+            <ProfileLogoutButton locale={params.locale} />
           </form>
         </div>
       </section>
     </main>
   );
 }
+

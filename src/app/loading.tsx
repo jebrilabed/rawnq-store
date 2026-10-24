@@ -1,5 +1,5 @@
-import { LoadingScreen } from "@/components/ui/LoadingState";
+import { StoreHomeSkeleton } from "@/components/ui/Skeleton";
 
 export default function Loading() {
-  return <LoadingScreen fullPage />;
+  return <StoreHomeSkeleton />;
 }

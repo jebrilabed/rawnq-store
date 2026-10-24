@@ -1,22 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
-import { updateStockAction } from "../actions";
-import { SubmitButton } from "@/components/admin/Controls";
+import { StockForm } from "@/components/admin/StockForm";
 import s from "@/components/admin/admin.module.css";
 import { getInventoryProducts, stockOf } from "@/lib/data/admin";
 import { getSettings } from "@/lib/data/db";
 
-function StockForm({ id, variant, qty }: { id: string; variant?: string; qty: number }) {
-  return (
-    <form action={updateStockAction} className={s.inline}>
-      <input type="hidden" name="id" value={id} />
-      {variant !== undefined && <input type="hidden" name="variant" value={variant} />}
-      <input className={`${s.field} ${s.stockInput}`} name="qty" type="number" min={0} defaultValue={qty} aria-label="الكمية" />
-      <SubmitButton className={s.sm} pendingLabel="جارٍ الحفظ…">حفظ</SubmitButton>
-    </form>
-  );
-}
 
 export default async function InventoryAdmin() {
   const [products, settings] = await Promise.all([getInventoryProducts(), getSettings()]);

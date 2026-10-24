@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import s from "./storefront.module.css";
 
-export function AutoScrollRail({ children, label, direction = "rtl" }: { children: React.ReactNode; label: string; direction?: "rtl" | "ltr" }) {
+export function AutoScrollRail({ children, label, direction = "rtl", interactiveClone = true }: { children: React.ReactNode; label: string; direction?: "rtl" | "ltr"; interactiveClone?: boolean }) {
   const viewport = useRef<HTMLDivElement>(null);
   const clone = useRef<HTMLDivElement>(null);
   const pointerStart = useRef<{ id: number; x: number; scrollLeft: number } | null>(null);
@@ -11,18 +11,24 @@ export function AutoScrollRail({ children, label, direction = "rtl" }: { childre
   const resumeTimer = useRef<number | null>(null);
 
   useEffect(() => {
-    if (clone.current) clone.current.inert = true;
+    if (clone.current) {
+      clone.current.inert = !interactiveClone;
+      if (interactiveClone) {
+        clone.current.querySelectorAll<HTMLElement>("a, button, input, select, textarea, [tabindex]").forEach((element) => {
+          element.tabIndex = -1;
+        });
+      }
+    }
     return () => {
       if (resumeTimer.current !== null) window.clearTimeout(resumeTimer.current);
     };
-  }, []);
+  }, [interactiveClone]);
 
   function startDrag(event: React.PointerEvent<HTMLDivElement>) {
     if (event.button !== 0) return;
     if (resumeTimer.current !== null) window.clearTimeout(resumeTimer.current);
     pointerStart.current = { id: event.pointerId, x: event.clientX, scrollLeft: event.currentTarget.scrollLeft };
     dragged.current = false;
-    event.currentTarget.setPointerCapture(event.pointerId);
     setDragging(true);
   }
 
@@ -30,7 +36,10 @@ export function AutoScrollRail({ children, label, direction = "rtl" }: { childre
     const start = pointerStart.current;
     if (!start || start.id !== event.pointerId) return;
     const delta = event.clientX - start.x;
-    if (Math.abs(delta) > 4) dragged.current = true;
+    if (Math.abs(delta) > 4 && !dragged.current) {
+      dragged.current = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
     if (dragged.current) {
       event.preventDefault();
       event.currentTarget.scrollLeft = start.scrollLeft - delta;

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { customerLoginAction, customerRegisterAction } from "@/app/[locale]/(store)/auth-actions";
 import { Spinner } from "@/components/ui/LoadingState";
+import { toast } from "@/components/ui/Toast";
 import type { DeliveryArea } from "@/lib/data/db";
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
@@ -11,9 +12,12 @@ import { translate } from "@/lib/i18n";
 function AuthSubmitButton({ isLogin, locale }: { isLogin: boolean; locale: string }) {
   const { pending } = useFormStatus();
   const tr = (text: string) => translate(locale, text);
-  return <button className={s.btn} disabled={pending} aria-busy={pending}>
-    {pending ? <span className={s.pendingAction}><Spinner /> {tr("جارٍ المعالجة…")}</span> : isLogin ? tr("دخول") : tr("إنشاء الحساب")}
-  </button>;
+  const pendingLabel = isLogin ? tr("جارٍ تسجيل الدخول…") : tr("جارٍ إنشاء الحساب…");
+  return (
+    <button type="submit" className={s.btn} disabled={pending} aria-busy={pending}>
+      {pending ? <span className={s.pendingAction}><Spinner /> {pendingLabel}</span> : isLogin ? tr("دخول") : tr("إنشاء الحساب")}
+    </button>
+  );
 }
 
 export function AuthForm({ mode, locale, error, next, courierAreas = [], deliveryAreas = [] }: {
@@ -39,9 +43,12 @@ export function AuthForm({ mode, locale, error, next, courierAreas = [], deliver
       const form = new FormData(e.currentTarget);
       if (!isLogin && form.get("password") !== form.get("confirmPassword")) {
         e.preventDefault();
-        setMsg(tr("كلمتا المرور غير متطابقتين."));
+        const errText = tr("كلمتا المرور غير متطابقتين.");
+        setMsg(errText);
+        toast.warning(errText);
       }
     }}>
+
       <input type="hidden" name="locale" value={locale} />
       {isLogin && (next === "orders" || next === "profile" || next === "admin") && <input type="hidden" name="next" value={next} />}
       {!isLogin && <input className={s.input} name="name" placeholder={tr("الاسم الكامل")} required autoComplete="name" />}

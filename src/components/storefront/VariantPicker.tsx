@@ -4,6 +4,8 @@ import { Check, Minus, Plus, ShoppingCart } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import type { Product } from "@/lib/types";
 import { useCart } from "./CartProvider";
+import { Spinner } from "@/components/ui/LoadingState";
+import { toast } from "@/components/ui/Toast";
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
 
@@ -16,6 +18,7 @@ export function VariantPicker({ product, locale = "ar" }: { product: Product; lo
   const sizes = useMemo(() => unique(product.variants.map((v) => v.size)), [product]);
   const [color, setColor] = useState<string>();
   const [size, setSize] = useState<string>();
+  const [pending, setPending] = useState(false);
   const [added, setAdded] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
@@ -29,14 +32,42 @@ export function VariantPicker({ product, locale = "ar" }: { product: Product; lo
   const colorAvailable = (c: string) => product.variants.some((v) => v.color === c && (!size || v.size === size) && v.stock > 0);
   const sizeAvailable = (z: string) => product.variants.some((v) => v.size === z && (!color || v.color === color) && v.stock > 0);
 
-  function addToCart() {
-    const option = [color, size].filter(Boolean).join(" / ");
-    add({ key: [product.slug, color, size].filter(Boolean).join("|"), slug: product.slug, name: product.name, image: product.image, price, option: option || undefined, qty: quantity });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1400);
+  async function addToCart() {
+    if (pending || !ready || stock <= 0) return;
+    setPending(true);
+    try {
+      const option = [color, size].filter(Boolean).join(" / ");
+      add({
+        key: [product.slug, color, size].filter(Boolean).join("|"),
+        slug: product.slug,
+        name: product.name,
+        image: product.image,
+        price,
+        option: option || undefined,
+        qty: quantity,
+      });
+      // Short delay for visible smooth feedback
+      await new Promise((resolve) => setTimeout(resolve, 220));
+      setAdded(true);
+      toast.success(tr("تمت إضافة المنتج إلى السلة"));
+      setTimeout(() => setAdded(false), 1600);
+    } catch {
+      toast.error(tr("تعذر إضافة المنتج إلى السلة. حاول مرة أخرى."));
+    } finally {
+      setPending(false);
+    }
   }
 
-  const label = !ready ? tr("اختر الخيارات") : stock <= 0 ? tr("غير متوفر") : added ? tr("تمت الإضافة") : tr("أضف إلى السلة");
+  const label = pending
+    ? tr("جارٍ الإضافة…")
+    : !ready
+      ? tr("اختر الخيارات")
+      : stock <= 0
+        ? tr("غير متوفر")
+        : added
+          ? tr("تمت الإضافة")
+          : tr("أضف إلى السلة");
+
 
   return (
     <>
@@ -77,8 +108,13 @@ export function VariantPicker({ product, locale = "ar" }: { product: Product; lo
             <button type="button" onClick={() => setQuantity((current) => Math.min(quantityLimit, current + 1))} disabled={!ready || quantity >= quantityLimit} aria-label={tr("زيادة الكمية")}><Plus size={15} /></button>
           </span>
         </label>
-        <button className={`${s.btnWide} ${s.productAddButton}`} disabled={!ready || stock <= 0} onClick={addToCart}>
-          {added ? <Check size={18} /> : <ShoppingCart size={18} />}
+        <button
+          className={`${s.btnWide} ${s.productAddButton}`}
+          disabled={!ready || stock <= 0 || pending}
+          aria-busy={pending}
+          onClick={addToCart}
+        >
+          {pending ? <Spinner /> : added ? <Check size={18} /> : <ShoppingCart size={18} />}
           {label}
         </button>
       </div>

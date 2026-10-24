@@ -1,5 +1,5 @@
-import { LoadingScreen } from "@/components/ui/LoadingState";
+import { AdminDashboardSkeleton } from "@/components/ui/Skeleton";
 
 export default function AdminLoading() {
-  return <LoadingScreen label="جارٍ تحميل بيانات لوحة التحكم…" />;
+  return <AdminDashboardSkeleton />;
 }

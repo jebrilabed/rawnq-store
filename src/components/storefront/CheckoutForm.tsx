@@ -9,6 +9,7 @@ import type { DeliveryArea } from "@/lib/data/db";
 import { saveOrder } from "@/lib/orders";
 import { useCart } from "./CartProvider";
 import { Spinner } from "@/components/ui/LoadingState";
+import { toast } from "@/components/ui/Toast";
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
 
@@ -39,17 +40,30 @@ export function CheckoutForm({ locale, areas, courierAreas, customer, methods }:
   const shipping = selectedArea?.fee ?? 0;
 
   async function uploadReceipt() {
-    if (!receiptFile) { setReceiptError(tr("اختر صورة أو ملف PDF للإيصال.")); return; }
+    if (!receiptFile) {
+      const msg = tr("اختر صورة أو ملف PDF للإيصال.");
+      setReceiptError(msg);
+      toast.warning(msg);
+      return;
+    }
     setReceiptPending(true);
     setReceiptError("");
     const form = new FormData();
     form.set("receipt", receiptFile);
     try {
       const result = await uploadTransferReceiptAction(form);
-      if (result.ok) setReceiptUrl(result.url);
-      else setReceiptError(tr(result.error));
+      if (result.ok) {
+        setReceiptUrl(result.url);
+        toast.success(tr("تم رفع إيصال التحويل بنجاح."));
+      } else {
+        const msg = tr(result.error);
+        setReceiptError(msg);
+        toast.error(msg);
+      }
     } catch {
-      setReceiptError(tr("تعذر رفع الإيصال. حاول مرة أخرى."));
+      const msg = tr("تعذر رفع الإيصال. حاول مرة أخرى.");
+      setReceiptError(msg);
+      toast.error(msg);
     } finally {
       setReceiptPending(false);
     }
@@ -67,8 +81,18 @@ export function CheckoutForm({ locale, areas, courierAreas, customer, methods }:
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (submitting.current) return;
-    if (!selectedArea) { setError(tr("اختر منطقة التوصيل.")); return; }
-    if (payment === "bank" && !receiptUrl) { setError(tr("ارفع إيصال التحويل البنكي أولاً.")); return; }
+    if (!selectedArea) {
+      const msg = tr("اختر منطقة التوصيل.");
+      setError(msg);
+      toast.warning(msg);
+      return;
+    }
+    if (payment === "bank" && !receiptUrl) {
+      const msg = tr("ارفع إيصال التحويل البنكي أولاً.");
+      setError(msg);
+      toast.warning(msg);
+      return;
+    }
     submitting.current = true;
     setPending(true);
     const f = new FormData(e.currentTarget);
@@ -82,17 +106,26 @@ export function CheckoutForm({ locale, areas, courierAreas, customer, methods }:
         paymentReceiptUrl: payment === "bank" ? receiptUrl : undefined,
         lines: lines.map((l) => ({ slug: l.slug, option: l.option, qty: l.qty })),
       });
-      if (!res.ok) { setError(tr(res.error)); return; }
+      if (!res.ok) {
+        const msg = tr(res.error);
+        setError(msg);
+        toast.error(msg);
+        return;
+      }
+      toast.success(tr("تم تأكيد طلبك بنجاح!"));
       saveOrder(res.order);
       clear();
       router.push(`/${locale}/order-confirmation/${res.order.orderNumber}${res.deliverySent ? "" : "?delivery=pending"}`);
     } catch {
-      setError(tr("تعذر إرسال الطلب. حاول مرة أخرى."));
+      const msg = tr("تعذر إرسال الطلب. حاول مرة أخرى.");
+      setError(msg);
+      toast.error(msg);
     } finally {
       submitting.current = false;
       setPending(false);
     }
   }
+
 
   return (
     <form className={`${s.form} ${s.checkoutLayout}`} onSubmit={onSubmit}>

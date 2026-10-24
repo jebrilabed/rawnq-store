@@ -4,6 +4,7 @@ import { useFormStatus } from "react-dom";
 import { updateOrderStatusAction } from "@/app/(admin)/admin/actions";
 import { STATUS_LABEL, type OrderStatus } from "@/lib/orders";
 import { Spinner } from "@/components/ui/LoadingState";
+import { toast } from "@/components/ui/Toast";
 import s from "./admin.module.css";
 
 export function StatusSelect({ orderNumber, status }: { orderNumber: string; status: OrderStatus }) {
@@ -19,9 +20,12 @@ export function StatusSelect({ orderNumber, status }: { orderNumber: string; sta
     setError("");
     try {
       await updateOrderStatusAction(orderNumber, next);
+      const label = STATUS_LABEL[next as OrderStatus] || next;
+      toast.success(`تم تحديث حالة الطلب ${orderNumber} إلى "${label}" بنجاح.`);
     } catch {
       setSelected(previous);
       setError("تعذر تحديث حالة الطلب. حاول مرة أخرى.");
+      toast.error("تعذر تحديث حالة الطلب. حاول مرة أخرى.");
     } finally {
       setPending(false);
     }
@@ -34,21 +38,21 @@ export function StatusSelect({ orderNumber, status }: { orderNumber: string; sta
         {(Object.keys(STATUS_LABEL) as OrderStatus[]).map((k) => <option key={k} value={k}>{STATUS_LABEL[k]}</option>)}
       </select>
       {pending && <span className={s.actionPending} role="status"><Spinner /> جارٍ تحديث الحالة…</span>}
-      {error && <span role="alert">{error}</span>}
+      {error && <span role="alert" className={s.muted}>{error}</span>}
     </span>
   );
 }
 
-export function ConfirmButton({ children, message, className }: { children: React.ReactNode; message: string; className?: string }) {
+export function ConfirmButton({ children, message, className, pendingLabel = "جارٍ الحذف…" }: { children: React.ReactNode; message: string; className?: string; pendingLabel?: string }) {
   const { pending } = useFormStatus();
-  return <button className={className} disabled={pending} aria-busy={pending} onClick={(e) => { if (!confirm(message)) e.preventDefault(); }}>
-    {pending ? <span className={s.actionPending}><Spinner /> جارٍ التنفيذ…</span> : children}
+  return <button type="submit" className={className} disabled={pending} aria-busy={pending} onClick={(e) => { if (!confirm(message)) e.preventDefault(); }}>
+    {pending ? <span className={s.actionPending}><Spinner /> {pendingLabel}</span> : children}
   </button>;
 }
 
 export function SubmitButton({ children, className, pendingLabel = "جارٍ الحفظ…" }: { children: React.ReactNode; className?: string; pendingLabel?: string }) {
   const { pending } = useFormStatus();
-  return <button className={className} disabled={pending} aria-busy={pending}>
+  return <button type="submit" className={className} disabled={pending} aria-busy={pending}>
     {pending ? <span className={s.actionPending}><Spinner /> {pendingLabel}</span> : children}
   </button>;
 }

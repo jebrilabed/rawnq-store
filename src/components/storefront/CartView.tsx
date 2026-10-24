@@ -4,8 +4,10 @@ import Link from "next/link";
 import { Minus, Plus, ShoppingBasket, X } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "./CartProvider";
+import { toast } from "@/components/ui/Toast";
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
+
 
 
 export function CartView({ locale }: { locale: string }) {
@@ -42,7 +44,17 @@ export function CartView({ locale }: { locale: string }) {
                   <span>{l.qty}</span>
                   <button type="button" onClick={() => setQty(l.key, l.qty + 1)} disabled={l.qty >= 99} aria-label={tr("زيادة الكمية")}><Plus size={15} /></button>
                 </div>
-                <button type="button" className={s.removeItem} onClick={() => remove(l.key)} aria-label={`${tr("حذف")} ${l.name}`}><X size={17} /><span>{tr("حذف")}</span></button>
+                <button
+                  type="button"
+                  className={s.removeItem}
+                  onClick={() => {
+                    remove(l.key);
+                    toast.info(`${tr("تمت إزالة")} "${tr(l.name)}" ${tr("من السلة")}`);
+                  }}
+                  aria-label={`${tr("حذف")} ${l.name}`}
+                >
+                  <X size={17} /><span>{tr("حذف")}</span>
+                </button>
               </div>
             </div>
           </div>

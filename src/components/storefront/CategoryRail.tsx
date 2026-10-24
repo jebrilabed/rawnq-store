@@ -81,98 +81,107 @@ const CATEGORY_NAME_SECTION_IMAGES: Record<string, keyof typeof SECTION_IMAGES> 
   "ورود وأشجار": "flowers",
 };
 
-const SUBCATEGORY_IMAGES: Partial<Record<keyof typeof SECTION_IMAGES, { keywords: string[]; image: string }[]>> = {
-  appliances: [
-    { keywords: ["air fryer", "مقالي هوائية", "قلاية هوائية"], image: "/sections/أدوات كهربائية/مقالي هوائية_ نكهات ذهبية في مطبخ عصري.png" },
-    { keywords: ["vacuum", "مكنسة", "مكانس"], image: "/sections/أدوات كهربائية/مكانس كهربائية في غرفة معيشة أنيقة.png" },
-    { keywords: ["fan", "مروحة"], image: "/sections/أدوات كهربائية/Luxury Fan Showcase with Arabic Signage.png" },
-    { keywords: ["iron", "مكواة", "أسياخ"], image: "/sections/أدوات كهربائية/Luxury Irons and Electric Skewers Display.png" },
-    { keywords: ["heater", "مدفأة", "دفاية"], image: "/sections/أدوات كهربائية/Warmly Staged Heater Collection.png" },
-    { keywords: ["scale", "ميزان"], image: "/sections/أدوات كهربائية/Luxurious Kitchen Scales Display with Arabic Banner.png" },
-    { keywords: ["electronics", "إلكترونيات"], image: "/sections/أدوات كهربائية/Premium Home Electronics Showcase.png" },
-    { keywords: ["appliance", "أجهزة", "جهاز كهربائي"], image: "/sections/أدوات كهربائية/Gemini_Generated_Image_5wz0sd5wz0sd5wz0.jpeg" },
-  ],
-  kitchenware: [
-    { keywords: ["coffee capsule", "كبسولات", "قهوة"], image: "/sections/أدوات مطبخ/Elegant Coffee Capsule Display.png" },
-    { keywords: ["cutlery", "ملاعق", "شوك", "سكاكين"], image: "/sections/أدوات مطبخ/Elegant Cutlery Kitchen Display.png" },
-    { keywords: ["kettle", "غلاية", "دلة", "إبريق"], image: "/sections/أدوات مطبخ/Elegant Kettles and Arabic Coffee Pots.png" },
-    { keywords: ["ladle", "مغارف", "مغرفة"], image: "/sections/أدوات مطبخ/Elegant Stainless Steel Ladles in a Cozy Kitchen.png" },
-    { keywords: ["baking", "خبز", "معجنات"], image: "/sections/أدوات مطبخ/Luxury Baking Tools and Desserts Display.png" },
-    { keywords: ["knife", "سكين", "سكاكين"], image: "/sections/أدوات مطبخ/Luxury Cutlery and Knife Showcase.png" },
-    { keywords: ["cutting board", "لوح تقطيع", "ألواح تقطيع"], image: "/sections/أدوات مطبخ/Premium Cutting Boards Kitchen Display.png" },
-    { keywords: ["spice grinder", "مطحنة", "طاحونة"], image: "/sections/أدوات مطبخ/Warm Kitchen Spice Grinder Showcase.png" },
-    { keywords: ["wooden", "خشبي", "خشبيات"], image: "/sections/أدوات مطبخ/Warm Wooden Utensil Kitchen Display.png" },
-    { keywords: ["apron", "مريول", "مراييل"], image: "/sections/أدوات مطبخ/مراييل مطبخ أنيقة ودفء منزلي.png" },
-    { keywords: ["utensil", "أدوات مطبخ", "ملاقط"], image: "/sections/أدوات مطبخ/Elegant Kitchen Utensils and Tongs Display.png" },
-  ],
-  organization: [
-    { keywords: ["makeup", "مكياج", "تجميل"], image: "/sections/ترتيب واستغلال المساحات/Elegant Makeup Organizer Boutique Display.png" },
-    { keywords: ["fabric", "قماش", "ملابس"], image: "/sections/ترتيب واستغلال المساحات/منظمات قماش في أجواء منزلية دافئة.png" },
-    { keywords: ["cutlery", "ملاعق", "أدراج", "أدوات مطبخ"], image: "/sections/ترتيب واستغلال المساحات/منظمات معالق أنيقة في مطبخ دافئ.png" },
-    { keywords: ["organizer", "منظم", "منظمات", "تخزين"], image: "/sections/ترتيب واستغلال المساحات/منظمات منزلية متنوعة بأناقة دافئة.png" },
-  ],
-  kitchenwareArabic: [
-    { keywords: ["clean", "تنظيف", "منظفات"], image: "/sections/أدوات منزلية/Arabic Cleaning Supplies Display.png" },
-    { keywords: ["laundry basket", "سلة غسيل", "سلال غسيل"], image: "/sections/أدوات منزلية/Elegant Laundry Basket Display.png" },
-    { keywords: ["laundry", "غسيل", "ملابس"], image: "/sections/أدوات منزلية/Elegant Home Laundry Essentials Display.png" },
-    { keywords: ["tissue", "مناديل"], image: "/sections/أدوات منزلية/Elegant Tissue Box Collection.png" },
-    { keywords: ["living room", "معطر", "عطور", "مباخر"], image: "/sections/أدوات منزلية/Luxury Arabic Home Fragrance Display.png" },
-    { keywords: ["warmer", "سخان", "حافظة طعام"], image: "/sections/أدوات منزلية/Luxury Buffet Warmers in a Golden Kitchen.png" },
-    { keywords: ["trash", "قمامة", "نفايات"], image: "/sections/أدوات منزلية/Modern Arabic Trash Bin Showroom Display.png" },
-    { keywords: ["storage", "تخزين", "حافظات"], image: "/sections/أدوات منزلية/Modern Kitchen Storage Showroom Display.png" },
-    { keywords: ["cooler", "مبرد", "كولر"], image: "/sections/أدوات منزلية/Portable Cooler Showroom Adventure.png" },
-    { keywords: ["woven", "قش", "حرف"], image: "/sections/أدوات منزلية/Woven Straw Crafts Collection.png" },
-    { keywords: ["carafe", "قارورة", "إبريق"], image: "/sections/أدوات منزلية/Elegant Arabic Carafe Kitchen Display.png" },
-  ],
-  bedding: [
-    { keywords: ["pillow", "مخدة", "وسائد"], image: "/sections/الفرش المنزلي/Elegant Arabic Pillow Display.png" },
-    { keywords: ["curtain", "ستائر"], image: "/sections/الفرش المنزلي/Elegant Curtain Boutique Showcase.png" },
-    { keywords: ["doormat", "دعاسة", "مدخل"], image: "/sections/الفرش المنزلي/Elegant Doormat Display in Arabic.png" },
-    { keywords: ["basket", "سلال", "مناديل"], image: "/sections/الفرش المنزلي/Elegant Woven Baskets and Tissue Display.png" },
-    { keywords: ["blanket", "حرام", "بطانيات"], image: "/sections/الفرش المنزلي/أطقم حرامات ووسائد فاخرة.png" },
-    { keywords: ["towel", "منشفة", "مناشف"], image: "/sections/الفرش المنزلي/بشاكير ومناشف بلمسة فاخرة.png" },
-    { keywords: ["sheet", "شرشف", "رنر"], image: "/sections/الفرش المنزلي/شراشف ورنرات بلمسة فاخرة.png" },
-  ],
-  gifts: [
-    { keywords: ["vase", "مزهرية", "فازة"], image: "/sections/تحف و هدايا/Elegant Arabic Vase Boutique Display.png" },
-    { keywords: ["mirror", "مرآة", "مرايا"], image: "/sections/تحف و هدايا/Luxury Mirror Gallery Showroom.png" },
-    { keywords: ["watch", "ساعة", "ساعات"], image: "/sections/تحف و هدايا/Luxury Watch Boutique Display.png" },
-    { keywords: ["candle", "شمعدان", "شمعدانات"], image: "/sections/تحف و هدايا/شمعدانات فاخرة بإضاءة دافئة.png" },
-    { keywords: ["painting", "لوحات", "براويز"], image: "/sections/تحف و هدايا/لوحات وبراويز بلمسة عربية دافئة.png" },
-    { keywords: ["decor", "ديكور", "تحف"], image: "/sections/تحف و هدايا/تحف وديكورات فاخرة بإضاءة دافئة.png" },
-  ],
+const SUBCATEGORY_PARENT_IMAGES: Record<string, keyof typeof SECTION_IMAGES> = {
+  category: "bedding",
+  "category-2": "appliances",
+  "category-4": "cookware",
+  "category-5": "organization",
+  "category-6": "tableSetting",
+  "category-7": "kitchenware",
+  "category-8": "hospitality",
+  "category-10": "kitchenwareArabic",
+  "category-11": "glassware",
+  "category-12": "flowers",
+  "category-14": "gifts",
+  "category-49": "kitchenware",
+  "category-50": "kitchenware",
 };
 
-const SUBCATEGORY_PARENT_SECTION: Record<string, keyof typeof SECTION_IMAGES> = {
-  "أدوات كهربائية": "appliances",
-  "Electrical appliances": "appliances",
-  "أدوات مطبخ": "kitchenware",
-  "أدوات المطبخ": "kitchenware",
-  "Kitchen tools": "kitchenware",
-  "أدوات منزلية": "kitchenwareArabic",
-  Housewares: "kitchenwareArabic",
-  "الفرش المنزلي": "bedding",
-  "Home furnishings": "bedding",
-  "تحف و هدايا": "gifts",
-  "تحف وهدايا": "gifts",
-  "Decor & gifts": "gifts",
-  "ترتيب واستغلال المساحات": "organization",
-  "Storage & organization": "organization",
-  "دلات وضيافة": "hospitality",
-  "دلالات وضيافة": "hospitality",
-  "Coffee pots & hospitality": "hospitality",
+const SUBCATEGORY_IMAGE_BY_SLUG: Record<string, string> = {
+  "category-15": "/sections/الفرش المنزلي/أطقم حرامات ووسائد فاخرة.png",
+  "category-16": "/sections/الفرش المنزلي/Elegant Arabic Pillow Display.png",
+  "category-17": "/sections/الفرش المنزلي/بشاكير ومناشف بلمسة فاخرة.png",
+  "category-18": "/sections/الفرش المنزلي/Elegant Doormat Display in Arabic.png",
+  "category-19": "/sections/الفرش المنزلي/شراشف ورنرات بلمسة فاخرة.png",
+  "category-20": "/sections/الفرش المنزلي/Elegant Woven Baskets and Tissue Display.png",
+  "category-21": "/sections/الفرش المنزلي/Elegant Curtain Boutique Showcase.png",
+  "category-22": "/sections/أدوات كهربائية/Gemini_Generated_Image_h7fgkmh7fgkmh7fg.jpeg",
+  "category-23": "/sections/أدوات كهربائية/Gemini_Generated_Image_fvzun8fvzun8fvzu.jpeg",
+  "category-24": "/sections/أدوات كهربائية/Luxury Irons and Electric Skewers Display.png",
+  "category-25": "/sections/أدوات كهربائية/Luxurious Kitchen Scales Display with Arabic Banner.png",
+  "category-26": "/sections/أدوات كهربائية/مقالي هوائية_ نكهات ذهبية في مطبخ عصري.png",
+  "category-27": "/sections/أدوات كهربائية/Gemini_Generated_Image_5wz0sd5wz0sd5wz0.jpeg",
+  "category-28": "/sections/أدوات كهربائية/مكانس كهربائية في غرفة معيشة أنيقة.png",
+  "category-29": "/sections/أدوات كهربائية/Premium Home Electronics Showcase.png",
+  "category-30": "/sections/أدوات كهربائية/Luxury Fan Showcase with Arabic Signage.png",
+  "category-31": "/sections/أدوات كهربائية/Warmly Staged Heater Collection.png",
+  "category-32": SECTION_IMAGES.cookware,
+  "category-33": SECTION_IMAGES.cookware,
+  "category-34": "/sections/ترتيب واستغلال المساحات/Gemini_Generated_Image_6b969r6b969r6b96.jpeg",
+  "category-35": "/sections/ترتيب واستغلال المساحات/Gemini_Generated_Image_13vh2m13vh2m13vh.jpeg",
+  "category-36": "/sections/ترتيب واستغلال المساحات/Gemini_Generated_Image_u6caq7u6caq7u6ca.jpeg",
+  "category-37": "/sections/ترتيب واستغلال المساحات/Gemini_Generated_Image_hnuudohnuudohnuu.jpeg",
+  "category-38": "/sections/ترتيب واستغلال المساحات/منظمات معالق أنيقة في مطبخ دافئ.png",
+  "category-39": "/sections/ترتيب واستغلال المساحات/منظمات قماش في أجواء منزلية دافئة.png",
+  "category-40": "/sections/ترتيب واستغلال المساحات/Gemini_Generated_Image_ganex2ganex2gane.jpeg",
+  "category-41": "/sections/ترتيب واستغلال المساحات/Gemini_Generated_Image_dckgf7dckgf7dckg.jpeg",
+  "category-42": "/sections/ترتيب واستغلال المساحات/Elegant Makeup Organizer Boutique Display.png",
+  "category-43": "/sections/ترتيب واستغلال المساحات/منظمات منزلية متنوعة بأناقة دافئة.png",
+  "category-44": SECTION_IMAGES.tableSetting,
+  "category-45": SECTION_IMAGES.tableSetting,
+  "category-46": SECTION_IMAGES.tableSetting,
+  "category-47": SECTION_IMAGES.tableSetting,
+  "category-48": SECTION_IMAGES.tableSetting,
+  "category-49": "/sections/أدوات مطبخ/Luxury Cutlery and Knife Showcase.png",
+  "category-50": "/sections/أدوات مطبخ/Elegant Kitchen Utensils and Tongs Display.png",
+  "category-51": "/sections/أدوات مطبخ/Premium Cutting Boards Kitchen Display.png",
+  "category-52": "/sections/أدوات مطبخ/Elegant Kettles and Arabic Coffee Pots.png",
+  "category-53": "/sections/أدوات مطبخ/Luxury Baking Tools and Desserts Display.png",
+  "category-54": "/sections/أدوات مطبخ/Warm Kitchen Spice Grinder Showcase.png",
+  "category-55": "/sections/أدوات مطبخ/Cozy Modern Kitchen Accessories Display.png",
+  "category-56": "/sections/أدوات مطبخ/Elegant Coffee Capsule Display.png",
+  "category-57": "/sections/أدوات مطبخ/مراييل مطبخ أنيقة ودفء منزلي.png",
+  "category-58": "/sections/أدوات مطبخ/Elegant Cutlery Kitchen Display.png",
+  "category-59": "/sections/أدوات مطبخ/Premium Original Knives Display.png",
+  "category-60": "/sections/أدوات مطبخ/Premium Knife Set Store Display.png",
+  "category-61": "/sections/أدوات مطبخ/Warm Wooden Utensil Kitchen Display.png",
+  "category-62": "/sections/أدوات مطبخ/Elegant Stainless Steel Ladles in a Cozy Kitchen.png",
+  "category-64": "/sections/دلات وضيافة/Gemini_Generated_Image_fw5lcpfw5lcpfw5l.jpeg",
+  "category-65": "/sections/دلات وضيافة/Gemini_Generated_Image_a57gjra57gjra57g.jpeg",
+  "category-66": "/sections/دلات وضيافة/Gemini_Generated_Image_arelfdarelfdarel.jpeg",
+  "category-67": "/sections/دلات وضيافة/Gemini_Generated_Image_mt8etkmt8etkmt8e.jpeg",
+  "category-68": "/sections/دلات وضيافة/Gemini_Generated_Image_nksa0gnksa0gnksa.jpeg",
+  "category-69": "/sections/أدوات منزلية/Luxury Arabic Home Fragrance Display.png",
+  "category-70": "/sections/أدوات منزلية/Elegant Laundry Basket Display.png",
+  "category-71": "/sections/أدوات منزلية/Modern Arabic Trash Bin Showroom Display.png",
+  "category-72": "/sections/أدوات منزلية/Woven Straw Crafts Collection.png",
+  "category-73": "/sections/أدوات منزلية/Luxurious Tables Living Room Vignette.png",
+  "category-74": "/sections/أدوات منزلية/Modern Kitchen Storage Showroom Display.png",
+  "category-75": "/sections/أدوات منزلية/Elegant Home Laundry Essentials Display.png",
+  "category-76": "/sections/أدوات منزلية/Arabic Cleaning Supplies Display.png",
+  "category-77": "/sections/أدوات منزلية/Elegant Tissue Box Collection.png",
+  "category-79": "/sections/أدوات منزلية/Luxury Buffet Warmers in a Golden Kitchen.png",
+  "category-80": "/sections/أدوات منزلية/Elegant Arabic Carafe Kitchen Display.png",
+  "category-81": "/sections/أدوات منزلية/Portable Cooler Showroom Adventure.png",
+  "category-82": SECTION_IMAGES.glassware,
+  "category-83": SECTION_IMAGES.glassware,
+  "category-84": SECTION_IMAGES.glassware,
+  "category-85": SECTION_IMAGES.tableSetting,
+  "category-88": SECTION_IMAGES.flowers,
+  "category-89": "/sections/تحف و هدايا/لوحات وبراويز بلمسة عربية دافئة.png",
+  "category-90": "/sections/تحف و هدايا/Luxury Watch Boutique Display.png",
+  "category-91": "/sections/تحف و هدايا/Luxury Mirror Gallery Showroom.png",
+  "category-92": "/sections/تحف و هدايا/شمعدانات فاخرة بإضاءة دافئة.png",
+  "category-93": "/sections/تحف و هدايا/تحف وديكورات فاخرة بإضاءة دافئة.png",
+  "category-94": "/sections/تحف و هدايا/Elegant Arabic Vase Boutique Display.png",
 };
 
 function subcategoryImage(category: Category, parentCategory?: Category): string | undefined {
   if (!parentCategory) return undefined;
-  const section = SUBCATEGORY_PARENT_SECTION[parentCategory.name.trim()]
-    ?? STORE_CATEGORY_SECTION_IMAGES[parentCategory.slug]
-    ?? CATEGORY_SECTION_IMAGES[parentCategory.slug];
-  if (!section) return undefined;
-  const name = `${category.name} ${category.slug}`.toLocaleLowerCase();
-  return SUBCATEGORY_IMAGES[section]?.find(({ keywords }) =>
-    keywords.some((keyword) => name.includes(keyword.toLocaleLowerCase())),
-  )?.image;
+  const image = SUBCATEGORY_IMAGE_BY_SLUG[category.slug];
+  if (image) return image;
+  const parentImage = SUBCATEGORY_PARENT_IMAGES[parentCategory.slug];
+  return parentImage ? SECTION_IMAGES[parentImage] : undefined;
 }
 
 export function CategoryRail({ categories, locale, parentCategory }: { categories: Category[]; locale: string; parentCategory?: Category }) {
@@ -196,7 +205,7 @@ export function CategoryRail({ categories, locale, parentCategory }: { categorie
     </>
   );
   return (
-    <AutoScrollRail label={translate(locale, "تصفح أقسام المتجر")} direction={localeDirection(locale)}>
+    <AutoScrollRail label={translate(locale, "تصفح أقسام المتجر")} direction={localeDirection(locale)} interactiveClone>
       {cards}
     </AutoScrollRail>
   );

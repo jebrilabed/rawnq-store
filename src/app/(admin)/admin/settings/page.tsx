@@ -40,8 +40,9 @@ export default async function SettingsAdmin({ searchParams }: { searchParams: { 
           </div>
         </section>
         <div className={s.settingsActions}>
-          <SubmitButton className={s.btn}>حفظ الإعدادات</SubmitButton>
+          <SubmitButton className={s.btn} pendingLabel="جارٍ حفظ الإعدادات…">حفظ الإعدادات</SubmitButton>
         </div>
+
       </form>
     </>
   );

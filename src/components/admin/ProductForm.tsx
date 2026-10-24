@@ -41,7 +41,8 @@ export function ProductForm({ product, categories, error }: { product?: Product;
       </div>
       <CloudinaryImageField initial={product?.image ?? ""} />
       <label className={s.check}><input type="checkbox" name="published" defaultChecked={product?.published ?? true} /> منشور في المتجر</label>
-      <SubmitButton className={s.btn}>حفظ المنتج</SubmitButton>
+      <SubmitButton className={s.btn} pendingLabel="جارٍ حفظ المنتج…">حفظ المنتج</SubmitButton>
     </form>
+
   );
 }

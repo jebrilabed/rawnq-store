@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { checkBestRouteConnectionAction } from "@/app/(admin)/admin/actions";
 import { Spinner } from "@/components/ui/LoadingState";
+import { toast } from "@/components/ui/Toast";
 import type { BestRouteConnectionCheck as CheckResult } from "@/lib/integrations/best-route";
 import s from "./admin.module.css";
 
@@ -19,10 +20,23 @@ export function BestRouteConnectionCheck() {
   async function check() {
     if (pending) return;
     setPending(true);
-    try { setResult(await checkBestRouteConnectionAction()); }
-    catch { setResult(null); }
-    finally { setPending(false); }
+    try {
+      const data = await checkBestRouteConnectionAction();
+      setResult(data);
+      const allOk = Object.values(data).every((val) => typeof val === "object" && val && "ok" in val && (val as { ok: boolean }).ok);
+      if (allOk) {
+        toast.success("تم فحص الاتصال مع Best Route بنجاح؛ جميع الأنظمة تعمل بشكل سليم.");
+      } else {
+        toast.warning("تم فحص الاتصال مع Best Route؛ توجد بعض البنود غير المكتملة.");
+      }
+    } catch {
+      setResult(null);
+      toast.error("تعذر الاتصال بـ Best Route. تحقق من مفتاح API وإعدادات الشبكة.");
+    } finally {
+      setPending(false);
+    }
   }
+
 
   return (
     <section className={s.bestRouteCheck} aria-labelledby="best-route-heading">

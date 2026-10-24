@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { sendBestRouteOrderAction } from "@/app/(admin)/admin/actions";
 import { Spinner } from "@/components/ui/LoadingState";
+import { toast } from "@/components/ui/Toast";
 import s from "./admin.module.css";
 
 type Props = {
@@ -32,14 +33,21 @@ export function BestRouteOrderButton({ orderNumber, payment, orderStatus, shipme
       if (result.ok) {
         setOrderId(result.orderId);
         setError("");
-      } else setError(result.error);
+        toast.success(`تم إرسال الطلب ${orderNumber} إلى Best Route بنجاح (رقم الشحنة: ${result.orderId}).`);
+      } else {
+        setError(result.error);
+        toast.error(`تعذر إرسال الطلب إلى Best Route: ${result.error}`);
+      }
       router.refresh();
     } catch {
       setState("UNKNOWN");
-      setError("تعذر تأكيد نتيجة الإرسال. تحقق في لوحة Best Route برقم المرجع قبل إعادة المحاولة.");
+      const err = "تعذر تأكيد نتيجة الإرسال. تحقق في لوحة Best Route برقم المرجع قبل إعادة المحاولة.";
+      setError(err);
+      toast.error(err);
       router.refresh();
     } finally { setPending(false); }
   }
+
 
   const alreadySent = state === "SENT";
   const uncertain = state === "UNKNOWN" || state === "SENDING";
