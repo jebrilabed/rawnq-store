@@ -7,7 +7,7 @@ const { addTokenToSession, addUserToToken } = loadTypeScript(new URL("../src/lib
 const { shippingFor } = loadTypeScript(new URL("../src/lib/pricing.ts", import.meta.url));
 const { parseCart } = loadTypeScript(new URL("../src/lib/cart.ts", import.meta.url));
 const { LOCALES, isLocale, localeDirection, localizedValue, translate } = loadTypeScript(new URL("../src/lib/i18n.ts", import.meta.url));
-const { orderCategories } = loadTypeScript(new URL("../src/lib/categories.ts", import.meta.url));
+const { getCategoryDescendantSlugs, orderCategories } = loadTypeScript(new URL("../src/lib/categories.ts", import.meta.url));
 
 test("store localization supports all configured locales and proper text direction", () => {
   assert.deepEqual(LOCALES, ["ar", "en", "he", "ru"]);
@@ -82,4 +82,15 @@ test("category ordering keeps each parent before all nested descendants", () => 
     ["child", 1],
     ["grandchild", 2],
   ]);
+});
+
+test("category descendants can be excluded as parents to prevent hierarchy cycles", () => {
+  const categories = [
+    { slug: "root", name: "Root" },
+    { slug: "child", name: "Child", parentSlug: "root" },
+    { slug: "grandchild", name: "Grandchild", parentSlug: "child" },
+    { slug: "other", name: "Other" },
+  ];
+
+  assert.deepEqual([...getCategoryDescendantSlugs(categories, "root")], ["root", "child", "grandchild"]);
 });

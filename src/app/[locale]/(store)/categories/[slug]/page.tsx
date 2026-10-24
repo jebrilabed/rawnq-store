@@ -16,7 +16,7 @@ export default async function CategoryPage({ params }: { params: { locale: strin
   const tr = (text: string) => translate(params.locale, text);
   return (
     <main className={`${s.wrap} ${s.section}`}>
-      {children.length > 0 && <CategoryRail categories={children} locale={params.locale} />}
+      {children.length > 0 && <CategoryRail categories={children} locale={params.locale} parentCategory={category} />}
       <div className={s.head}><h1>{category.name}</h1></div>
       {products.length === 0 && children.length === 0
         ? <p className={s.muted}>{tr("لا توجد منتجات في هذا القسم بعد.")}</p>

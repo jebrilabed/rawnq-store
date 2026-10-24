@@ -2,6 +2,7 @@ import type { Product, Variant } from "@/lib/types";
 import type { CustomerOrderListItem, OrderStatus, OrderSummary } from "@/lib/orders";
 import { prisma } from "./prisma";
 import { getSettings, type Settings, saveSettings as persistSettings } from "./db";
+import { getCategoryDescendantSlugs } from "@/lib/categories";
 
 export const stockOf = (product: { stock: number; variants: { stock: number }[] }) => product.variants.length ? product.variants.reduce((total, variant) => total + variant.stock, 0) : product.stock;
 
@@ -221,6 +222,18 @@ export async function renameCategory(slug: string, name: string, translations: R
   if (name.length < 2) return "أدخل اسم القسم.";
   if (await prisma.category.findFirst({ where: { name, slug: { not: slug } } })) return "القسم موجود مسبقاً.";
   await prisma.category.updateMany({ where: { slug }, data: { name, translations: JSON.stringify(translations) } });
+  return null;
+}
+
+export async function moveCategory(slug: string, parentSlug?: string): Promise<string | null> {
+  const categories = await prisma.category.findMany({ select: { slug: true, parentSlug: true } });
+  if (!categories.some((category) => category.slug === slug)) return "القسم غير موجود.";
+  if (parentSlug && !categories.some((category) => category.slug === parentSlug)) return "القسم الرئيسي المحدد غير موجود.";
+  if (parentSlug && getCategoryDescendantSlugs(categories, slug).has(parentSlug)) {
+    return "لا يمكن نقل القسم إلى نفسه أو إلى أحد أقسامه الفرعية.";
+  }
+
+  await prisma.category.update({ where: { slug }, data: { parentSlug: parentSlug || null } });
   return null;
 }
 

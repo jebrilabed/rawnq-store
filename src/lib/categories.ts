@@ -27,3 +27,20 @@ export function orderCategories<T extends Category>(categories: T[]): { category
 
   return ordered;
 }
+
+export function getCategoryDescendantSlugs<T extends { slug: string; parentSlug?: string | null }>(categories: T[], slug: string): Set<string> {
+  const descendants = new Set([slug]);
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+    for (const category of categories) {
+      if (category.parentSlug && descendants.has(category.parentSlug) && !descendants.has(category.slug)) {
+        descendants.add(category.slug);
+        changed = true;
+      }
+    }
+  }
+
+  return descendants;
+}

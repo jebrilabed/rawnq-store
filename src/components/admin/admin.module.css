@@ -102,6 +102,7 @@
 .categoryCount{display:inline-block;margin-inline-end:5px;padding:3px 8px;border-radius:4px;background:#edf1ed;color:#58675e;font-size:.76rem;font-weight:650}
 .subcategoryCell{padding-inline-start:22px}
 .categoryTreeName{display:flex;align-items:center;gap:8px;min-width:220px}
+.categoryTreeName small{display:block;margin-top:3px;color:var(--a-muted)}
 .categoryTreeToggle,.categoryTreeTogglePlaceholder{display:grid;place-items:center;width:28px;height:28px;flex:0 0 auto}
 .categoryTreeToggle{border:0;border-radius:4px;background:transparent;color:var(--a-green)}
 .categoryTreeToggle:hover{background:var(--a-green-soft)}

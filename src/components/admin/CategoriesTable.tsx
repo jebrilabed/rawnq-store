@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
 import { ChevronDown, Tags } from "lucide-react";
-import { deleteCategoryAction, renameCategoryAction } from "@/app/(admin)/admin/actions";
+import { deleteCategoryAction, moveCategoryAction, renameCategoryAction } from "@/app/(admin)/admin/actions";
 import { ConfirmButton, SubmitButton } from "@/components/admin/Controls";
-import { orderCategories } from "@/lib/categories";
+import { getCategoryDescendantSlugs, orderCategories } from "@/lib/categories";
 import type { Category } from "@/lib/types";
 import s from "./admin.module.css";
 
@@ -16,6 +16,7 @@ type CategoryRow = Category & {
 export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const [translationOpen, setTranslationOpen] = useState<Set<string>>(() => new Set());
+  const [parentOpen, setParentOpen] = useState<Set<string>>(() => new Set());
   const orderedCategories = orderCategories(categories);
   const visibleCategories = orderedCategories.filter(({ category }) => {
     let parentSlug = category.parentSlug;
@@ -49,13 +50,16 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
               <CategoryRows
                 key={category.slug}
                 category={category}
+                parentOptions={orderCategories(categories.filter(({ slug }) => !getCategoryDescendantSlugs(categories, category.slug).has(slug)))}
                 depth={depth}
                 hasChildren={hasChildren}
                 isExpanded={isExpanded}
                 isTranslationOpen={isTranslationOpen}
+                isParentOpen={parentOpen.has(category.slug)}
                 translations={translations}
                 onToggleExpanded={() => toggle(setExpanded, category.slug)}
                 onToggleTranslation={() => toggle(setTranslationOpen, category.slug)}
+                onToggleParent={() => toggle(setParentOpen, category.slug)}
               />
             );
           })}
@@ -67,22 +71,28 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
 
 function CategoryRows({
   category,
+  parentOptions,
   depth,
   hasChildren,
   isExpanded,
   isTranslationOpen,
+  isParentOpen,
   translations,
   onToggleExpanded,
   onToggleTranslation,
+  onToggleParent,
 }: {
   category: CategoryRow;
+  parentOptions: { category: CategoryRow; depth: number }[];
   depth: number;
   hasChildren: boolean;
   isExpanded: boolean;
   isTranslationOpen: boolean;
+  isParentOpen: boolean;
   translations: Record<string, string>;
   onToggleExpanded: () => void;
   onToggleTranslation: () => void;
+  onToggleParent: () => void;
 }) {
   return (
     <>
@@ -113,6 +123,9 @@ function CategoryRows({
             <button type="button" className={s.sm} aria-expanded={isTranslationOpen} onClick={onToggleTranslation}>
               {isTranslationOpen ? "إخفاء الترجمات" : "ترجمات"}
             </button>
+            <button type="button" className={s.sm} aria-expanded={isParentOpen} onClick={onToggleParent}>
+              {isParentOpen ? "إلغاء النقل" : "تغيير القسم الأب"}
+            </button>
             <form action={deleteCategoryAction}>
               <input type="hidden" name="slug" value={category.slug} />
               <ConfirmButton className={`${s.sm} ${s.danger}`} message="حذف القسم؟">حذف</ConfirmButton>
@@ -120,6 +133,26 @@ function CategoryRows({
           </div>
         </td>
       </tr>
+      {isParentOpen && (
+        <tr className={s.categoryTranslationRow}>
+          <td colSpan={3}>
+            <form action={moveCategoryAction} className={s.categoryTranslationForm}>
+              <input type="hidden" name="slug" value={category.slug} />
+              <label>القسم الأب
+                <select className={s.field} name="parentSlug" defaultValue={category.parentSlug ?? ""}>
+                  <option value="">قسم رئيسي بدون أب</option>
+                  {parentOptions.map(({ category: parent, depth: parentDepth }) => (
+                    <option key={parent.slug} value={parent.slug}>
+                      {"— ".repeat(parentDepth)}{parent.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <SubmitButton className={s.sm}>حفظ القسم الأب</SubmitButton>
+            </form>
+          </td>
+        </tr>
+      )}
       {isTranslationOpen && (
         <tr className={s.categoryTranslationRow}>
           <td colSpan={3}>

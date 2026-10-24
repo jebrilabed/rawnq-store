@@ -133,6 +133,11 @@ export async function renameCategoryAction(f: FormData) {
   const err = await admin.renameCategory(text(f, "slug", 80), text(f, "name", 60), { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) }); if (err) return fail("/admin/categories", err);
   revalidateCategoryPages(); redirect("/admin/categories");
 }
+export async function moveCategoryAction(f: FormData) {
+  await requireAdmin();
+  const err = await admin.moveCategory(text(f, "slug", 80), text(f, "parentSlug", 80) || undefined); if (err) return fail("/admin/categories", err);
+  revalidateCategoryPages(); redirect("/admin/categories");
+}
 export async function deleteCategoryAction(f: FormData) {
   await requireAdmin();
   const err = await admin.deleteCategory(text(f, "slug", 80)); if (err) return fail("/admin/categories", err);

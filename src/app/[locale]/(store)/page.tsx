@@ -15,6 +15,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
   const [categories, products, bestSelling] = await Promise.all([
     getCategories(locale), getProducts({ locale }), getBestSellingProducts(5, locale),
   ]);
+  const mainCategories = categories.filter((category) => category.parentSlug === null || category.parentSlug === undefined);
   const tr = (text: string) => translate(locale, text);
   return (
     <main>
@@ -25,7 +26,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
       <section className={s.railSection}>
         <div className={s.wrap}>
           <div className={s.railHeading}><div><span>{tr("اكتشف مجموعتنا")}</span><h2>{tr("تسوّق حسب القسم")}</h2></div><Link href={`/${locale}/products`}>{tr("كل المنتجات")}</Link></div>
-          <CategoryRail categories={categories} locale={locale} />
+          <CategoryRail categories={mainCategories} locale={locale} />
         </div>
       </section>
       <section className={`${s.railSection} ${s.bestSellerSection}`}>
