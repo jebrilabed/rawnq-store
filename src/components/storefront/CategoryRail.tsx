@@ -21,6 +21,8 @@ const SECTION_IMAGES = {
   appliances: "/sections/Modern Kitchen Appliances Showcase.png",
   woodworks: "/sections/Rustic Wooden Kitchenware Collection.png",
   hospitality: "/sections/WhatsApp Image 2026-10-22 at 6.50.39 PM.jpeg",
+  homeDecor: "/sections/تحف و هدايا/تحف وديكورات فاخرة بإضاءة دافئة.png",
+  tongs: "/sections/Premium Kitchen Tongs Display.png",
 } as const;
 
 const STORE_CATEGORY_SECTION_IMAGES: Record<string, keyof typeof SECTION_IMAGES> = {
@@ -38,6 +40,8 @@ const STORE_CATEGORY_SECTION_IMAGES: Record<string, keyof typeof SECTION_IMAGES>
   "category-12": "flowers",
   "category-13": "bathroom",
   "category-14": "gifts",
+  "category-63": "homeDecor",
+  "category-87": "tongs",
 };
 
 const CATEGORY_SECTION_IMAGES: Record<string, keyof typeof SECTION_IMAGES> = {
@@ -57,29 +61,102 @@ const CATEGORY_SECTION_IMAGES: Record<string, keyof typeof SECTION_IMAGES> = {
   garden: "flowers",
 };
 
-const CATEGORY_NAME_SECTION_IMAGES: Record<string, keyof typeof SECTION_IMAGES> = {
-  "أدوات كهربائية": "appliances",
-  "أدوات مطبخ": "kitchenware",
-  "أدوات المطبخ": "kitchenware",
-  "أدوات منزلية": "kitchenwareArabic",
-  "اكسسوارات حمام": "bathroom",
-  "إكسسوارات حمام": "bathroom",
-  "الفرش المنزلي": "bedding",
-  "تحف و هدايا": "gifts",
-  "تحف وهدايا": "gifts",
-  "ترتيب واستغلال المساحات": "organization",
-  خشبيات: "woodworks",
-  "دلات وضيافة": "hospitality",
-  "دلالات وضيافة": "hospitality",
-  "زجاجيات و فناجين": "glassware",
-  "زجاجيات وفناجين": "glassware",
-  سفرة: "tableSetting",
-  "طناجر و قلايات": "cookware",
-  "طناجر وقلايات": "cookware",
-  هندي: "spices",
-  "ورود و أشجار": "flowers",
-  "ورود وأشجار": "flowers",
-};
+const CATEGORY_IMAGE_BY_NAME = [
+  { name: "الفرش المنزلي", image: "/sections/Luxury Home Bedding Collection.png" },
+  { name: "أدوات كهربائية", image: "/sections/Modern Kitchen Appliances Showcase.png" },
+  { name: "هندي", image: "/sections/Indian Spice Market Still Life.png" },
+  { name: "طناجر و قلايات", image: "/sections/Luxury Gold-Accented Cookware Collection.png" },
+  { name: "ترتيب واستغلال المساحات", image: "/sections/Elegant Home Organization Display.png" },
+  { name: "سفرة", image: "/sections/Luxurious Gold-Accented Table Setting.png" },
+  { name: "أدوات مطبخ", image: "/sections/Elegant Kitchenware Display with Arabic Sign.png" },
+  { name: "دلات وضيافة", image: "/sections/WhatsApp Image 2026-10-22 at 6.50.39 PM.jpeg" },
+  { name: "خشبيات", image: "/sections/Rustic Wooden Kitchenware Collection.png" },
+  { name: "أدوات منزلية", image: "/sections/Elegant Kitchenware Collection.png" },
+  { name: "زجاجيات و فناجين", image: "/sections/Luxury Glassware and Tea Sets Display.png" },
+  { name: "ورود و أشجار", image: "/sections/Flowers and Trees_ Boutique Floral Showcase.png" },
+  { name: "اكسسوارات حمام", image: "/sections/Elegant Marble Bathroom Accessories Display.png" },
+  { name: "تحف و هدايا", image: "/sections/EElegant Gifts and Décor Display.png" },
+  { name: "ديكورات منزل", image: "/sections/تحف و هدايا/تحف وديكورات فاخرة بإضاءة دافئة.png" },
+  { name: "طقاطيق", image: "/sections/Premium Kitchen Tongs Display.png" },
+  { name: "أطقم حرامات و وسائد", image: "/sections/الفرش المنزلي/أطقم حرامات ووسائد فاخرة.png" },
+  { name: "مخدات", image: "/sections/الفرش المنزلي/Elegant Pillow Display with Arabic Sign.png" },
+  { name: "بشاكير و مناشف", image: "/sections/الفرش المنزلي/بشاكير ومناشف بلمسة فاخرة.png" },
+  { name: "دعاسات", image: "/sections/الفرش المنزلي/Warm Entryway Doormat Showcase.png" },
+  { name: "شراشف و رنرات", image: "/sections/الفرش المنزلي/شراشف ورنرات بلمسة فاخرة.png" },
+  { name: "سلات مع علب محارم", image: "/sections/الفرش المنزلي/Luxurious Baskets and Tissue Boxes Display.png" },
+  { name: "برادي", image: "/sections/الفرش المنزلي/Luxury Curtain Showroom with Arabic Sign.png" },
+  { name: "عصارات", image: "/sections/أدوات كهربائية/Gemini_Generated_Image_h7fgkmh7fgkmh7fg.jpeg" },
+  { name: "خلاطات و مفارم", image: "/sections/أدوات كهربائية/Gemini_Generated_Image_fvzun8fvzun8fvzu.jpeg" },
+  { name: "مكاوي و سشوارات", image: "/sections/أدوات كهربائية/Luxury Irons and Electric Skewers Display.png" },
+  { name: "موازين", image: "/sections/أدوات كهربائية/Luxurious Kitchen Scales Display with Arabic Banner.png" },
+  { name: "مقالي هوائية", image: "/sections/أدوات كهربائية/مقالي هوائية_ نكهات ذهبية في مطبخ عصري.png" },
+  { name: "عجانات و خفاقات", image: "/sections/أدوات كهربائية/Gemini_Generated_Image_5wz0sd5wz0sd5wz0.jpeg" },
+  { name: "مكانس كهرباء", image: "/sections/أدوات كهربائية/مكانس كهربائية في غرفة معيشة أنيقة.png" },
+  { name: "كهربائيات مميزة", image: "/sections/أدوات كهربائية/Premium Home Electronics Showcase.png" },
+  { name: "مراوح", image: "/sections/أدوات كهربائية/Luxury Fan Showcase with Arabic Signage.png" },
+  { name: "صوبات", image: "/sections/أدوات كهربائية/Warmly Staged Heater Collection.png" },
+  { name: "قلايات", image: "/sections/طناجر و قلايات/Premium Cookware Display with Arabic Sign.png" },
+  { name: "صواني فرن", image: "/sections/طناجر و قلايات/Premium Oven Trays and Baked Delights.png" },
+  { name: "أطقم وعلب بهار", image: "/sections/ترتيب واستغلال المساحات/Gemini_Generated_Image_6b969r6b969r6b96.jpeg" },
+  { name: "سلات ثلاجة", image: "/sections/ترتيب واستغلال المساحات/Gemini_Generated_Image_13vh2m13vh2m13vh.jpeg" },
+  { name: "علب بقوليات", image: "/sections/ترتيب واستغلال المساحات/Gemini_Generated_Image_u6caq7u6caq7u6ca.jpeg" },
+  { name: "تبرويرات", image: "/sections/ترتيب واستغلال المساحات/Gemini_Generated_Image_hnuudohnuudohnuu.jpeg" },
+  { name: "منظمات معالق", image: "/sections/ترتيب واستغلال المساحات/منظمات معالق أنيقة في مطبخ دافئ.png" },
+  { name: "منظمات قماش", image: "/sections/ترتيب واستغلال المساحات/منظمات قماش في أجواء منزلية دافئة.png" },
+  { name: "علاقات ملابس", image: "/sections/ترتيب واستغلال المساحات/Gemini_Generated_Image_ganex2ganex2gane.jpeg" },
+  { name: "رفوف جلي", image: "/sections/ترتيب واستغلال المساحات/Gemini_Generated_Image_dckgf7dckgf7dckg.jpeg" },
+  { name: "منظمات ميك اب", image: "/sections/ترتيب واستغلال المساحات/Elegant Makeup Organizer Boutique Display.png" },
+  { name: "منظمات منوعة", image: "/sections/ترتيب واستغلال المساحات/منظمات منزلية متنوعة بأناقة دافئة.png" },
+  { name: "صحون", image: "/sections/زجاجيات و فناجين/Elegant Dishware Display with Arabic Signage.png" },
+  { name: "صحون نحاسية (ذهبية)", image: "/sections/سفرة/Golden Copperware Showcase.png" },
+  { name: "زخرف", image: "/sections/سفرة/Luxurious Arabic Home Décor Showcase.png" },
+  { name: "زبادي وجاطات سلطة", image: "/sections/سفرة/Yogurt and Salad Kitchen Display.png" },
+  { name: "كوسترات", image: "/sections/سفرة/Luxury Coaster Collection Display.png" },
+  { name: "سكاكين ومعالق", image: "/sections/أدوات مطبخ/Luxury Cutlery and Knife Showcase.png" },
+  { name: "مغارف وملاقط", image: "/sections/أدوات مطبخ/Elegant Kitchen Utensils and Tongs Display.png" },
+  { name: "قطاعات والواح تقطيع", image: "/sections/أدوات مطبخ/Premium Cutting Boards Kitchen Display.png" },
+  { name: "أباريق و غلايات", image: "/sections/أدوات مطبخ/Elegant Kettles and Arabic Coffee Pots.png" },
+  { name: "أدوات كيك وحلويات", image: "/sections/أدوات مطبخ/Luxury Baking Tools and Desserts Display.png" },
+  { name: "مطاحن وممالح", image: "/sections/أدوات مطبخ/Warm Kitchen Spice Grinder Showcase.png" },
+  { name: "كماليات المطبخ", image: "/sections/أدوات مطبخ/Cozy Modern Kitchen Accessories Display.png" },
+  { name: "ستاندات كبسولات", image: "/sections/أدوات مطبخ/Elegant Coffee Capsule Display.png" },
+  { name: "مراييل مطبخ", image: "/sections/أدوات مطبخ/مراييل مطبخ أنيقة ودفء منزلي.png" },
+  { name: "معالق و شوك يومية", image: "/sections/أدوات مطبخ/Elegant Cutlery Kitchen Display.png" },
+  { name: "سكاكين أصلية", image: "/sections/أدوات مطبخ/Premium Original Knives Display.png" },
+  { name: "أطقم سكاكين", image: "/sections/أدوات مطبخ/Premium Knife Set Store Display.png" },
+  { name: "مغارف خشب", image: "/sections/أدوات مطبخ/Warm Wooden Utensil Kitchen Display.png" },
+  { name: "مغارف ستانليس", image: "/sections/أدوات مطبخ/Elegant Stainless Steel Ladles in a Cozy Kitchen.png" },
+  { name: "صواني تقديم", image: "/sections/دلات وضيافة/Gemini_Generated_Image_fw5lcpfw5lcpfw5l.jpeg" },
+  { name: "متكات", image: "/sections/دلات وضيافة/Gemini_Generated_Image_a57gjra57gjra57g.jpeg" },
+  { name: "دلات قهوة وشاي", image: "/sections/دلات وضيافة/Luxurious Arabic Coffee and Tea Display.png" },
+  { name: "مضايف", image: "/sections/دلات وضيافة/Gemini_Generated_Image_mt8etkmt8etkmt8e.jpeg" },
+  { name: "خرفان", image: "/sections/دلات وضيافة/Gemini_Generated_Image_nksa0gnksa0gnksa.jpeg" },
+  { name: "شموع ومباخر ومعطرات", image: "/sections/أدوات منزلية/Luxury Arabic Home Fragrance Display.png" },
+  { name: "سلات غسيل", image: "/sections/أدوات منزلية/Elegant Laundry Basket Display.png" },
+  { name: "سلات مهملات", image: "/sections/أدوات منزلية/Modern Arabic Trash Bin Showroom Display.png" },
+  { name: "قش", image: "/sections/أدوات منزلية/Woven Straw Crafts Collection.png" },
+  { name: "طاولات", image: "/sections/أدوات منزلية/Luxurious Tables Living Room Vignette.png" },
+  { name: "خزائن وجوارير", image: "/sections/أدوات منزلية/Elegant Storage Cabinet Showcase.png" },
+  { name: "مناشر وطاولات كوي", image: "/sections/أدوات منزلية/Elegant Home Laundry Essentials Display.png" },
+  { name: "أدوات ومواد تنظيف", image: "/sections/أدوات منزلية/Arabic Cleaning Supplies Display.png" },
+  { name: "علب محارم", image: "/sections/أدوات منزلية/Elegant Tissue Box Collection.png" },
+  { name: "مطرات ولنش بوكس", image: "/sections/أدوات منزلية/Elegant Arabic Carafe Kitchen Display.png" },
+  { name: "حافظات سخن", image: "/sections/أدوات منزلية/Luxury Buffet Warmers in a Golden Kitchen.png" },
+  { name: "قناصل", image: "/sections/أدوات منزلية/Elegant Arabic Carafe Kitchen Display.png" },
+  { name: "ثلاجات رحل", image: "/sections/أدوات منزلية/Luxury Travel Coolers_ Adventure Awaits.png" },
+  { name: "شافات عصير", image: "/sections/زجاجيات و فناجين/Elegant Glass Juice Dispensers Display.png" },
+  { name: "كاسات", image: "/sections/زجاجيات و فناجين/Luxurious Glassware Showcase.png" },
+  { name: "مجات", image: "/sections/زجاجيات و فناجين/Luxurious Mug Collection Display.png" },
+  { name: "صحون مكسرات وفواكه", image: "/sections/سفرة/Luxury Nuts and Fruit Serving Display.png" },
+  { name: "أباريق زيت", image: "/sections/زجاجيات و فناجين/instruction-caption-high-level-instructi_tVwZQirBV8qHkYEV0vgmyQ_RqL__TshQAaxADaVczhOdA_cover.jpg" },
+  { name: "قواوير", image: "/sections/ورود و أشجار/Ornate Garden Planters Showcase.png" },
+  { name: "لوحات وبراويز", image: "/sections/تحف و هدايا/لوحات وبراويز بلمسة عربية دافئة.png" },
+  { name: "ساعات", image: "/sections/تحف و هدايا/Cozy Home Clock Display.png" },
+  { name: "مرايا", image: "/sections/تحف و هدايا/Luxurious Mirror Display with Arabic Signage.png" },
+  { name: "شمعدانات", image: "/sections/تحف و هدايا/شمعدانات فاخرة بإضاءة دافئة.png" },
+  { name: "تحف وديكورات", image: "/sections/تحف و هدايا/تحف وديكورات فاخرة بإضاءة دافئة.png" },
+  { name: "فازات", image: "/sections/تحف و هدايا/Luxurious Vase Collection Display.png" },
+];
 
 const SUBCATEGORY_PARENT_IMAGES: Record<string, keyof typeof SECTION_IMAGES> = {
   category: "bedding",
@@ -189,11 +266,11 @@ export function CategoryRail({ categories, locale, parentCategory }: { categorie
   const cards = (
     <>
       {orderedCategories.map(({ category }) => {
+        const sectionImage = CATEGORY_IMAGE_BY_NAME.find(({ name }) => name === category.name.trim())?.image;
         const image = subcategoryImage(category, parentCategory);
-        const sectionImage = CATEGORY_NAME_SECTION_IMAGES[category.name.trim()]
-          ?? STORE_CATEGORY_SECTION_IMAGES[category.slug]
+        const categorySectionImage = STORE_CATEGORY_SECTION_IMAGES[category.slug]
           ?? CATEGORY_SECTION_IMAGES[category.slug];
-        const categoryImage = image ?? (sectionImage ? SECTION_IMAGES[sectionImage] : undefined);
+        const categoryImage = sectionImage ?? image ?? (categorySectionImage ? SECTION_IMAGES[categorySectionImage] : undefined);
         return (
           <Link key={category.slug} data-rail-item href={`/${locale}/categories/${category.slug}`} className={s.categoryCard}>
             {categoryImage
@@ -204,8 +281,17 @@ export function CategoryRail({ categories, locale, parentCategory }: { categorie
       })}
     </>
   );
+  const label = translate(locale, "تصفح أقسام المتجر");
+  if (orderedCategories.length <= 5) {
+    return (
+      <section className={s.rail} aria-label={label}>
+        <div className={s.staticCategoryGrid} dir={localeDirection(locale)}>{cards}</div>
+      </section>
+    );
+  }
+
   return (
-    <AutoScrollRail label={translate(locale, "تصفح أقسام المتجر")} direction={localeDirection(locale)} interactiveClone>
+    <AutoScrollRail label={label} direction={localeDirection(locale)} interactiveClone>
       {cards}
     </AutoScrollRail>
   );

@@ -89,6 +89,8 @@
 .railViewport:active{cursor:grabbing}
 .railTrack{display:flex;align-items:stretch;width:max-content;min-width:100%;will-change:transform;animation:railTicker 52s linear infinite}
 .railGroup{display:flex;flex:0 0 auto;align-items:stretch;gap:14px;width:max-content;padding-inline-end:14px}
+.staticCategoryGrid{display:flex;flex-wrap:wrap;justify-content:center;align-items:stretch;gap:14px;padding:6px 2px 14px}
+.staticCategoryGrid .categoryCard{flex:0 1 clamp(224px,76vw,270px)}
 .rail:hover .railTrack,.rail:focus-within .railTrack,.railDragging .railTrack{animation-play-state:paused}
 @keyframes railTicker{to{transform:translateX(-50%)}}
 .categoryCard{position:relative;flex:0 0 clamp(224px,76vw,270px);height:198px;display:grid;place-items:center;overflow:hidden;padding:0;border:1px solid #e4e8e2;border-radius:10px;background:var(--tile);scroll-snap-align:start;transition:transform .22s,border-color .22s,box-shadow .22s}
