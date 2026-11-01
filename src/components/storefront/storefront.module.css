@@ -1,4 +1,4 @@
-.wrap{max-width:1320px;margin-inline:auto;padding-inline:clamp(16px,3vw,40px)}
+.wrap{max-width:1320px;margin-inline:auto;padding-inline:clamp(16px,4vw,40px)}
 .compactPage{max-width:1200px}
 .storeShell{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
 .storeMain{flex:1;display:flex;flex-direction:column}
@@ -112,10 +112,13 @@
 .collectionMeta p{color:var(--muted);font-size:.86rem}
 .emptyIcon{width:64px;height:64px;display:grid;place-items:center;border-radius:50%;background:var(--gold-soft);color:var(--teal)}
 .section{padding:26px 0}
+@media(max-width:480px){.section{padding:18px 0}}
 .head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+@media(max-width:480px){.head{margin-bottom:10px}}
 .head h2,.head h1{font-size:1.35rem}
 .head a{color:var(--teal);font-weight:600;font-size:.92rem}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:480px){.grid{grid-template-columns:repeat(2,1fr);gap:10px;padding-inline:0}}
 .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .3s}
 .card:hover{transform:translateY(-5px);box-shadow:0 14px 30px #1c243018;border-color:var(--gold)}
 .thumb{position:relative;aspect-ratio:1;background:var(--tile);overflow:hidden}
@@ -123,7 +126,8 @@
 .thumb img{object-fit:cover;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
 .card:hover .thumb img{transform:scale(1.07)}
 .tag{position:absolute;z-index:2;top:10px;inset-inline-start:10px;background:var(--sale);color:#fff;font-size:.75rem;font-weight:700;padding:2px 9px;border-radius:12px}
-.info{padding:12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.info{padding:10px;display:flex;flex-direction:column;gap:6px;flex:1}
+@media(max-width:480px){.info{padding:8px 9px}}
 .info h3{font-size:.95rem;font-weight:600;line-height:1.4}
 .price{margin-top:auto;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-weight:700}
 .price s{color:var(--muted);font-weight:400;font-size:.85rem}
