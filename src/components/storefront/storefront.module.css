@@ -98,8 +98,8 @@
 @keyframes railTicker{to{transform:translateX(-50%)}}
 .categoryCard{position:relative;flex:0 0 clamp(160px,44vw,270px);aspect-ratio:4/3;height:auto;display:grid;place-items:center;overflow:hidden;padding:0;border:1px solid #e4e8e2;border-radius:10px;background:var(--tile);scroll-snap-align:start;transition:transform .22s,border-color .22s,box-shadow .22s}
 .categoryCard:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 10px 24px #1c243014}
-.categoryImage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--tile)}
-.categoryImage img{object-fit:contain;width:100%;height:100%;transition:transform .25s}
+.categoryImage{position:absolute;inset:0}
+.categoryImage img{object-fit:cover;width:100%;height:100%;transition:transform .25s}
 .categoryCard:hover .categoryImage img{transform:scale(1.04)}
 .categoryTitle{padding:16px;color:var(--ink);font-size:1.05rem;font-weight:700;text-align:center}
 .bestSellerCard{flex:0 0 clamp(220px,72vw,260px);scroll-snap-align:start}
