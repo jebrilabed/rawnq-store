@@ -274,7 +274,7 @@ export function CategoryRail({ categories, locale, parentCategory }: { categorie
         return (
           <Link key={category.slug} data-rail-item href={`/${locale}/categories/${category.slug}`} className={s.categoryCard}>
             {categoryImage
-              ? <span className={s.categoryImage}><Image src={categoryImage} alt={category.name} fill sizes="(max-width: 720px) 76vw, 220px" /></span>
+              ? <span className={s.categoryImage}><Image src={categoryImage} alt={category.name} fill sizes="(max-width: 480px) 44vw, (max-width: 720px) 44vw, 220px" /></span>
               : <span className={s.categoryTitle}>{category.name}</span>}
           </Link>
         );
