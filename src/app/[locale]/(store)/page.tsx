@@ -6,14 +6,15 @@ import { CategoryRail } from "@/components/storefront/CategoryRail";
 import { AutoScrollRail } from "@/components/storefront/AutoScrollRail";
 import s from "@/components/storefront/storefront.module.css";
 import { getBestSellingProducts, getCategories, getProducts } from "@/lib/data/catalog";
+import { getSettings } from "@/lib/data/db";
 import { localeDirection, translate } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage({ params }: { params: { locale: string } }) {
   const { locale } = params;
-  const [categories, products, bestSelling] = await Promise.all([
-    getCategories(locale), getProducts({ locale }), getBestSellingProducts(5, locale),
+  const [categories, products, bestSelling, settings] = await Promise.all([
+    getCategories(locale), getProducts({ locale }), getBestSellingProducts(5, locale), getSettings(),
   ]);
   const mainCategories = categories.filter((category) => category.parentSlug === null || category.parentSlug === undefined);
   const tr = (text: string) => translate(locale, text);
@@ -22,7 +23,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
       <section className={s.banner}>
         <Image src="/brand/banner.jpg" alt={tr("رونق ستور - كل ما يحتاجه بيتك بلمسة جمال وجودة")} width={1200} height={670} priority sizes="100vw" />
       </section>
-      <Marquee locale={locale} />
+      <Marquee locale={locale} whatsapp={settings.whatsapp || settings.phone} />
       <section className={s.railSection}>
         <div className={s.wrap}>
           <div className={s.railHeading}><div><span>{tr("اكتشف مجموعتنا")}</span><h2>{tr("تسوّق حسب القسم")}</h2></div><Link href={`/${locale}/products`}>{tr("كل المنتجات")}</Link></div>

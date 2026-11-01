@@ -71,8 +71,10 @@
 @keyframes slide{from{transform:translateX(100%)}}
 .marquee{background:var(--teal);color:#fff;overflow:hidden;white-space:nowrap;direction:ltr;padding:10px 0;font-weight:600;font-size:.9rem}
 .track{display:inline-flex;animation:run 26s linear infinite}
-.track span{display:inline-flex;align-items:center;gap:48px;padding:0 24px}
-.track span::after{content:"✦";color:var(--gold)}
+.track span,.track a{display:inline-flex;align-items:center;gap:48px;padding:0 24px}
+.track span::after,.track a::after{content:"✦";color:var(--gold)}
+.marqueeLink{color:#fff;text-decoration:underline;text-underline-offset:3px;font-weight:700;cursor:pointer}
+.marqueeLink:hover{opacity:.85}
 .marquee:hover .track{animation-play-state:paused}
 @keyframes run{to{transform:translateX(-50%)}}
 .banner{background:var(--gold-soft)}
