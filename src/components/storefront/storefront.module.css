@@ -1,4 +1,5 @@
-.wrap{max-width:1320px;margin-inline:auto;padding-inline:clamp(16px,4vw,40px)}
+.wrap{max-width:1320px;margin-inline:auto;padding-inline:clamp(20px,5vw,40px)}
+@media(max-width:480px){.wrap{padding-inline:14px}}
 .compactPage{max-width:1200px}
 .storeShell{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
 .storeMain{flex:1;display:flex;flex-direction:column}
@@ -118,7 +119,7 @@
 .head h2,.head h1{font-size:1.35rem}
 .head a{color:var(--teal);font-weight:600;font-size:.92rem}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-@media(max-width:480px){.grid{grid-template-columns:repeat(2,1fr);gap:10px;padding-inline:0}}
+@media(max-width:480px){.grid{grid-template-columns:repeat(2,1fr);gap:10px}}
 .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .3s}
 .card:hover{transform:translateY(-5px);box-shadow:0 14px 30px #1c243018;border-color:var(--gold)}
 .thumb{position:relative;aspect-ratio:1;background:var(--tile);overflow:hidden}
