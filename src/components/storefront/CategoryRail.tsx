@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import Image from "next/image";
 import type { Category } from "@/lib/types";
 import { AutoScrollRail } from "./AutoScrollRail";
@@ -75,7 +75,7 @@ const CATEGORY_IMAGE_BY_NAME = [
   { name: "زجاجيات و فناجين", image: "/sections/Luxury Glassware and Tea Sets Display.png" },
   { name: "ورود و أشجار", image: "/sections/Flowers and Trees_ Boutique Floral Showcase.png" },
   { name: "اكسسوارات حمام", image: "/sections/Elegant Marble Bathroom Accessories Display.png" },
-  { name: "تحف و هدايا", image: "/sections/EElegant Gifts and Décor Display.png" },
+  { name: "تحف و هدايا", image: "/sections/Elegant Gifts and Décor Display.png" },
   { name: "ديكورات منزل", image: "/sections/تحف و هدايا/تحف وديكورات فاخرة بإضاءة دافئة.png" },
   { name: "طقاطيق", image: "/sections/Premium Kitchen Tongs Display.png" },
   { name: "أطقم حرامات و وسائد", image: "/sections/الفرش المنزلي/أطقم حرامات ووسائد فاخرة.png" },
@@ -156,6 +156,8 @@ const CATEGORY_IMAGE_BY_NAME = [
   { name: "شمعدانات", image: "/sections/تحف و هدايا/شمعدانات فاخرة بإضاءة دافئة.png" },
   { name: "تحف وديكورات", image: "/sections/تحف و هدايا/تحف وديكورات فاخرة بإضاءة دافئة.png" },
   { name: "فازات", image: "/sections/تحف و هدايا/Luxurious Vase Collection Display.png" },
+  { name: "فناجين قهوه وساده", image: "/sections/Elegant Arabic Coffee Cup Collection.png" },
+  { name: "فناجين قهوة سادة", image: "/sections/Elegant Arabic Coffee Cup Collection.png" },
 ];
 
 const SUBCATEGORY_PARENT_IMAGES: Record<string, keyof typeof SECTION_IMAGES> = {
