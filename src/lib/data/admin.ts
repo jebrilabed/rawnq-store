@@ -249,6 +249,10 @@ export async function deleteCategory(slug: string): Promise<string | null> {
   return null;
 }
 
+export async function deleteOrder(orderNumber: string) {
+  return prisma.storeOrder.delete({ where: { orderNumber } });
+}
+
 export async function setOrderStatus(orderNumber: string, status: OrderStatus) {
   await prisma.$transaction(async (tx) => {
     const order = await tx.storeOrder.findUnique({ where: { orderNumber }, select: { id: true, status: true } });

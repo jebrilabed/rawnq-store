@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { StatusSelect } from "@/components/admin/Controls";
+import { ConfirmButton, StatusSelect } from "@/components/admin/Controls";
+import { deleteOrderAction } from "../../actions";
 import s from "@/components/admin/admin.module.css";
 import { getBestRouteShipment, getOrder } from "@/lib/data/admin";
 import { BestRouteOrderButton } from "@/components/admin/BestRouteOrderButton";
@@ -16,7 +17,15 @@ export default async function OrderAdmin({ params }: { params: { orderNumber: st
     <>
       <header className={s.pageHeader}>
         <div><span className={s.eyebrow}>تفاصيل الطلب</span><h1>{o.orderNumber}</h1><p>{new Date(o.createdAt).toLocaleString("ar")}</p></div>
-        <div className={s.pageActions}><StatusSelect orderNumber={o.orderNumber} status={o.status} /><Link href="/admin/orders" className={s.btnGhost}>العودة للطلبات</Link></div>
+        <div className={s.pageActions}>
+          <StatusSelect orderNumber={o.orderNumber} status={o.status} />
+          <form action={deleteOrderAction}>
+            <input type="hidden" name="orderNumber" value={o.orderNumber} />
+            <input type="hidden" name="returnTo" value="/admin/orders" />
+            <ConfirmButton className={`${s.btnGhost} ${s.danger}`} message={`هل أنت متأكد من حذف الطلب رقم ${o.orderNumber} نهائياً؟`}>حذف الطلب نهائياً</ConfirmButton>
+          </form>
+          <Link href="/admin/orders" className={s.btnGhost}>العودة للطلبات</Link>
+        </div>
       </header>
       {shipment && <BestRouteOrderButton orderNumber={o.orderNumber} payment={o.payment} orderStatus={o.status}
         shipment={shipment} orderTypeConfigured={Boolean(process.env.BEST_ROUTE_ORDER_TYPE_ID?.trim())} />}

@@ -194,6 +194,19 @@ export async function saveStoreContentAction(f: FormData) {
   redirect("/admin/content?saved=1");
 }
 
+export async function deleteOrderAction(f: FormData) {
+  await requireAdmin();
+  const orderNumber = text(f, "orderNumber", 80);
+  if (!orderNumber) return;
+  await admin.deleteOrder(orderNumber);
+  revalidatePath("/admin/orders", "page");
+  revalidatePath("/admin", "page");
+  const returnTo = text(f, "returnTo", 200);
+  if (returnTo) {
+    redirect(returnTo);
+  }
+}
+
 export async function updateOrderStatusAction(orderNumber: string, status: string) {
   await requireAdmin();
   if (!Object.prototype.hasOwnProperty.call(STATUS_LABEL, status)) return;

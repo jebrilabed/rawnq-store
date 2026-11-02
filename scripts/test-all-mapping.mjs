@@ -44,6 +44,7 @@ async function main() {
     gifts: "/sections/Elegant Gifts and Décor Display.png", // تحف و هدايا
     homeDecor: "/sections/تحف و هدايا/تحف وديكورات فاخرة بإضاءة دافئة.png", // ديكورات منزل
     tongs: "/sections/Premium Kitchen Tongs Display.png", // طقاطيق
+    coffeeCups: "/sections/Elegant Arabic Coffee Cup Collection.png", // فناجين قهوة سادة
   };
 
   const rootMapping = {
@@ -63,6 +64,7 @@ async function main() {
     "category-14": sectionImages.gifts,
     "category-63": sectionImages.homeDecor, // ديكورات منزل
     "category-87": sectionImages.tongs, // طقاطيق
+    "category-95": sectionImages.coffeeCups, // فناجين قهوة سادة
   };
 
   const subcategoryMapping = {
