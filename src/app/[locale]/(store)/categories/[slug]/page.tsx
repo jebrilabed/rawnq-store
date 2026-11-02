@@ -15,12 +15,18 @@ export default async function CategoryPage({ params }: { params: { locale: strin
   const products = await getProducts({ category: category.slug, locale: params.locale });
   const tr = (text: string) => translate(params.locale, text);
   return (
-    <main className={`${s.wrap} ${s.section}`}>
-      {children.length > 0 && <CategoryRail categories={children} locale={params.locale} parentCategory={category} />}
-      <div className={s.head}><h1>{category.name}</h1></div>
-      {products.length === 0 && children.length === 0
-        ? <p className={s.muted}>{tr("لا توجد منتجات في هذا القسم بعد.")}</p>
-        : products.length > 0 && <div className={s.grid}>{products.map((p) => <ProductCard key={p.id} product={p} locale={params.locale} />)}</div>}
+    <main>
+      {children.length > 0 && (
+        <section className={s.railSection}>
+          <CategoryRail categories={children} locale={params.locale} parentCategory={category} />
+        </section>
+      )}
+      <div className={`${s.wrap} ${s.section}`}>
+        <div className={s.head}><h1>{category.name}</h1></div>
+        {products.length === 0 && children.length === 0
+          ? <p className={s.muted}>{tr("لا توجد منتجات في هذا القسم بعد.")}</p>
+          : products.length > 0 && <div className={s.grid}>{products.map((p) => <ProductCard key={p.id} product={p} locale={params.locale} />)}</div>}
+      </div>
     </main>
   );
 }

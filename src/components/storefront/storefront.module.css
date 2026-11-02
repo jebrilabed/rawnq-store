@@ -70,7 +70,7 @@
 .drawer a{padding:14px 8px;border-bottom:1px solid var(--line);font-weight:500}
 @keyframes slide{from{transform:translateX(100%)}}
 .marquee{background:var(--teal);color:#fff;overflow:hidden;white-space:nowrap;direction:ltr;padding:10px 0;font-weight:600;font-size:.9rem}
-.track{display:inline-flex;animation:run 26s linear infinite}
+.track{display:inline-flex;animation:run 50s linear infinite}
 .track span,.track a{display:inline-flex;align-items:center;gap:48px;padding:0 24px}
 .track span::after,.track a::after{content:"✦";color:var(--gold)}
 .marqueeLink{color:#fff;text-decoration:none;font-weight:700;cursor:pointer}

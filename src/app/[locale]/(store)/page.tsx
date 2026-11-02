@@ -27,24 +27,26 @@ export default async function HomePage({ params }: { params: { locale: string } 
       <section className={s.railSection}>
         <div className={s.wrap}>
           <div className={s.railHeading}><div><span>{tr("اكتشف مجموعتنا")}</span><h2>{tr("تسوّق حسب القسم")}</h2></div><Link href={`/${locale}/products`}>{tr("كل المنتجات")}</Link></div>
-          <CategoryRail categories={mainCategories} locale={locale} />
         </div>
+        <CategoryRail categories={mainCategories} locale={locale} />
       </section>
       <section className={`${s.railSection} ${s.bestSellerSection}`}>
         <div className={s.wrap}>
           <div className={s.railHeading}><div><span>{tr("الأكثر طلبًا")}</span><h2>{tr("الأكثر مبيعًا")}</h2></div><Link href={`/${locale}/products`}>{tr("عرض الكل")}</Link></div>
-          {bestSelling.length ? (
-            <AutoScrollRail label={`${tr("المنتجات")} · ${tr("الأكثر مبيعًا")}`} direction={localeDirection(locale)}>
-              {bestSelling.map((product) => (
-                <div key={product.id} data-rail-item className={s.bestSellerCard}>
-                  <ProductCard product={product} locale={locale} />
-                </div>
-              ))}
-            </AutoScrollRail>
-          ) : (
-            <div className={s.bestSellerEmpty}>{tr("ستظهر هنا المنتجات الأكثر مبيعًا بعد تسجيل أول الطلبات.")}</div>
-          )}
         </div>
+        {bestSelling.length ? (
+          <AutoScrollRail label={`${tr("المنتجات")} · ${tr("الأكثر مبيعًا")}`} direction={localeDirection(locale)}>
+            {bestSelling.map((product) => (
+              <div key={product.id} data-rail-item className={s.bestSellerCard}>
+                <ProductCard product={product} locale={locale} />
+              </div>
+            ))}
+          </AutoScrollRail>
+        ) : (
+          <div className={s.wrap}>
+            <div className={s.bestSellerEmpty}>{tr("ستظهر هنا المنتجات الأكثر مبيعًا بعد تسجيل أول الطلبات.")}</div>
+          </div>
+        )}
       </section>
       <section className={`${s.wrap} ${s.section}`}>
         <div className={s.head}><h2>{tr("وصل حديثاً")}</h2><Link href={`/${locale}/products`}>{tr("عرض الكل")}</Link></div>
