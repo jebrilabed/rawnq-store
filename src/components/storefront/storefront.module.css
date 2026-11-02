@@ -71,11 +71,10 @@
 .drawer a{padding:14px 8px;border-bottom:1px solid var(--line);font-weight:500}
 @keyframes slide{from{transform:translateX(100%)}}
 .marquee{background:var(--teal);color:#fff;overflow:hidden;white-space:nowrap;direction:ltr;padding:10px 0;font-weight:600;font-size:.9rem}
-.track{display:flex;width:max-content;will-change:transform;animation:run 32s linear infinite}
-.marqueeGroup{display:inline-flex;flex-shrink:0;align-items:center}
-.marqueeGroup span,.marqueeGroup a,.track span,.track a{display:inline-flex;align-items:center;gap:48px;padding:0 24px}
-.marqueeGroup span::after,.marqueeGroup a::after,.track span::after,.track a::after{content:"✦";color:var(--gold)}
-.marqueeLink{color:#fff;text-decoration:none;font-weight:700;cursor:pointer}
+.track{display:inline-flex;animation:run 26s linear infinite}
+.track span,.track a{display:inline-flex;align-items:center;gap:48px;padding:0 24px}
+.track span::after,.track a::after{content:"✦";color:var(--gold)}
+.marqueeLink{color:#fff;text-decoration:underline;text-underline-offset:3px;font-weight:700;cursor:pointer}
 .marqueeLink:hover{opacity:.85}
 .marquee:hover .track{animation-play-state:paused}
 @keyframes run{to{transform:translateX(-50%)}}
@@ -99,8 +98,8 @@
 @keyframes railTicker{to{transform:translateX(-50%)}}
 .categoryCard{position:relative;flex:0 0 clamp(160px,44vw,270px);display:flex;flex-direction:column;overflow:hidden;padding:0;border:1px solid #e4e8e2;border-radius:10px;background:var(--tile);scroll-snap-align:start;transition:transform .22s,border-color .22s,box-shadow .22s}
 .categoryCard:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 10px 24px #1c243014}
-.categoryImage{display:block;width:100%;aspect-ratio:1/1;overflow:hidden;line-height:0}
-.categoryImage img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .25s}
+.categoryImage{display:block;width:100%;line-height:0}
+.categoryImage img{display:block;width:100%;height:auto;transition:transform .25s}
 .categoryCard:hover .categoryImage img{transform:scale(1.04)}
 .categoryTitle{padding:16px;color:var(--ink);font-size:1.05rem;font-weight:700;text-align:center}
 .bestSellerCard{flex:0 0 clamp(220px,72vw,260px);scroll-snap-align:start}
