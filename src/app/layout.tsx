@@ -15,8 +15,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const requestedLocale = headers().get("x-site-locale") ?? "ar";
   const locale = isLocale(requestedLocale) ? requestedLocale : "ar";
   return (
-    <html lang={locale} dir={localeDirection(locale)} className={font.variable}>
-      <body>
+    <html lang={locale} dir={localeDirection(locale)} className={font.variable} suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <Suspense fallback={null}>
           <ToastProvider>
             <NavigationProgress />

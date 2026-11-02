@@ -11,7 +11,13 @@ const nextConfig = {
   },
   images: {
     // Product images uploaded by the admin panel use Cloudinary.
-    remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+    ],
   },
   async headers() {
     return [{
