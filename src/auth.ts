@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+﻿import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/data/prisma";
 import { verifyPassword } from "@/lib/auth/password";
@@ -20,7 +20,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!email || !password || password.length > 128) return null;
       if (credentials?.accountType === "admin") {
         const admin = await prisma.adminUser.findUnique({ where: { email } });
-        if (!admin || admin.role !== "ADMIN" || !await verifyPassword(password, admin.passwordHash)) return null;
+        if (!admin || !["ADMIN", "WORKER"].includes(admin.role) || !await verifyPassword(password, admin.passwordHash)) return null;
         return { id: admin.id, email: admin.email, name: admin.email, role: admin.role };
       }
       const customer = await prisma.customerUser.findUnique({ where: { email } });
