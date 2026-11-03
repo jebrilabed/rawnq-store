@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Heart, LayoutDashboard, Menu, ShoppingCart, User, X } from "lucide-react";
+import { ChevronDown, Heart, LayoutDashboard, Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { useCart } from "./CartProvider";
 import { useFavorites } from "./FavoritesProvider";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -107,9 +107,10 @@ export function Header({ locale, storeName, userRole, categories }: { locale: st
               )}
             </div>
           </nav>
+          <HeaderSearchForm id="header-product-search-desktop" locale={locale} className={`${s.headerSearchForm} ${s.headerSearchDesktop}`} />
           <LanguageSwitcher locale={locale} />
           <Link href={accountHref} className={`${s.iconBtn} ${!userRole ? s.loginBtn : ""}`} aria-label={accountLabel}>
-            {userRole === "ADMIN" ? <LayoutDashboard size={22} /> : userRole === "CUSTOMER" ? <User size={22} /> : accountLabel}
+            {userRole === "ADMIN" ? <LayoutDashboard size={22} /> : userRole === "CUSTOMER" ? <User size={22} /> : <><User size={20} /><span className={s.loginLabel}>{accountLabel}</span></>}
           </Link>
           <Link href={`${base}/favorites`} className={s.iconBtn} aria-label={`${tr("المفضلة")}، ${favorites.count}`}>
             <Heart size={21} />
@@ -119,6 +120,9 @@ export function Header({ locale, storeName, userRole, categories }: { locale: st
             <ShoppingCart size={22} />
             {count > 0 && <span className={s.badge}>{count}</span>}
           </Link>
+        </div>
+        <div className={`${s.wrap} ${s.headerSearchMobileWrap}`}>
+          <HeaderSearchForm id="header-product-search-mobile" locale={locale} className={s.headerSearchForm} />
         </div>
       </header>
       {open && (
@@ -143,6 +147,17 @@ export function Header({ locale, storeName, userRole, categories }: { locale: st
         </>
       )}
     </>
+  );
+}
+
+function HeaderSearchForm({ id, locale, className }: { id: string; locale: string; className: string }) {
+  const tr = (text: string) => translate(locale, text);
+  return (
+    <form id={id} className={className} action={`/${locale}/products`} method="get" role="search">
+      <Search size={18} aria-hidden="true" />
+      <input name="q" type="search" placeholder={tr("ابحث عن منتج")} aria-label={tr("بحث")} />
+      <button type="submit" aria-label={tr("بحث")}><Search size={17} aria-hidden="true" /></button>
+    </form>
   );
 }
 
