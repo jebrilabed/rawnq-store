@@ -24,11 +24,6 @@ export default async function HomePage({ params }: { params: { locale: string } 
       <section className={s.banner}>
         <Image src="/brand/banner.jpg" alt={tr("رونق ستور - كل ما يحتاجه بيتك بلمسة جمال وجودة")} width={1200} height={670} priority sizes="100vw" />
       </section>
-      <section className={s.searchSection}>
-        <div className={s.wrap}>
-          <ProductSearch locale={locale} />
-        </div>
-      </section>
       <Marquee locale={locale} whatsapp={settings.whatsapp || settings.phone} />
       <section className={s.railSection}>
         <div className={s.wrap}>
@@ -56,6 +51,9 @@ export default async function HomePage({ params }: { params: { locale: string } 
       </section>
       <section className={`${s.wrap} ${s.section}`}>
         <div className={s.head}><h2>{tr("وصل حديثاً")}</h2><Link href={`/${locale}/products`}>{tr("عرض الكل")}</Link></div>
+        <div className={s.searchPageField}>
+          <ProductSearch locale={locale} />
+        </div>
         <div className={s.grid}>{products.map((p) => <ProductCard key={p.id} product={p} locale={locale} />)}</div>
       </section>
     </main>
