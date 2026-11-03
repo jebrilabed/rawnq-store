@@ -1,10 +1,10 @@
-"use server";
+﻿"use server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { signOut } from "@/auth";
 import * as admin from "@/lib/data/admin";
 import { STATUS_LABEL, type OrderStatus } from "@/lib/orders";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireAdmin, requireStaffOrAdmin } from "@/lib/auth/require-admin";
 import type { Variant } from "@/lib/types";
 import { uploadProductImage } from "@/lib/data/cloudinary";
 import { checkBestRouteConnection } from "@/lib/integrations/best-route";
@@ -72,7 +72,7 @@ function parseVariants(raw: string): Variant[] | string {
 }
 
 export async function saveProductAction(f: FormData) {
-  await requireAdmin();
+  await requireStaffOrAdmin();
   const id = text(f, "id", 80) || undefined;
   const back = id ? `/admin/products/${id}` : "/admin/products/new";
   const hasVariants = f.get("hasVariants") === "on";
@@ -119,7 +119,7 @@ export async function saveProductAction(f: FormData) {
   redirect("/admin/products?saved=" + encodeURIComponent("تم حفظ بيانات المنتج بنجاح."));
 }
 export async function togglePublishedAction(f: FormData) {
-  await requireAdmin();
+  await requireStaffOrAdmin();
   await admin.togglePublished(text(f, "id", 80));
   revalidateProductPages();
   redirect("/admin/products?saved=" + encodeURIComponent("تم تحديث حالة نشر المنتج بنجاح."));
@@ -261,7 +261,7 @@ export async function changeAdminPasswordAction(f: FormData) {
 }
 
 export async function updateStockAction(f: FormData) {
-  await requireAdmin();
+  await requireStaffOrAdmin();
   const vi = text(f, "variant", 80);
   const qty = num(f, "qty");
   if (!Number.isInteger(qty) || qty < 0 || qty > 2_147_483_647) return;

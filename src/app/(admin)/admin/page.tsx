@@ -1,3 +1,4 @@
+﻿import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { AlertTriangle, ArrowUpLeft, Boxes, Package, ShoppingBag, Wallet } from "lucide-react";
@@ -5,8 +6,11 @@ import { StatusSelect } from "@/components/admin/Controls";
 import s from "@/components/admin/admin.module.css";
 import { getRecentOrders, stats } from "@/lib/data/admin";
 import { formatPrice } from "@/lib/format";
+import { requireStaffOrAdmin } from "@/lib/auth/require-admin";
 
 export default async function Dashboard() {
+  const session = await requireStaffOrAdmin();
+  if (session.user.role === "WORKER") redirect("/admin/products");
   const [st, orders] = await Promise.all([stats(), getRecentOrders()]);
   return (
     <>

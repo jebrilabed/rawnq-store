@@ -1,3 +1,4 @@
+﻿import { requireAdmin } from "@/lib/auth/require-admin";
 import { saveStoreContentAction } from "../actions";
 import { SubmitButton } from "@/components/admin/Controls";
 import { getStoredContent } from "@/lib/data/db";
@@ -11,6 +12,7 @@ const LANGUAGES = [
 ] as const;
 
 export default async function ContentAdmin({ searchParams }: { searchParams: { saved?: string; error?: string } }) {
+  await requireAdmin();
   const content = await getStoredContent();
   return (
     <>

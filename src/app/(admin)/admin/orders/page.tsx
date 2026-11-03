@@ -1,3 +1,4 @@
+﻿import { requireAdmin } from "@/lib/auth/require-admin";
 import Image from "next/image";
 import Link from "next/link";
 import { ConfirmButton, StatusSelect } from "@/components/admin/Controls";
@@ -7,6 +8,7 @@ import { getOrders } from "@/lib/data/admin";
 import { formatPrice } from "@/lib/format";
 
 export default async function OrdersAdmin() {
+  await requireAdmin();
   const orders = await getOrders();
   return (
     <>

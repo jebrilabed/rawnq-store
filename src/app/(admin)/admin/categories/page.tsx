@@ -1,3 +1,4 @@
+﻿import { requireAdmin } from "@/lib/auth/require-admin";
 import { addCategoryAction } from "../actions";
 import { SubmitButton } from "@/components/admin/Controls";
 import { Plus } from "lucide-react";
@@ -7,6 +8,7 @@ import { CategoryPicker } from "@/components/admin/CategoryPicker";
 import { CategoriesTable } from "@/components/admin/CategoriesTable";
 
 export default async function CategoriesAdmin({ searchParams }: { searchParams: { error?: string } }) {
+  await requireAdmin();
   const categories = await getCategoryRows();
   const mainCategoryCount = categories.filter((category) => !category.parentSlug).length;
   return (

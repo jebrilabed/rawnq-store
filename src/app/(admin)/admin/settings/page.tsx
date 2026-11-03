@@ -1,3 +1,4 @@
+﻿import { requireAdmin } from "@/lib/auth/require-admin";
 import { changeAdminPasswordAction, saveSettingsAction } from "../actions";
 import { SubmitButton } from "@/components/admin/Controls";
 import { DeliveryAreasEditor } from "@/components/admin/DeliveryAreasEditor";
@@ -6,6 +7,7 @@ import { getSettings } from "@/lib/data/db";
 import { BestRouteConnectionCheck } from "@/components/admin/BestRouteConnectionCheck";
 
 export default async function SettingsAdmin({ searchParams }: { searchParams: { error?: string; saved?: string; passwordError?: string; passwordChanged?: string } }) {
+  await requireAdmin();
   const st = await getSettings();
   return (
     <>

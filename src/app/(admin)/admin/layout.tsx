@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { LogOut, Store } from "lucide-react";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { SubmitButton } from "@/components/admin/Controls";
 import s from "@/components/admin/admin.module.css";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireStaffOrAdmin } from "@/lib/auth/require-admin";
 import { getSettings } from "@/lib/data/db";
 import { adminLogoutAction } from "./actions";
 
@@ -13,7 +14,8 @@ export const metadata: Metadata = { title: "RAWNQ | لوحة التحكم", robo
 export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  await requireAdmin();
+  const session = await requireStaffOrAdmin();
+  const role = session.user.role as string;
   const { storeName } = await getSettings();
   return (
     <div className={s.shell}>
@@ -24,7 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
         <div>
           <span className={s.navCaption}>إدارة المتجر</span>
-          <AdminNav />
+          <AdminNav role={role} />
         </div>
         <div className={s.sidebarFoot}>RAWNQ · مساحة الإدارة</div>
       </aside>
