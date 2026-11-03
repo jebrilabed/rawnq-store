@@ -2053,7 +2053,9 @@
     .menuBtn {
         display: none
     }
+}
 
+@media (min-width:1280px) {
     .headerSearchDesktop {
         display: flex;
         flex: 0 1 clamp(145px, 16vw, 230px)
