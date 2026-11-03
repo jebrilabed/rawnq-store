@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, FileText, LayoutDashboard, Package, Settings, ShoppingBag, Tags } from "lucide-react";
+import { Boxes, FileText, KeyRound, LayoutDashboard, Package, Settings, ShoppingBag, Tags } from "lucide-react";
 import s from "./admin.module.css";
 
 const ADMIN_TABS = [
@@ -14,6 +14,7 @@ const WORKER_TABS = [
   ["/admin/products", "المنتجات", Package],
   ["/admin/categories", "الأقسام", Tags],
   ["/admin/inventory", "المخزون", Boxes],
+  ["/admin/account", "حسابي", KeyRound],
 ] as const;
 
 export function AdminNav({ role }: { role: string }) {

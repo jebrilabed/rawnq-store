@@ -318,3 +318,28 @@ export async function saveSettingsAction(f: FormData) {
   });
   revalidateSettingsPages(); redirect("/admin/settings?saved=1");
 }
+
+export async function changePasswordAction(f: FormData) {
+  const session = await requireStaffOrAdmin();
+  const currentPassword = f.get("currentPassword");
+  const newPassword = f.get("newPassword");
+  const confirmPassword = f.get("confirmPassword");
+  const failPw = (msg: string): never => redirect(`/admin/account?passwordError=${encodeURIComponent(msg)}`);
+
+  if (typeof currentPassword !== "string" || typeof newPassword !== "string" || typeof confirmPassword !== "string" || !currentPassword || !newPassword || !confirmPassword) {
+    return failPw("أكمل حقول كلمة المرور الثلاثة.");
+  }
+  if (newPassword.length < 8 || newPassword.length > 128) {
+    return failPw("يجب أن تكون كلمة المرور الجديدة بين 8 و128 حرفاً.");
+  }
+  if (newPassword !== confirmPassword) {
+    return failPw("تأكيد كلمة المرور الجديدة غير مطابق.");
+  }
+  if (!session?.user?.id) return failPw("تعذر التحقق من الجلسة. سجل الدخول مجدداً.");
+  const user = await prisma.adminUser.findUnique({ where: { id: session.user.id } });
+  if (!user || !await verifyPassword(currentPassword, user.passwordHash)) {
+    return failPw("كلمة المرور الحالية غير صحيحة.");
+  }
+  await prisma.adminUser.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(newPassword) } });
+  redirect("/admin/account?passwordChanged=1");
+}
