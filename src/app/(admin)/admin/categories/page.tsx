@@ -1,4 +1,4 @@
-﻿import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import { addCategoryAction } from "../actions";
 import { SubmitButton } from "@/components/admin/Controls";
 import { Plus } from "lucide-react";

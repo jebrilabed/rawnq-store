@@ -1,4 +1,4 @@
-﻿import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import Image from "next/image";
 import Link from "next/link";
 import { ConfirmButton, StatusSelect } from "@/components/admin/Controls";

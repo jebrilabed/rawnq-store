@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Boxes, FileText, LayoutDashboard, Package, Settings, ShoppingBag, Tags } from "lucide-react";

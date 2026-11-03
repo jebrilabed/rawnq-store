@@ -1,4 +1,4 @@
-﻿import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import { saveStoreContentAction } from "../actions";
 import { SubmitButton } from "@/components/admin/Controls";
 import { getStoredContent } from "@/lib/data/db";

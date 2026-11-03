@@ -1,4 +1,4 @@
-﻿import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import { changeAdminPasswordAction, saveSettingsAction } from "../actions";
 import { SubmitButton } from "@/components/admin/Controls";
 import { DeliveryAreasEditor } from "@/components/admin/DeliveryAreasEditor";
