@@ -156,10 +156,30 @@ model StoreContent {
 
 model AdminUser {
   id           String   @id @default(cuid())
-  email        String   @unique
+  email        String?  @unique
+  username     String?  @unique
+  name         String?
   passwordHash String
   role         String   @default("ADMIN")
   createdAt    DateTime @default(now())
+  activityLogs AdminActivityLog[]
+}
+
+model AdminActivityLog {
+  id         String    @id @default(cuid())
+  actorId    String?
+  actor      AdminUser? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorName  String
+  actorRole  String
+  action     String
+  entityType String
+  entityId   String?
+  entityName String
+  details    String   @default("")
+  createdAt  DateTime @default(now())
+
+  @@index([actorRole, createdAt])
+  @@index([createdAt])
 }
 
 model CustomerUser {

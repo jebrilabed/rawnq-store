@@ -31,8 +31,9 @@ export function AuthForm({ mode, locale, error, next, courierAreas = [], deliver
   const tr = (text: string) => translate(locale, text);
   const [msg, setMsg] = useState("");
   const isLogin = mode === "login";
+  const isAdminLogin = isLogin && next === "admin";
   const errorMessage = error === "credentials"
-    ? tr("البريد الإلكتروني أو كلمة المرور غير صحيحة.")
+    ? tr(isAdminLogin ? "اسم المستخدم أو كلمة المرور غير صحيحة." : "البريد الإلكتروني أو كلمة المرور غير صحيحة.")
     : error === "exists"
       ? tr("يوجد حساب مسجل بهذا البريد الإلكتروني.")
       : error === "invalid"
@@ -52,7 +53,7 @@ export function AuthForm({ mode, locale, error, next, courierAreas = [], deliver
       <input type="hidden" name="locale" value={locale} />
       {isLogin && (next === "orders" || next === "profile" || next === "admin") && <input type="hidden" name="next" value={next} />}
       {!isLogin && <input className={s.input} name="name" placeholder={tr("الاسم الكامل")} required autoComplete="name" />}
-      <input className={`${s.input} ${s.emailInput}`} name="email" type="email" placeholder={tr("البريد الإلكتروني")} required autoComplete="email" dir="ltr" />
+      <input className={`${s.input} ${s.emailInput}`} name="email" type={isAdminLogin ? "text" : "email"} placeholder={tr(isAdminLogin ? "اسم المستخدم أو البريد الإلكتروني" : "البريد الإلكتروني")} required autoComplete={isAdminLogin ? "username" : "email"} dir={isAdminLogin ? "auto" : "ltr"} />
       {!isLogin && <input className={`${s.input} ${s.phoneInput}`} name="phone" type="tel" placeholder={tr("رقم الهاتف")} required autoComplete="tel" />}
       {!isLogin && (
         <label className={s.authFieldLabel}>{tr("المدينة / المنطقة")}

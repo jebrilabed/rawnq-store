@@ -1,13 +1,13 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, FileText, KeyRound, LayoutDashboard, Package, Settings, ShoppingBag, Tags } from "lucide-react";
+import { Boxes, FileText, KeyRound, LayoutDashboard, Package, Settings, ShoppingBag, Tags, Users } from "lucide-react";
 import s from "./admin.module.css";
 
 const ADMIN_TABS = [
   ["/admin", "الرئيسية", LayoutDashboard], ["/admin/products", "المنتجات", Package], ["/admin/categories", "الأقسام", Tags],
   ["/admin/orders", "الطلبات", ShoppingBag], ["/admin/inventory", "المخزون", Boxes], ["/admin/settings", "الإعدادات", Settings],
-  ["/admin/content", "محتوى المتجر", FileText],
+  ["/admin/content", "محتوى المتجر", FileText], ["/admin/workers", "العمال", Users],
 ] as const;
 
 const WORKER_TABS = [

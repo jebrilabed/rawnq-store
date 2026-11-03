@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import { ConfirmButton, StatusSelect } from "@/components/admin/Controls";
 import { deleteOrderAction } from "../../actions";
 import s from "@/components/admin/admin.module.css";
@@ -11,6 +12,7 @@ import { PAYMENT_LABEL } from "@/lib/orders";
 import { OrderStatusTracking } from "@/components/ui/OrderStatusTracking";
 
 export default async function OrderAdmin({ params }: { params: { orderNumber: string } }) {
+  await requireAdmin();
   const [o, shipment] = await Promise.all([getOrder(params.orderNumber), getBestRouteShipment(params.orderNumber)]);
   if (!o) notFound();
   return (

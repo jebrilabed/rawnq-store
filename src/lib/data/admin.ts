@@ -58,6 +58,43 @@ export async function getCategoryRows() {
   });
 }
 
+export async function getWorkerAccounts() {
+  return prisma.adminUser.findMany({
+    where: { role: "WORKER" },
+    select: { id: true, name: true, username: true, email: true, createdAt: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function getWorkerActivity(requestedPage = 1, requestedPageSize = 50) {
+  const where = { actorRole: "WORKER" };
+  const pageSize = Math.max(1, Math.min(100, Math.trunc(requestedPageSize)));
+  const total = await prisma.adminActivityLog.count({ where });
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(Math.max(1, Math.trunc(requestedPage) || 1), pageCount);
+  const items = await prisma.adminActivityLog.findMany({
+    where,
+    select: { id: true, actorName: true, action: true, entityType: true, entityName: true, details: true, createdAt: true },
+    orderBy: { createdAt: "desc" },
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+  });
+  return { items, total, page, pageCount };
+}
+
+export async function logWorkerActivity(input: {
+  actorId: string;
+  actorName: string;
+  actorRole: "WORKER";
+  action: string;
+  entityType: string;
+  entityId?: string;
+  entityName: string;
+  details?: string;
+}) {
+  await prisma.adminActivityLog.create({ data: { ...input, entityId: input.entityId ?? null, details: input.details ?? "" } });
+}
+
 export type OrderListRow = { orderNumber: string; status: OrderStatus; customerName: string; total: number; image: string };
 
 export async function getOrders(): Promise<OrderListRow[]> {

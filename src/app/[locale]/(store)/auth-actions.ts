@@ -22,7 +22,7 @@ export async function customerLoginAction(form: FormData) {
   if (!password || password.length > 128) redirect(`/${locale}/login?error=credentials${adminRequested ? "&next=admin" : ""}`);
   const customer = adminRequested ? null : await prisma.customerUser.findUnique({ where: { email }, select: { id: true } });
   const admin = adminRequested || !customer
-    ? await prisma.adminUser.findUnique({ where: { email }, select: { id: true } })
+    ? await prisma.adminUser.findFirst({ where: { OR: [{ email }, { username: email }] }, select: { id: true } })
     : null;
   const accountType = adminRequested || (!customer && admin) ? "admin" : "customer";
   const redirectTo = admin

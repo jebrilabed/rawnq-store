@@ -10,7 +10,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: { signIn: "/ar/login" },
   providers: [Credentials({
     credentials: {
-      email: { label: "Email", type: "email" },
+      email: { label: "Email or username", type: "text" },
       password: { label: "Password", type: "password" },
       accountType: { label: "Account type", type: "text" },
     },
@@ -19,9 +19,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const password = String(credentials?.password ?? "");
       if (!email || !password || password.length > 128) return null;
       if (credentials?.accountType === "admin") {
-        const admin = await prisma.adminUser.findUnique({ where: { email } });
+        const admin = await prisma.adminUser.findFirst({ where: { OR: [{ email }, { username: email }] } });
         if (!admin || !["ADMIN", "WORKER"].includes(admin.role) || !await verifyPassword(password, admin.passwordHash)) return null;
-        return { id: admin.id, email: admin.email, name: admin.email, role: admin.role };
+        return { id: admin.id, email: admin.email, name: admin.name ?? admin.username ?? admin.email ?? "", role: admin.role };
       }
       const customer = await prisma.customerUser.findUnique({ where: { email } });
       if (!customer || customer.role !== "CUSTOMER" || !await verifyPassword(password, customer.passwordHash)) return null;

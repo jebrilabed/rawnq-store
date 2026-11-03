@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { signOut } from "@/auth";
+import { Prisma } from "@prisma/client";
 import * as admin from "@/lib/data/admin";
 import { STATUS_LABEL, type OrderStatus } from "@/lib/orders";
 import { requireAdmin, requireStaffOrAdmin } from "@/lib/auth/require-admin";
@@ -71,9 +72,58 @@ function parseVariants(raw: string): Variant[] | string {
   return out;
 }
 
+type WorkerEdit = { action: string; entityType: string; entityId?: string; entityName: string; details?: string };
+async function recordWorkerEdit(session: Awaited<ReturnType<typeof requireStaffOrAdmin>>, edit: WorkerEdit) {
+  if (session.user.role !== "WORKER" || !session.user.id) return;
+  await admin.logWorkerActivity({
+    actorId: session.user.id,
+    actorName: session.user.name ?? session.user.email ?? "عامل",
+    actorRole: "WORKER",
+    ...edit,
+  });
+}
+
+export async function createWorkerAction(f: FormData) {
+  await requireAdmin();
+  const name = text(f, "name", 80);
+  const passwordValue = f.get("password");
+  const confirmPasswordValue = f.get("confirmPassword");
+  const password = typeof passwordValue === "string" ? passwordValue : "";
+  const confirmPassword = typeof confirmPasswordValue === "string" ? confirmPasswordValue : "";
+  const username = name.toLowerCase();
+  const failWorker = (message: string): never => redirect(`/admin/workers?error=${encodeURIComponent(message)}`);
+
+  if (name.length < 2) return failWorker("أدخل اسم العامل بطول حرفين على الأقل.");
+  if (password.length < 8 || password.length > 128) return failWorker("يجب أن تكون كلمة المرور بين 8 و128 حرفاً.");
+  if (password !== confirmPassword) return failWorker("تأكيد كلمة المرور غير مطابق.");
+  const existing = await prisma.adminUser.findFirst({ where: { OR: [{ username }, { email: username }] }, select: { id: true } });
+  if (existing) return failWorker("اسم العامل مستخدم مسبقاً. اختر اسماً آخر.");
+
+  try {
+    await prisma.adminUser.create({ data: { name, username, passwordHash: await hashPassword(password), role: "WORKER" } });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return failWorker("اسم العامل مستخدم مسبقاً. اختر اسماً آخر.");
+    throw error;
+  }
+  revalidatePath("/admin/workers");
+  redirect("/admin/workers?created=1");
+}
+
 export async function saveProductAction(f: FormData) {
-  await requireStaffOrAdmin();
+  const session = await requireStaffOrAdmin();
   const id = text(f, "id", 80) || undefined;
+  const productName = text(f, "name", 120);
+  const description = text(f, "description", 1000);
+  const categorySlug = text(f, "categorySlug", 80);
+  const published = f.get("published") === "on";
+  const translations = {
+    en: text(f, "name_en", 120), he: text(f, "name_he", 120), ru: text(f, "name_ru", 120),
+    en_description: text(f, "description_en", 1000), he_description: text(f, "description_he", 1000),
+    ru_description: text(f, "description_ru", 1000),
+  };
+  const previousProduct = session.user.role === "WORKER" && id
+    ? await prisma.product.findUnique({ where: { id }, include: { variants: true } })
+    : null;
   const back = id ? `/admin/products/${id}` : "/admin/products/new";
   const hasVariants = f.get("hasVariants") === "on";
   const variants = parseVariants(text(f, "variants", 20000));
@@ -104,23 +154,45 @@ export async function saveProductAction(f: FormData) {
     }
   }
   const err = await admin.saveProduct({
-    id, name: text(f, "name", 120), description: text(f, "description", 1000),
-    translations: {
-      en: text(f, "name_en", 120), he: text(f, "name_he", 120), ru: text(f, "name_ru", 120),
-      en_description: text(f, "description_en", 1000), he_description: text(f, "description_he", 1000),
-      ru_description: text(f, "description_ru", 1000),
-    },
-    categorySlug: text(f, "categorySlug", 80),
+    id, name: productName, description, translations, categorySlug,
     price, comparePrice: !hasVariants && Number.isFinite(compare) && compare > 0 ? compare : undefined,
-    stock, image, published: f.get("published") === "on", variants,
+    stock, image, published, variants,
   });
   if (err) return fail(back, err);
+  const changedFields: string[] = [];
+  if (!previousProduct) changedFields.push("إنشاء المنتج");
+  else {
+    if (previousProduct.name !== productName) changedFields.push("الاسم");
+    if (previousProduct.description !== description) changedFields.push("الوصف");
+    if (previousProduct.categorySlug !== categorySlug) changedFields.push("القسم");
+    if (previousProduct.price.toNumber() !== price) changedFields.push("السعر");
+    if ((previousProduct.comparePrice?.toNumber() ?? null) !== (Number.isFinite(compare) && compare > 0 ? compare : null)) changedFields.push("سعر المقارنة");
+    if (previousProduct.stock !== stock) changedFields.push("المخزون");
+    if (previousProduct.image !== image) changedFields.push("الصورة");
+    if (previousProduct.published !== published) changedFields.push("حالة النشر");
+    const oldVariants = previousProduct.variants.map((variant) => [variant.color ?? "", variant.size ?? "", variant.stock, variant.price?.toNumber() ?? null]).sort((a, b) => `${String(a[0])}${String(a[1])}`.localeCompare(`${String(b[0])}${String(b[1])}`));
+    const newVariants = variants.map((variant) => [variant.color ?? "", variant.size ?? "", variant.stock, variant.price ?? null]).sort((a, b) => `${String(a[0])}${String(a[1])}`.localeCompare(`${String(b[0])}${String(b[1])}`));
+    if (JSON.stringify(oldVariants) !== JSON.stringify(newVariants)) changedFields.push("الخيارات والكميات");
+    if (previousProduct.translations !== JSON.stringify(translations)) changedFields.push("الترجمات");
+  }
+  if (changedFields.length) await recordWorkerEdit(session, {
+    action: id ? "تعديل منتج" : "إضافة منتج", entityType: "منتج", entityId: id, entityName: productName,
+    details: changedFields.join("، "),
+  });
   revalidateProductPages();
   redirect("/admin/products?saved=" + encodeURIComponent("تم حفظ بيانات المنتج بنجاح."));
 }
 export async function togglePublishedAction(f: FormData) {
-  await requireStaffOrAdmin();
-  await admin.togglePublished(text(f, "id", 80));
+  const session = await requireStaffOrAdmin();
+  const id = text(f, "id", 80);
+  const product = session.user.role === "WORKER"
+    ? await prisma.product.findUnique({ where: { id }, select: { name: true, published: true } })
+    : null;
+  await admin.togglePublished(id);
+  if (product) await recordWorkerEdit(session, {
+    action: "تغيير حالة النشر", entityType: "منتج", entityId: id, entityName: product.name,
+    details: product.published ? "إخفاء المنتج" : "نشر المنتج",
+  });
   revalidateProductPages();
   redirect("/admin/products?saved=" + encodeURIComponent("تم تحديث حالة نشر المنتج بنجاح."));
 }
@@ -131,27 +203,47 @@ export async function deleteProductAction(f: FormData) {
   redirect("/admin/products?saved=" + encodeURIComponent("تم حذف المنتج بنجاح."));
 }
 
-export async function adminLogoutAction() { await signOut({ redirectTo: "/ar/login" }); }
+export async function adminLogoutAction() { await signOut({ redirectTo: "/ar/login?next=admin" }); }
 
 export async function addCategoryAction(f: FormData) {
-  await requireStaffOrAdmin();
+  const session = await requireStaffOrAdmin();
+  const name = text(f, "name", 60);
+  const parentSlug = text(f, "parentSlug", 80) || undefined;
   const err = await admin.addCategory(
-    text(f, "name", 60),
+    name,
     { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) },
-    text(f, "parentSlug", 80) || undefined,
+    parentSlug,
   ); if (err) return fail("/admin/categories", err);
+  await recordWorkerEdit(session, { action: "إضافة قسم", entityType: "قسم", entityName: name, details: parentSlug ? `قسم فرعي من ${parentSlug}` : "قسم رئيسي" });
   revalidateCategoryPages();
   redirect("/admin/categories?saved=" + encodeURIComponent("تمت إضافة القسم بنجاح."));
 }
 export async function renameCategoryAction(f: FormData) {
-  await requireStaffOrAdmin();
-  const err = await admin.renameCategory(text(f, "slug", 80), text(f, "name", 60), { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) }); if (err) return fail("/admin/categories", err);
+  const session = await requireStaffOrAdmin();
+  const slug = text(f, "slug", 80);
+  const name = text(f, "name", 60);
+  const translations = { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) };
+  const previous = session.user.role === "WORKER" ? await prisma.category.findUnique({ where: { slug }, select: { name: true, translations: true } }) : null;
+  const err = await admin.renameCategory(slug, name, translations); if (err) return fail("/admin/categories", err);
+  if (previous) {
+    const changes: string[] = [];
+    if (previous.name !== name) changes.push(`الاسم: ${previous.name} ← ${name}`);
+    if (previous.translations !== JSON.stringify(translations)) changes.push("الترجمات");
+    if (changes.length) await recordWorkerEdit(session, { action: "تعديل قسم", entityType: "قسم", entityId: slug, entityName: name, details: changes.join("، ") });
+  }
   revalidateCategoryPages();
   redirect("/admin/categories?saved=" + encodeURIComponent("تم تحديث اسم القسم بنجاح."));
 }
 export async function moveCategoryAction(f: FormData) {
-  await requireStaffOrAdmin();
-  const err = await admin.moveCategory(text(f, "slug", 80), text(f, "parentSlug", 80) || undefined); if (err) return fail("/admin/categories", err);
+  const session = await requireStaffOrAdmin();
+  const slug = text(f, "slug", 80);
+  const parentSlug = text(f, "parentSlug", 80) || undefined;
+  const previous = session.user.role === "WORKER" ? await prisma.category.findUnique({ where: { slug }, select: { name: true, parentSlug: true } }) : null;
+  const err = await admin.moveCategory(slug, parentSlug); if (err) return fail("/admin/categories", err);
+  if (previous && (previous.parentSlug ?? "") !== (parentSlug ?? "")) await recordWorkerEdit(session, {
+    action: "نقل قسم", entityType: "قسم", entityId: slug, entityName: previous.name,
+    details: `من ${previous.parentSlug ?? "الجذر"} إلى ${parentSlug ?? "الجذر"}`,
+  });
   revalidateCategoryPages();
   redirect("/admin/categories?saved=" + encodeURIComponent("تم نقل القسم بنجاح."));
 }
@@ -261,11 +353,21 @@ export async function changeAdminPasswordAction(f: FormData) {
 }
 
 export async function updateStockAction(f: FormData) {
-  await requireStaffOrAdmin();
+  const session = await requireStaffOrAdmin();
+  const id = text(f, "id", 80);
   const vi = text(f, "variant", 80);
   const qty = num(f, "qty");
   if (!Number.isInteger(qty) || qty < 0 || qty > 2_147_483_647) return;
-  await admin.setStock(text(f, "id", 80), vi === "" ? null : vi, qty);
+  const product = session.user.role === "WORKER"
+    ? await prisma.product.findUnique({ where: { id }, select: { name: true, stock: true, variants: { select: { id: true, color: true, size: true, stock: true } } } })
+    : null;
+  const variant = vi ? product?.variants.find((item) => item.id === vi) : undefined;
+  const previousQty = vi ? variant?.stock : product?.stock;
+  await admin.setStock(id, vi === "" ? null : vi, qty);
+  if (product && previousQty !== undefined && previousQty !== qty && (!vi || variant)) {
+    const option = variant ? [variant.color, variant.size].filter(Boolean).join(" / ") || "أساسي" : "المخزون الأساسي";
+    await recordWorkerEdit(session, { action: "تعديل المخزون", entityType: "مخزون", entityId: id, entityName: product.name, details: `${option}: ${previousQty} ← ${qty}` });
+  }
   revalidateInventoryPages();
 }
 
@@ -341,5 +443,6 @@ export async function changePasswordAction(f: FormData) {
     return failPw("كلمة المرور الحالية غير صحيحة.");
   }
   await prisma.adminUser.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(newPassword) } });
+  await recordWorkerEdit(session, { action: "تغيير كلمة المرور", entityType: "حساب", entityName: session.user.name ?? session.user.email ?? "عامل", details: "تغيير كلمة المرور الشخصية" });
   redirect("/admin/account?passwordChanged=1");
 }

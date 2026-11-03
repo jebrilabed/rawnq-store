@@ -14,7 +14,7 @@ export default async function AccountPage({ searchParams }: { searchParams: { pa
           <h1>إعدادات الحساب</h1>
           <p>تغيير كلمة المرور الخاصة بك.</p>
         </div>
-        <span className={s.pill}>{session.user.email} · {roleLabel}</span>
+        <span className={s.pill}>{session.user.name ?? session.user.email ?? ""} · {roleLabel}</span>
       </header>
 
       {searchParams.passwordError && <p role="alert" className={s.error}>{searchParams.passwordError}</p>}
