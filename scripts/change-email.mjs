@@ -32,3 +32,4 @@ try {
   prompt.close();
   await prisma.$disconnect();
 }
+
