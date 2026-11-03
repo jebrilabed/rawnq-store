@@ -23,6 +23,9 @@ const SECTION_IMAGES = {
   hospitality: "/sections/WhatsApp Image 2026-10-22 at 6.50.39 PM.jpeg",
   homeDecor: "/sections/تحف و هدايا/تحف وديكورات فاخرة بإضاءة دافئة.png",
   tongs: "/sections/Premium Kitchen Tongs Display.png",
+  coffeeCups: "/sections/Elegant Arabic Coffee Cup Collection.png",
+  winter: "/sections/Winter Comfort Textile Display.png",
+  vases: "/sections/Elegant Vase Collection with Arabic Plaque.png",
 } as const;
 
 const STORE_CATEGORY_SECTION_IMAGES: Record<string, keyof typeof SECTION_IMAGES> = {
@@ -42,6 +45,9 @@ const STORE_CATEGORY_SECTION_IMAGES: Record<string, keyof typeof SECTION_IMAGES>
   "category-14": "gifts",
   "category-63": "homeDecor",
   "category-87": "tongs",
+  "category-95": "coffeeCups",
+  "category-96": "winter",
+  "category-98": "vases",
 };
 
 const CATEGORY_SECTION_IMAGES: Record<string, keyof typeof SECTION_IMAGES> = {
@@ -158,6 +164,10 @@ const CATEGORY_IMAGE_BY_NAME = [
   { name: "فازات", image: "/sections/تحف و هدايا/Luxurious Vase Collection Display.png" },
   { name: "فناجين قهوه وساده", image: "/sections/Elegant Arabic Coffee Cup Collection.png" },
   { name: "فناجين قهوة سادة", image: "/sections/Elegant Arabic Coffee Cup Collection.png" },
+  { name: "شتوي", image: "/sections/Winter Comfort Textile Display.png" },
+  { name: "شتوية", image: "/sections/Winter Comfort Textile Display.png" },
+  { name: "شتويه", image: "/sections/Winter Comfort Textile Display.png" },
+  { name: "نثريات", image: "/sections/Elegant Vase Collection with Arabic Plaque.png" },
 ];
 
 const SUBCATEGORY_PARENT_IMAGES: Record<string, keyof typeof SECTION_IMAGES> = {
