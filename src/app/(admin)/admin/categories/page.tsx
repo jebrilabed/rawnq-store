@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireStaffOrAdmin } from "@/lib/auth/require-admin";
 import { addCategoryAction } from "../actions";
 import { SubmitButton } from "@/components/admin/Controls";
 import { Plus } from "lucide-react";
@@ -8,7 +8,8 @@ import { CategoryPicker } from "@/components/admin/CategoryPicker";
 import { CategoriesTable } from "@/components/admin/CategoriesTable";
 
 export default async function CategoriesAdmin({ searchParams }: { searchParams: { error?: string } }) {
-  await requireAdmin();
+  const session = await requireStaffOrAdmin();
+  const canDelete = session.user.role === "ADMIN";
   const categories = await getCategoryRows();
   const mainCategoryCount = categories.filter((category) => !category.parentSlug).length;
   return (
@@ -31,7 +32,7 @@ export default async function CategoriesAdmin({ searchParams }: { searchParams: 
         </details>
       </form>
       {categories.length === 0 ? <div className={s.emptyState}>لا توجد أقسام بعد. أضف أول قسم.</div> : (
-        <CategoriesTable categories={categories} />
+        <CategoriesTable categories={categories} canDelete={canDelete} />
       )}
     </>
   );

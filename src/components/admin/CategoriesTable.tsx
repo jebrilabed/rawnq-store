@@ -13,7 +13,7 @@ type CategoryRow = Category & {
   _count: { products: number; children: number };
 };
 
-export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
+export function CategoriesTable({ categories, canDelete }: { categories: CategoryRow[]; canDelete: boolean }) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const [translationOpen, setTranslationOpen] = useState<Set<string>>(() => new Set());
   const [parentOpen, setParentOpen] = useState<Set<string>>(() => new Set());
@@ -57,6 +57,7 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
                 isTranslationOpen={isTranslationOpen}
                 isParentOpen={parentOpen.has(category.slug)}
                 translations={translations}
+                canDelete={canDelete}
                 onToggleExpanded={() => toggle(setExpanded, category.slug)}
                 onToggleTranslation={() => toggle(setTranslationOpen, category.slug)}
                 onToggleParent={() => toggle(setParentOpen, category.slug)}
@@ -78,6 +79,7 @@ function CategoryRows({
   isTranslationOpen,
   isParentOpen,
   translations,
+  canDelete,
   onToggleExpanded,
   onToggleTranslation,
   onToggleParent,
@@ -90,6 +92,7 @@ function CategoryRows({
   isTranslationOpen: boolean;
   isParentOpen: boolean;
   translations: Record<string, string>;
+  canDelete: boolean;
   onToggleExpanded: () => void;
   onToggleTranslation: () => void;
   onToggleParent: () => void;
@@ -126,10 +129,12 @@ function CategoryRows({
             <button type="button" className={s.sm} aria-expanded={isParentOpen} onClick={onToggleParent}>
               {isParentOpen ? "إلغاء النقل" : "تغيير القسم الأب"}
             </button>
-            <form action={deleteCategoryAction}>
-              <input type="hidden" name="slug" value={category.slug} />
-              <ConfirmButton className={`${s.sm} ${s.danger}`} message="حذف القسم؟">حذف</ConfirmButton>
-            </form>
+            {canDelete && (
+              <form action={deleteCategoryAction}>
+                <input type="hidden" name="slug" value={category.slug} />
+                <ConfirmButton className={`${s.sm} ${s.danger}`} message="حذف القسم؟">حذف</ConfirmButton>
+              </form>
+            )}
           </div>
         </td>
       </tr>

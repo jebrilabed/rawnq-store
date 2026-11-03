@@ -12,6 +12,7 @@ const ADMIN_TABS = [
 
 const WORKER_TABS = [
   ["/admin/products", "المنتجات", Package],
+  ["/admin/categories", "الأقسام", Tags],
   ["/admin/inventory", "المخزون", Boxes],
 ] as const;
 

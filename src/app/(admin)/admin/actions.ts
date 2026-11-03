@@ -134,7 +134,7 @@ export async function deleteProductAction(f: FormData) {
 export async function adminLogoutAction() { await signOut({ redirectTo: "/ar/login" }); }
 
 export async function addCategoryAction(f: FormData) {
-  await requireAdmin();
+  await requireStaffOrAdmin();
   const err = await admin.addCategory(
     text(f, "name", 60),
     { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) },
@@ -144,13 +144,13 @@ export async function addCategoryAction(f: FormData) {
   redirect("/admin/categories?saved=" + encodeURIComponent("تمت إضافة القسم بنجاح."));
 }
 export async function renameCategoryAction(f: FormData) {
-  await requireAdmin();
+  await requireStaffOrAdmin();
   const err = await admin.renameCategory(text(f, "slug", 80), text(f, "name", 60), { en: text(f, "name_en", 60), he: text(f, "name_he", 60), ru: text(f, "name_ru", 60) }); if (err) return fail("/admin/categories", err);
   revalidateCategoryPages();
   redirect("/admin/categories?saved=" + encodeURIComponent("تم تحديث اسم القسم بنجاح."));
 }
 export async function moveCategoryAction(f: FormData) {
-  await requireAdmin();
+  await requireStaffOrAdmin();
   const err = await admin.moveCategory(text(f, "slug", 80), text(f, "parentSlug", 80) || undefined); if (err) return fail("/admin/categories", err);
   revalidateCategoryPages();
   redirect("/admin/categories?saved=" + encodeURIComponent("تم نقل القسم بنجاح."));
