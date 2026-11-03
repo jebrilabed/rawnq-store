@@ -4,6 +4,7 @@ import { Marquee } from "@/components/storefront/Marquee";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { CategoryRail } from "@/components/storefront/CategoryRail";
 import { AutoScrollRail } from "@/components/storefront/AutoScrollRail";
+import { ProductSearch } from "@/components/storefront/ProductSearch";
 import s from "@/components/storefront/storefront.module.css";
 import { getBestSellingProducts, getCategories, getProducts } from "@/lib/data/catalog";
 import { getSettings } from "@/lib/data/db";
@@ -14,7 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function HomePage({ params }: { params: { locale: string } }) {
   const { locale } = params;
   const [categories, products, bestSelling, settings] = await Promise.all([
-    getCategories(locale), getProducts({ locale }), getBestSellingProducts(5, locale), getSettings(),
+    getCategories(locale), getProducts({ locale, take: 10 }), getBestSellingProducts(5, locale), getSettings(),
   ]);
   const mainCategories = categories.filter((category) => category.parentSlug === null || category.parentSlug === undefined);
   const tr = (text: string) => translate(locale, text);
@@ -22,6 +23,11 @@ export default async function HomePage({ params }: { params: { locale: string } 
     <main>
       <section className={s.banner}>
         <Image src="/brand/banner.jpg" alt={tr("رونق ستور - كل ما يحتاجه بيتك بلمسة جمال وجودة")} width={1200} height={670} priority sizes="100vw" />
+      </section>
+      <section className={s.searchSection}>
+        <div className={s.wrap}>
+          <ProductSearch locale={locale} />
+        </div>
       </section>
       <Marquee locale={locale} whatsapp={settings.whatsapp || settings.phone} />
       <section className={s.railSection}>

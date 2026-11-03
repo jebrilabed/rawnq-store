@@ -39,7 +39,9 @@ export async function getCategories(locale = "ar"): Promise<Category[]> {
   }));
 }
 
-export async function getProducts(opts: { category?: string; q?: string; locale?: string } = {}): Promise<Product[]> {
+type ProductFilters = { category?: string; q?: string; locale?: string };
+
+async function productWhere(opts: ProductFilters): Promise<Prisma.ProductWhereInput> {
   const searchFilters: Prisma.ProductWhereInput[] = [];
   let categorySlugs: string[] | undefined;
   if (opts.category) {
@@ -64,15 +66,43 @@ export async function getProducts(opts: { category?: string; q?: string; locale?
     }
   }
 
+  return {
+    published: true,
+    ...(categorySlugs ? { categorySlug: { in: categorySlugs } } : {}),
+    ...(searchFilters.length ? { OR: searchFilters } : {}),
+  };
+}
+
+function productOrder(): Prisma.ProductOrderByWithRelationInput[] {
+  return [{ createdAt: "desc" }, { id: "desc" }];
+}
+
+export async function getProducts(opts: ProductFilters & { take?: number; skip?: number } = {}): Promise<Product[]> {
+  const where = await productWhere(opts);
+
   const rows = await prisma.product.findMany({
-    where: {
-      published: true,
-      ...(categorySlugs ? { categorySlug: { in: categorySlugs } } : {}),
-      ...(searchFilters.length ? { OR: searchFilters } : {}),
-    },
-    include: { variants: true }, orderBy: { createdAt: "desc" },
+    where,
+    ...(opts.take !== undefined ? { take: Math.max(0, Math.trunc(opts.take)) } : {}),
+    ...(opts.skip !== undefined ? { skip: Math.max(0, Math.trunc(opts.skip)) } : {}),
+    include: { variants: true }, orderBy: productOrder(),
   });
   return rows.map((row) => toProduct(row, opts.locale));
+}
+
+export async function getProductPage(opts: ProductFilters & { page: number; pageSize: number }) {
+  const where = await productWhere(opts);
+  const pageSize = Math.max(1, Math.min(100, Math.trunc(opts.pageSize)));
+  const total = await prisma.product.count({ where });
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(Math.max(1, Math.trunc(opts.page) || 1), pageCount);
+  const rows = await prisma.product.findMany({
+    where,
+    take: pageSize,
+    skip: (page - 1) * pageSize,
+    include: { variants: true },
+    orderBy: productOrder(),
+  });
+  return { products: rows.map((row) => toProduct(row, opts.locale)), total, page, pageSize, pageCount };
 }
 
 export async function getBestSellingProducts(limit = 5, locale = "ar"): Promise<Product[]> {
@@ -96,24 +126,18 @@ export async function getBestSellingProducts(limit = 5, locale = "ar"): Promise<
   const missing = target - products.length;
   if (missing <= 0) return products;
 
-  const candidates = await prisma.product.findMany({
-    where: { published: true, slug: { notIn: products.map((product) => product.slug) } },
-    select: { slug: true },
-  });
-  for (let index = candidates.length - 1; index > 0; index--) {
-    const otherIndex = randomInt(index + 1);
-    [candidates[index], candidates[otherIndex]] = [candidates[otherIndex], candidates[index]];
-  }
-  const randomSlugs = candidates.slice(0, missing).map((candidate) => candidate.slug);
-  if (!randomSlugs.length) return products;
+  const candidateWhere = { published: true, slug: { notIn: products.map((product) => product.slug) } };
+  const candidateCount = await prisma.product.count({ where: candidateWhere });
+  const maxStart = Math.max(0, candidateCount - missing);
+  const start = maxStart > 0 ? randomInt(maxStart + 1) : 0;
   const randomRows = await prisma.product.findMany({
-    where: { slug: { in: randomSlugs }, published: true }, include: { variants: true },
+    where: candidateWhere,
+    take: missing,
+    skip: start,
+    orderBy: productOrder(),
+    include: { variants: true },
   });
-  const randomBySlug = new Map(randomRows.map((row) => [row.slug, toProduct(row, locale)]));
-  return [...products, ...randomSlugs.flatMap((slug) => {
-    const product = randomBySlug.get(slug);
-    return product ? [product] : [];
-  })].slice(0, target);
+  return [...products, ...randomRows.map((row) => toProduct(row, locale))].slice(0, target);
 }
 
 export async function getProduct(slug: string, locale = "ar"): Promise<Product | null> {

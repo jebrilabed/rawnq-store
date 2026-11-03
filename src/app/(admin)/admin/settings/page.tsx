@@ -1,11 +1,11 @@
-import { saveSettingsAction } from "../actions";
+import { changeAdminPasswordAction, saveSettingsAction } from "../actions";
 import { SubmitButton } from "@/components/admin/Controls";
 import { DeliveryAreasEditor } from "@/components/admin/DeliveryAreasEditor";
 import s from "@/components/admin/admin.module.css";
 import { getSettings } from "@/lib/data/db";
 import { BestRouteConnectionCheck } from "@/components/admin/BestRouteConnectionCheck";
 
-export default async function SettingsAdmin({ searchParams }: { searchParams: { error?: string; saved?: string } }) {
+export default async function SettingsAdmin({ searchParams }: { searchParams: { error?: string; saved?: string; passwordError?: string; passwordChanged?: string } }) {
   const st = await getSettings();
   return (
     <>
@@ -13,6 +13,8 @@ export default async function SettingsAdmin({ searchParams }: { searchParams: { 
       <BestRouteConnectionCheck />
       {searchParams.error && <p role="alert" className={s.error}>{searchParams.error}</p>}
       {searchParams.saved && <p className={s.saved}>تم الحفظ</p>}
+      {searchParams.passwordError && <p role="alert" className={s.error}>{searchParams.passwordError}</p>}
+      {searchParams.passwordChanged && <p className={s.saved}>تم تغيير كلمة المرور بنجاح.</p>}
       <form action={saveSettingsAction} className={`${s.form} ${s.settingsForm}`}>
         <section className={s.settingsSection}>
           <h2>الهوية والتواصل</h2><p>المعلومات التي تظهر للمتسوقين في المتجر.</p>
@@ -44,6 +46,21 @@ export default async function SettingsAdmin({ searchParams }: { searchParams: { 
         </div>
 
       </form>
+
+      <section className={s.settingsSection}>
+        <h2>تغيير كلمة مرور المسؤول</h2>
+        <p>أدخل كلمة المرور الحالية، ثم اختر كلمة مرور جديدة لا تقل عن 8 أحرف.</p>
+        <form action={changeAdminPasswordAction} className={`${s.form} ${s.settingsForm}`}>
+          <div className={s.settingsGrid}>
+            <label className={`${s.label} ${s.settingsWide}`}>كلمة المرور الحالية<input className={s.field} name="currentPassword" type="password" required maxLength={128} autoComplete="current-password" /></label>
+            <label className={s.label}>كلمة المرور الجديدة<input className={s.field} name="newPassword" type="password" required minLength={8} maxLength={128} autoComplete="new-password" /></label>
+            <label className={s.label}>تأكيد كلمة المرور الجديدة<input className={s.field} name="confirmPassword" type="password" required minLength={8} maxLength={128} autoComplete="new-password" /></label>
+          </div>
+          <div className={s.settingsActions}>
+            <SubmitButton className={s.btn} pendingLabel="جارٍ تغيير كلمة المرور…">تغيير كلمة المرور</SubmitButton>
+          </div>
+        </form>
+      </section>
     </>
   );
 }

@@ -10,6 +10,9 @@ import { uploadProductImage } from "@/lib/data/cloudinary";
 import { checkBestRouteConnection } from "@/lib/integrations/best-route";
 import { sendBestRouteOrder } from "@/lib/integrations/best-route-orders";
 import { saveStoreContent } from "@/lib/data/db";
+import { auth } from "@/auth";
+import { hashPassword, verifyPassword } from "@/lib/auth/password";
+import { prisma } from "@/lib/data/prisma";
 
 const text = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
 const num = (f: FormData, k: string) => { const v = text(f, k, 20); return v === "" ? NaN : Number(v); };
@@ -227,6 +230,34 @@ export async function sendBestRouteOrderAction(orderNumber: string, bankPaymentC
   revalidatePath(`/admin/orders/${orderNumber}`);
   revalidatePath("/admin/orders");
   return result;
+}
+
+export async function changeAdminPasswordAction(f: FormData) {
+  await requireAdmin();
+  const session = await auth();
+  const currentPassword = f.get("currentPassword");
+  const newPassword = f.get("newPassword");
+  const confirmPassword = f.get("confirmPassword");
+  const failPassword = (message: string): never => redirect(`/admin/settings?passwordError=${encodeURIComponent(message)}`);
+
+  if (typeof currentPassword !== "string" || typeof newPassword !== "string" || typeof confirmPassword !== "string" || !currentPassword || !newPassword || !confirmPassword) {
+    return failPassword("أكمل حقول كلمة المرور الثلاثة.");
+  }
+  if (newPassword.length < 8 || newPassword.length > 128) {
+    return failPassword("يجب أن تكون كلمة المرور الجديدة بين 8 و128 حرفاً.");
+  }
+  if (newPassword !== confirmPassword) {
+    return failPassword("تأكيد كلمة المرور الجديدة غير مطابق.");
+  }
+
+  if (!session?.user?.id || session.user.role !== "ADMIN") return failPassword("تعذر التحقق من حساب المسؤول. سجل الدخول مجدداً.");
+  const adminUser = await prisma.adminUser.findUnique({ where: { id: session.user.id } });
+  if (!adminUser || adminUser.role !== "ADMIN" || !await verifyPassword(currentPassword, adminUser.passwordHash)) {
+    return failPassword("كلمة المرور الحالية غير صحيحة.");
+  }
+
+  await prisma.adminUser.update({ where: { id: adminUser.id }, data: { passwordHash: await hashPassword(newPassword) } });
+  redirect("/admin/settings?passwordChanged=1");
 }
 
 export async function updateStockAction(f: FormData) {
