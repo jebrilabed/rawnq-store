@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { customerLoginAction, customerRegisterAction } from "@/app/[locale]/(store)/auth-actions";
 import { Spinner } from "@/components/ui/LoadingState";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { toast } from "@/components/ui/Toast";
 import type { DeliveryArea } from "@/lib/data/db";
 import s from "./storefront.module.css";
@@ -72,8 +73,8 @@ export function AuthForm({ mode, locale, error, next, courierAreas = [], deliver
         </label>
       )}
       {!isLogin && <textarea className={`${s.input} ${s.authAddress}`} name="address" placeholder={tr("العنوان بالتفصيل")} required minLength={4} autoComplete="street-address" />}
-      <input className={s.input} name="password" type="password" placeholder={tr("كلمة المرور")} required minLength={isLogin ? undefined : 8} maxLength={128} autoComplete={isLogin ? "current-password" : "new-password"} />
-      {!isLogin && <input className={s.input} name="confirmPassword" type="password" placeholder={tr("تأكيد كلمة المرور")} required minLength={8} maxLength={128} autoComplete="new-password" />}
+      <PasswordInput className={s.input} name="password" placeholder={tr("كلمة المرور")} required minLength={isLogin ? undefined : 8} maxLength={128} autoComplete={isLogin ? "current-password" : "new-password"} showLabel={tr("إظهار كلمة المرور")} hideLabel={tr("إخفاء كلمة المرور")} />
+      {!isLogin && <PasswordInput className={s.input} name="confirmPassword" placeholder={tr("تأكيد كلمة المرور")} required minLength={8} maxLength={128} autoComplete="new-password" showLabel={tr("إظهار كلمة المرور")} hideLabel={tr("إخفاء كلمة المرور")} />}
       {(msg || errorMessage) && <p role="alert" className={s.error}>{msg || errorMessage}</p>}
       <AuthSubmitButton isLogin={isLogin} locale={locale} />
       <p className={s.muted}>

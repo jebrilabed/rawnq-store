@@ -77,7 +77,7 @@ async function recordWorkerEdit(session: Awaited<ReturnType<typeof requireStaffO
   if (session.user.role !== "WORKER" || !session.user.id) return;
   await admin.logWorkerActivity({
     actorId: session.user.id,
-    actorName: session.user.name ?? session.user.email ?? "عامل",
+    actorName: session.user.name ?? session.user.email ?? "موظف",
     actorRole: "WORKER",
     ...edit,
   });
@@ -93,16 +93,16 @@ export async function createWorkerAction(f: FormData) {
   const username = name.toLowerCase();
   const failWorker = (message: string): never => redirect(`/admin/workers?error=${encodeURIComponent(message)}`);
 
-  if (name.length < 2) return failWorker("أدخل اسم العامل بطول حرفين على الأقل.");
+  if (name.length < 2) return failWorker("أدخل اسم الموظف بطول حرفين على الأقل.");
   if (password.length < 8 || password.length > 128) return failWorker("يجب أن تكون كلمة المرور بين 8 و128 حرفاً.");
   if (password !== confirmPassword) return failWorker("تأكيد كلمة المرور غير مطابق.");
   const existing = await prisma.adminUser.findFirst({ where: { OR: [{ username }, { email: username }] }, select: { id: true } });
-  if (existing) return failWorker("اسم العامل مستخدم مسبقاً. اختر اسماً آخر.");
+  if (existing) return failWorker("اسم الموظف مستخدم مسبقاً. اختر اسماً آخر.");
 
   try {
     await prisma.adminUser.create({ data: { name, username, passwordHash: await hashPassword(password), role: "WORKER" } });
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return failWorker("اسم العامل مستخدم مسبقاً. اختر اسماً آخر.");
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return failWorker("اسم الموظف مستخدم مسبقاً. اختر اسماً آخر.");
     throw error;
   }
   revalidatePath("/admin/workers");
@@ -443,6 +443,6 @@ export async function changePasswordAction(f: FormData) {
     return failPw("كلمة المرور الحالية غير صحيحة.");
   }
   await prisma.adminUser.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(newPassword) } });
-  await recordWorkerEdit(session, { action: "تغيير كلمة المرور", entityType: "حساب", entityName: session.user.name ?? session.user.email ?? "عامل", details: "تغيير كلمة المرور الشخصية" });
+  await recordWorkerEdit(session, { action: "تغيير كلمة المرور", entityType: "حساب", entityName: session.user.name ?? session.user.email ?? "موظف", details: "تغيير كلمة المرور الشخصية" });
   redirect("/admin/account?passwordChanged=1");
 }

@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { changeAdminPasswordAction, saveSettingsAction } from "../actions";
 import { SubmitButton } from "@/components/admin/Controls";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { DeliveryAreasEditor } from "@/components/admin/DeliveryAreasEditor";
 import s from "@/components/admin/admin.module.css";
 import { getSettings } from "@/lib/data/db";
@@ -54,9 +55,9 @@ export default async function SettingsAdmin({ searchParams }: { searchParams: { 
         <p>أدخل كلمة المرور الحالية، ثم اختر كلمة مرور جديدة لا تقل عن 8 أحرف.</p>
         <form action={changeAdminPasswordAction} className={`${s.form} ${s.settingsForm}`}>
           <div className={s.settingsGrid}>
-            <label className={`${s.label} ${s.settingsWide}`}>كلمة المرور الحالية<input className={s.field} name="currentPassword" type="password" required maxLength={128} autoComplete="current-password" /></label>
-            <label className={s.label}>كلمة المرور الجديدة<input className={s.field} name="newPassword" type="password" required minLength={8} maxLength={128} autoComplete="new-password" /></label>
-            <label className={s.label}>تأكيد كلمة المرور الجديدة<input className={s.field} name="confirmPassword" type="password" required minLength={8} maxLength={128} autoComplete="new-password" /></label>
+            <label className={`${s.label} ${s.settingsWide}`}>كلمة المرور الحالية<PasswordInput className={s.field} name="currentPassword" required maxLength={128} autoComplete="current-password" showLabel="إظهار كلمة المرور" hideLabel="إخفاء كلمة المرور" /></label>
+            <label className={s.label}>كلمة المرور الجديدة<PasswordInput className={s.field} name="newPassword" required minLength={8} maxLength={128} autoComplete="new-password" showLabel="إظهار كلمة المرور" hideLabel="إخفاء كلمة المرور" /></label>
+            <label className={s.label}>تأكيد كلمة المرور الجديدة<PasswordInput className={s.field} name="confirmPassword" required minLength={8} maxLength={128} autoComplete="new-password" showLabel="إظهار كلمة المرور" hideLabel="إخفاء كلمة المرور" /></label>
           </div>
           <div className={s.settingsActions}>
             <SubmitButton className={s.btn} pendingLabel="جارٍ تغيير كلمة المرور…">تغيير كلمة المرور</SubmitButton>

@@ -15,7 +15,7 @@ export async function requireStaffOrAdmin() {
 
 /**
  * بوابة صاحب المتجر حصراً (ADMIN).
- * إذا كان المستخدم عاملاً (WORKER) يتم تحويله مباشرة لصفحة المنتجات.
+ * إذا كان المستخدم موظفاً (WORKER) يتم تحويله مباشرة لصفحة المنتجات.
  */
 export async function requireAdmin() {
   const session = await requireStaffOrAdmin();

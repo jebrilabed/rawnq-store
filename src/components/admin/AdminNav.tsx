@@ -7,7 +7,7 @@ import s from "./admin.module.css";
 const ADMIN_TABS = [
   ["/admin", "الرئيسية", LayoutDashboard], ["/admin/products", "المنتجات", Package], ["/admin/categories", "الأقسام", Tags],
   ["/admin/orders", "الطلبات", ShoppingBag], ["/admin/inventory", "المخزون", Boxes], ["/admin/settings", "الإعدادات", Settings],
-  ["/admin/content", "محتوى المتجر", FileText], ["/admin/workers", "العمال", Users],
+  ["/admin/content", "محتوى المتجر", FileText], ["/admin/workers", "الموظفون", Users],
 ] as const;
 
 const WORKER_TABS = [
