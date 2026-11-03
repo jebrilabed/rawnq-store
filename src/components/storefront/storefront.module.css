@@ -65,8 +65,9 @@
     letter-spacing: 0
 }
 
-.headerSearchDesktop {
-    display: none
+.headerSearchDesktop,
+.headerSearchForm.headerSearchDesktop {
+    display: none !important
 }
 
 .headerSearchMobileWrap {
@@ -2056,13 +2057,14 @@
 }
 
 @media (min-width:1280px) {
-    .headerSearchDesktop {
-        display: flex;
+    .headerSearchDesktop,
+    .headerSearchForm.headerSearchDesktop {
+        display: flex !important;
         flex: 0 1 clamp(145px, 16vw, 230px)
     }
 
     .headerSearchMobileWrap {
-        display: none
+        display: none !important
     }
 }
 
@@ -2108,17 +2110,12 @@
     }
 
     .headerSearchForm {
-        min-height: 48px;
-        padding: 0 14px
+        min-height: 48px
     }
 
     .headerSearchForm input {
         height: 44px;
         font-size: .95rem
-    }
-
-    .headerSearchForm button {
-        display: none
     }
 }
 
