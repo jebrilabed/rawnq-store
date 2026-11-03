@@ -32,10 +32,15 @@ function instagramUrl(value: string) {
 
 export async function Footer({ locale, userRole }: { locale: string; userRole?: string }) {
   const tr = (text: string) => translate(locale, text);
-  const { storeName, phone, whatsapp, instagram } = await getSettings();
+  const { storeName, phone, whatsapp, instagram, facebook } = await getSettings();
   const contactPhone = phone.trim() || whatsapp.trim();
   const whatsappNumber = toWhatsAppNumber(whatsapp.trim() || phone.trim());
   const instagramHref = instagramUrl(instagram);
+  const facebookHref = facebook?.trim()
+    ? (/^https?:\/\//i.test(facebook.trim())
+      ? facebook.trim()
+      : `https://www.facebook.com/${encodeURIComponent(facebook.trim().replace(/^@/, ""))}`)
+    : null;
 
   return (
     <footer className={s.footer}>
@@ -57,6 +62,9 @@ export async function Footer({ locale, userRole }: { locale: string; userRole?: 
             {contactPhone && <li>{tr("الهاتف / واتساب:")} {whatsappNumber
               ? <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" dir="ltr">{contactPhone}</a>
               : <span dir="ltr">{contactPhone}</span>}</li>}
+            {facebook && <li>{tr("فيسبوك:")} {facebookHref
+              ? <a href={facebookHref} target="_blank" rel="noopener noreferrer" dir="ltr">{facebook.trim()}</a>
+              : <span dir="ltr">{facebook}</span>}</li>}
             {instagram && <li>{tr("إنستغرام:")} {instagramHref
               ? <a href={instagramHref} target="_blank" rel="noopener noreferrer" dir="ltr">{instagram.trim()}</a>
               : <span dir="ltr">{instagram}</span>}</li>}

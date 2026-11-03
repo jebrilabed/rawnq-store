@@ -4,7 +4,7 @@ import { prisma } from "./prisma";
 import { localizedValue, translate } from "@/lib/i18n";
 
 export type Settings = {
-  storeName: string; phone: string; whatsapp: string; instagram: string;
+  storeName: string; phone: string; whatsapp: string; instagram: string; facebook: string;
   shippingFee: number; freeShippingFrom: number | null;
   cod: boolean; bank: boolean; bankDetails: string; lowStockThreshold: number;
   bankAccountName: string; bankIban: string; bankAccountNumber: string;
@@ -25,6 +25,7 @@ export async function getSettings(locale = "ar"): Promise<Settings> {
     phone: row?.phone ?? STORE.phone,
     whatsapp: row?.whatsapp ?? row?.phone ?? "",
     instagram: row?.instagram ?? STORE.instagram,
+    facebook: row?.facebook ?? STORE.facebook,
     shippingFee,
     freeShippingFrom: null,
     cod: row?.cod ?? true,
@@ -110,7 +111,7 @@ export async function saveSettings(settings: Settings) {
       where: { id: 1 },
       create: {
         id: 1, storeName: settings.storeName, phone: settings.phone, whatsapp: settings.whatsapp,
-        instagram: settings.instagram, shippingFee: settings.shippingFee, freeShippingFrom: null,
+        instagram: settings.instagram, facebook: settings.facebook, shippingFee: settings.shippingFee, freeShippingFrom: null,
         cod: settings.cod, bank: settings.bank, bankDetails: settings.bankDetails,
         bankAccountName: settings.bankAccountName, bankIban: settings.bankIban,
         bankAccountNumber: settings.bankAccountNumber,
@@ -118,7 +119,7 @@ export async function saveSettings(settings: Settings) {
       },
       update: {
         storeName: settings.storeName, phone: settings.phone, whatsapp: settings.whatsapp,
-        instagram: settings.instagram, shippingFee: settings.shippingFee, freeShippingFrom: null,
+        instagram: settings.instagram, facebook: settings.facebook, shippingFee: settings.shippingFee, freeShippingFrom: null,
         cod: settings.cod, bank: settings.bank, bankDetails: settings.bankDetails,
         bankAccountName: settings.bankAccountName, bankIban: settings.bankIban,
         bankAccountNumber: settings.bankAccountNumber,

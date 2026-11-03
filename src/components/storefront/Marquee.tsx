@@ -1,7 +1,14 @@
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
 
-const ITEMS = ["توصيل سريع", "دفع عند الاستلام", "جودة مضمونة", "دعم عبر واتساب"];
+const ITEMS = [
+  "توصيل سريع",
+  "دفع عند الاستلام",
+  "جودة مضمونة",
+  "دعم عبر واتساب",
+  "تابعنا على إنستغرام",
+  "تابعنا على فيسبوك",
+];
 const REPETITIONS = 4;
 
 function toWhatsAppNumber(value: string) {
@@ -11,15 +18,55 @@ function toWhatsAppNumber(value: string) {
   return westernDigits.replace(/\D/g, "");
 }
 
+function toInstagramUrl(value: string) {
+  const account = value.trim().replace(/^@/, "");
+  if (!account) return null;
+  if (/instagram\.com\//i.test(account)) {
+    try {
+      const url = new URL(/^https?:\/\//i.test(account) ? account : `https://${account}`);
+      if (url.hostname.toLowerCase() === "instagram.com" || url.hostname.toLowerCase() === "www.instagram.com") {
+        url.protocol = "https:";
+        return url.toString();
+      }
+    } catch {
+      return null;
+    }
+  }
+  return /^[A-Za-z0-9._]+$/.test(account)
+    ? `https://www.instagram.com/${encodeURIComponent(account)}/`
+    : null;
+}
+
+function toFacebookUrl(value: string) {
+  const account = value.trim();
+  if (!account) return null;
+  if (/facebook\.com\//i.test(account) || /fb\.com\//i.test(account)) {
+    try {
+      const url = new URL(/^https?:\/\//i.test(account) ? account : `https://${account}`);
+      url.protocol = "https:";
+      return url.toString();
+    } catch {
+      return null;
+    }
+  }
+  return `https://www.facebook.com/${encodeURIComponent(account.replace(/^@/, ""))}`;
+}
+
 export function Marquee({
   locale = "ar",
   whatsapp = "",
+  instagram = "",
+  facebook = "",
 }: {
   locale?: string;
   whatsapp?: string;
+  instagram?: string;
+  facebook?: string;
 }) {
   const waNumber = toWhatsAppNumber(whatsapp);
   const waHref = waNumber ? `https://wa.me/${waNumber}` : null;
+  const igHref = toInstagramUrl(instagram);
+  const fbHref = toFacebookUrl(facebook);
 
   const renderGroup = (keyPrefix: string, isClone = false) => (
     <div className={s.marqueeGroup} aria-hidden={isClone ? "true" : undefined}>
@@ -27,11 +74,21 @@ export function Marquee({
         ITEMS.map((item, itemIdx) => {
           const key = `${keyPrefix}-${repIdx}-${itemIdx}`;
           const label = translate(locale, item);
-          if (item === "دعم عبر واتساب" && waHref) {
+
+          let href: string | null = null;
+          if (item === "دعم عبر واتساب") {
+            href = waHref;
+          } else if (item === "تابعنا على إنستغرام") {
+            href = igHref;
+          } else if (item === "تابعنا على فيسبوك") {
+            href = fbHref;
+          }
+
+          if (href) {
             return (
               <a
                 key={key}
-                href={waHref}
+                href={href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={s.marqueeLink}

@@ -124,6 +124,7 @@ model StoreSettings {
   phone             String  @default("")
   whatsapp          String  @default("")
   instagram         String  @default("")
+  facebook          String  @default("")
   shippingFee       Decimal @default(20) @db.Decimal(10, 2)
   freeShippingFrom  Decimal? @db.Decimal(10, 2)
   cod               Boolean @default(true)

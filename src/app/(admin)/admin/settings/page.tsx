@@ -24,7 +24,7 @@ export default async function SettingsAdmin({ searchParams }: { searchParams: { 
           <div className={s.settingsGrid}>
             <label className={`${s.label} ${s.settingsWide}`}>اسم المتجر<input className={s.field} name="storeName" defaultValue={st.storeName} required /></label>
             <label className={`${s.label} ${s.settingsWide}`}>رقم الجوال وواتساب<input className={s.field} name="phone" type="tel" defaultValue={st.phone || st.whatsapp} dir="ltr" autoComplete="tel" /></label>
-            <label className={`${s.label} ${s.settingsWide}`}>حساب إنستغرام<input className={s.field} name="instagram" defaultValue={st.instagram} dir="ltr" /></label>
+            <label className={`${s.label} ${s.settingsWide}`}>حساب إنستغرام<input className={s.field} name="instagram" defaultValue={st.instagram} dir="ltr" /></label>`n            <label className={`${s.label} ${s.settingsWide}`}>حساب أو رابط فيسبوك<input className={s.field} name="facebook" defaultValue={st.facebook} dir="ltr" /></label>
           </div>
         </section>
         <section className={s.settingsSection}>

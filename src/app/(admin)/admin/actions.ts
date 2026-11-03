@@ -413,7 +413,7 @@ export async function saveSettingsAction(f: FormData) {
     bankAccountNumber && `رقم الحساب: ${bankAccountNumber}`,
   ].filter(Boolean).join("\n");
   await admin.saveSettings({
-    storeName: text(f, "storeName", 80), phone, whatsapp: phone, instagram: text(f, "instagram", 60),
+    storeName: text(f, "storeName", 80), phone, whatsapp: phone, instagram: text(f, "instagram", 60), facebook: text(f, "facebook", 100),
     shippingFee: deliveryAreas[0]!.fee, freeShippingFrom: null, cod: f.get("cod") === "on", bank: bankEnabled,
     bankDetails, bankAccountName, bankIban, bankAccountNumber,
     lowStockThreshold: low, deliveryAreas: deliveryAreas as { id: string; value: string; name: string; fee: number; translations: string }[],
