@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
@@ -205,7 +206,47 @@ export function CheckoutForm({ locale, areas, courierAreas, customer, methods }:
       </div>
       <aside className={`${s.summary} ${s.checkoutSummary}`}>
         <div className={s.summaryHeader}><div><span>{tr("ملخص الطلب")}</span><h2>{lines.length} {tr("منتجات")}</h2></div><span className={s.summaryMark}><ShieldCheck size={20} /></span></div>
-        <div className={s.checkoutOrderItems}>{lines.map((line) => <div key={line.key}><span>{tr(line.name)} <small>× {line.qty}</small></span><b>{formatPrice(line.price * line.qty, locale)}</b></div>)}</div>
+        <div className={s.checkoutTableWrap}>
+          <table className={s.checkoutTable}>
+            <thead>
+              <tr>
+                <th scope="col" className={s.thProduct}>{tr("المنتج")}</th>
+                <th scope="col" className={s.thQty}>{tr("الكمية")}</th>
+                <th scope="col" className={s.thTotal}>{tr("المجموع")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lines.map((line) => (
+                <tr key={line.key}>
+                  <td className={s.tdProduct}>
+                    <div className={s.checkoutProductCell}>
+                      {line.image && (
+                        <Image
+                          src={line.image}
+                          alt=""
+                          width={42}
+                          height={42}
+                          className={s.checkoutThumb}
+                        />
+                      )}
+                      <div className={s.checkoutProductInfo}>
+                        <span className={s.checkoutProductName} title={tr(line.name)}>{tr(line.name)}</span>
+                        {line.option && <span className={s.checkoutProductOption}>{tr(line.option)}</span>}
+                        <span className={s.checkoutUnitPrice}>{formatPrice(line.price, locale)}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className={s.tdQty}>
+                    <span className={s.qtyBadge}>×{line.qty}</span>
+                  </td>
+                  <td className={s.tdTotal}>
+                    <b>{formatPrice(line.price * line.qty, locale)}</b>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <div className={s.summaryDivider} />
         <div><span>{tr("المجموع الفرعي")}</span><b>{formatPrice(subtotal, locale)}</b></div>
         <div><span>{tr("التوصيل")}{selectedArea ? ` · ${selectedArea.name}` : ""}</span><b>{formatPrice(shipping, locale)}</b></div>
