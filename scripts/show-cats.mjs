@@ -6,11 +6,11 @@ const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: proc
 
 async function main() {
   const cats = await prisma.category.findMany({
-    orderBy: { id: "asc" },
+    orderBy: { slug: "asc" },
   });
   console.log(`Total categories: ${cats.length}`);
   for (const c of cats) {
-    console.log(`${c.id} | slug: ${c.slug} | name: ${c.name} | parentId: ${c.parentId} | imageUrl: ${c.imageUrl}`);
+    console.log(`slug: ${c.slug} | name: ${c.name} | parentSlug: ${c.parentSlug}`);
   }
 }
 
