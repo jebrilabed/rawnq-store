@@ -26,6 +26,7 @@ const SECTION_IMAGES = {
   coffeeCups: "/sections/Elegant Arabic Coffee Cup Collection.png",
   winter: "/sections/Winter Comfort Textile Display.png",
   vases: "/sections/Elegant Vase Collection with Arabic Plaque.png",
+  toys: "/sections/Colorful Toy Store Wonderland.png",
 } as const;
 
 const STORE_CATEGORY_SECTION_IMAGES: Record<string, keyof typeof SECTION_IMAGES> = {
@@ -47,6 +48,7 @@ const STORE_CATEGORY_SECTION_IMAGES: Record<string, keyof typeof SECTION_IMAGES>
   "category-87": "tongs",
   "category-95": "coffeeCups",
   "category-96": "winter",
+  "category-97": "toys",
   "category-98": "vases",
 };
 
@@ -168,6 +170,8 @@ const CATEGORY_IMAGE_BY_NAME = [
   { name: "شتوية", image: "/sections/Winter Comfort Textile Display.png" },
   { name: "شتويه", image: "/sections/Winter Comfort Textile Display.png" },
   { name: "نثريات", image: "/sections/Elegant Vase Collection with Arabic Plaque.png" },
+  { name: "العاب", image: "/sections/Colorful Toy Store Wonderland.png" },
+  { name: "ألعاب", image: "/sections/Colorful Toy Store Wonderland.png" },
 ];
 
 const SUBCATEGORY_PARENT_IMAGES: Record<string, keyof typeof SECTION_IMAGES> = {
