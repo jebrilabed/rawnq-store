@@ -52,11 +52,22 @@ export function AuthForm({ mode, locale, error, next, reason, courierAreas = [],
   return (
     <form className={`${s.form} ${s.authForm}`} action={isLogin ? customerLoginAction : customerRegisterAction} onSubmit={(e) => {
       const form = new FormData(e.currentTarget);
-      if (!isLogin && form.get("password") !== form.get("confirmPassword")) {
-        e.preventDefault();
-        const errText = tr("كلمتا المرور غير متطابقتين.");
-        setMsg(errText);
-        toast.warning(errText);
+      if (!isLogin) {
+        const pw = String(form.get("password") ?? "");
+        if (pw.length < 8) {
+          e.preventDefault();
+          const errText = tr("كلمة المرور يجب أن تكون 8 أحرف على الأقل.");
+          setMsg(errText);
+          toast.warning(errText);
+          return;
+        }
+        if (pw !== form.get("confirmPassword")) {
+          e.preventDefault();
+          const errText = tr("كلمتا المرور غير متطابقتين.");
+          setMsg(errText);
+          toast.warning(errText);
+          return;
+        }
       }
     }}>
       {(reason === "checkout" || next === "checkout") && (
