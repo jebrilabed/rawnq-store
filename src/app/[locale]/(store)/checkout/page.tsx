@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { CheckoutForm } from "@/components/storefront/CheckoutForm";
 import s from "@/components/storefront/storefront.module.css";
@@ -11,17 +10,15 @@ export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage({ params }: { params: { locale: string } }) {
   const session = await auth();
-  if (session?.user?.role !== "CUSTOMER" || !session.user.id) {
-    redirect(`/${params.locale}/login?next=checkout&reason=checkout`);
-  }
-
   const tr = (text: string) => translate(params.locale, text);
   const [settings, customer] = await Promise.all([
     getSettings(params.locale),
-    prisma.customerUser.findUnique({
-      where: { id: session.user.id },
-      select: { name: true, phone: true, city: true, address: true, deliveryAreaName: true },
-    }),
+    session?.user?.role === "CUSTOMER" && session.user.id
+      ? prisma.customerUser.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, phone: true, city: true, address: true, deliveryAreaName: true },
+      })
+      : Promise.resolve(null),
   ]);
   const { deliveryAreas, cod, bank } = settings;
   const bankDetails = [

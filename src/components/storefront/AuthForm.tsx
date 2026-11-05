@@ -73,7 +73,7 @@ export function AuthForm({ mode, locale, error, next, reason, courierAreas = [],
       {(reason === "checkout" || next === "checkout") && (
         <div className={s.authNotice} role="status">
           <ShoppingBag size={18} aria-hidden="true" />
-          <span>{tr(isLogin ? "يجب تسجيل الدخول لمتابعة إتمام الطلب." : "أنشئ حساباً جديداً لمتابعة إتمام الطلب.")}</span>
+          <span>{tr("يمكنك إتمام الطلب كضيف بدون تسجيل دخول، أو تسجيل الدخول لاستخدام بيانات حسابك.")}</span>
         </div>
       )}
 
