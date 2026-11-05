@@ -4,7 +4,7 @@ import { getSettings } from "@/lib/data/db";
 import bestRouteAreaCatalog from "@/lib/integrations/best-route-areas.json";
 import { translate } from "@/lib/i18n";
 
-export default async function Page({ params, searchParams }: { params: { locale: string }; searchParams: { error?: string } }) {
+export default async function Page({ params, searchParams }: { params: { locale: string }; searchParams: { error?: string; next?: string; reason?: string } }) {
   const title = translate(params.locale, "إنشاء حساب");
   const { deliveryAreas } = await getSettings(params.locale);
   return (
@@ -15,6 +15,8 @@ export default async function Page({ params, searchParams }: { params: { locale:
           mode="register"
           locale={params.locale}
           error={searchParams.error}
+          next={searchParams.next}
+          reason={searchParams.reason}
           courierAreas={bestRouteAreaCatalog.areas.map((area) => area.name)}
           deliveryAreas={deliveryAreas}
         />

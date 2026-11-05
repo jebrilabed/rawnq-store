@@ -17,9 +17,22 @@ export async function customerLoginAction(form: FormData) {
   const password = String(form.get("password") ?? "");
   const requestedLocale = text(form, "locale", 12);
   const locale = isLocale(requestedLocale) ? requestedLocale : "ar";
-  const next = text(form, "next", 12);
+  const next = text(form, "next", 20);
+  const reason = text(form, "reason", 20);
   const adminRequested = next === "admin";
-  if (!password || password.length > 128) redirect(`/${locale}/login?error=credentials${adminRequested ? "&next=admin" : ""}`);
+
+  const buildErrorUrl = (errorType: string) => {
+    const q = new URLSearchParams();
+    q.set("error", errorType);
+    if (adminRequested) q.set("next", "admin");
+    else {
+      if (next) q.set("next", next);
+      if (reason) q.set("reason", reason);
+    }
+    return `/${locale}/login?${q.toString()}`;
+  };
+
+  if (!password || password.length > 128) redirect(buildErrorUrl("credentials"));
   const customer = adminRequested ? null : await prisma.customerUser.findUnique({ where: { email }, select: { id: true } });
   const admin = adminRequested || !customer
     ? await prisma.adminUser.findFirst({ where: { OR: [{ email }, { username: email }] }, select: { id: true } })
@@ -27,11 +40,17 @@ export async function customerLoginAction(form: FormData) {
   const accountType = adminRequested || (!customer && admin) ? "admin" : "customer";
   const redirectTo = admin
     ? "/admin"
-    : next === "orders" ? `/${locale}/orders` : next === "profile" ? `/${locale}/profile` : `/${locale}`;
+    : next === "checkout"
+      ? `/${locale}/checkout`
+      : next === "orders"
+        ? `/${locale}/orders`
+        : next === "profile"
+          ? `/${locale}/profile`
+          : `/${locale}`;
   try {
     await signIn("credentials", { email, password, accountType, redirectTo });
   } catch (error) {
-    if (error instanceof AuthError) redirect(`/${locale}/login?error=credentials${adminRequested ? "&next=admin" : ""}`);
+    if (error instanceof AuthError) redirect(buildErrorUrl("credentials"));
     throw error;
   }
 }
@@ -47,23 +66,41 @@ export async function customerRegisterAction(form: FormData) {
   const confirmPassword = String(form.get("confirmPassword") ?? "");
   const requestedLocale = text(form, "locale", 12);
   const locale = isLocale(requestedLocale) ? requestedLocale : "ar";
+  const next = text(form, "next", 20);
+  const reason = text(form, "reason", 20);
   const settings = await getSettings("ar");
+
+  const buildErrorUrl = (errorType: string) => {
+    const q = new URLSearchParams();
+    q.set("error", errorType);
+    if (next) q.set("next", next);
+    if (reason) q.set("reason", reason);
+    return `/${locale}/register?${q.toString()}`;
+  };
+
   if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^[0-9+\s-]{8,20}$/.test(phone)
     || !bestRouteAreaCatalog.areas.some((area) => area.name === city)
     || !settings.deliveryAreas.some((area) => area.value === deliveryAreaName)
     || address.length < 4 || password.length < 8 || password.length > 128 || password !== confirmPassword) {
-    redirect(`/${locale}/register?error=invalid`);
+    redirect(buildErrorUrl("invalid"));
   }
   try {
     await prisma.customerUser.create({ data: { name, email, phone, city, address, deliveryAreaName, passwordHash: await hashPassword(password), role: "CUSTOMER" } });
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") redirect(`/${locale}/register?error=exists`);
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") redirect(buildErrorUrl("exists"));
     throw error;
   }
+  const redirectTo = next === "checkout"
+    ? `/${locale}/checkout`
+    : next === "orders"
+      ? `/${locale}/orders`
+      : next === "profile"
+        ? `/${locale}/profile`
+        : `/${locale}`;
   try {
-    await signIn("credentials", { email, password, redirectTo: `/${locale}` });
+    await signIn("credentials", { email, password, redirectTo });
   } catch (error) {
-    if (error instanceof AuthError) redirect(`/${locale}/login?error=credentials`);
+    if (error instanceof AuthError) redirect(`/${locale}/login?error=credentials${next ? `&next=${encodeURIComponent(next)}` : ""}`);
     throw error;
   }
 }

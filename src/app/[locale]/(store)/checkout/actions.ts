@@ -39,6 +39,9 @@ export async function uploadTransferReceiptAction(form: FormData): Promise<{ ok:
 export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
   if (!input || typeof input !== "object") return { ok: false, error: "بيانات الطلب غير صالحة." };
   const session = await auth();
+  if (session?.user?.role !== "CUSTOMER" || !session.user.id) {
+    return { ok: false, error: "يجب تسجيل الدخول لإتمام الطلب." };
+  }
   const customer = {
     name: clean(input.customer?.name, 80), phone: clean(input.customer?.phone, 20),
     city: clean(input.customer?.city, 60), address: clean(input.customer?.address, 200), notes: clean(input.customer?.notes, 300),

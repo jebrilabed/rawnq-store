@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
+import { ShoppingBag } from "lucide-react";
 import { customerLoginAction, customerRegisterAction } from "@/app/[locale]/(store)/auth-actions";
 import { Spinner } from "@/components/ui/LoadingState";
 import { PasswordInput } from "@/components/ui/PasswordInput";
@@ -21,11 +22,12 @@ function AuthSubmitButton({ isLogin, locale }: { isLogin: boolean; locale: strin
   );
 }
 
-export function AuthForm({ mode, locale, error, next, courierAreas = [], deliveryAreas = [] }: {
+export function AuthForm({ mode, locale, error, next, reason, courierAreas = [], deliveryAreas = [] }: {
   mode: "login" | "register";
   locale: string;
   error?: string;
   next?: string;
+  reason?: string;
   courierAreas?: string[];
   deliveryAreas?: DeliveryArea[];
 }) {
@@ -40,6 +42,13 @@ export function AuthForm({ mode, locale, error, next, courierAreas = [], deliver
       : error === "invalid"
         ? tr("تحقق من جميع البيانات المطلوبة قبل إنشاء الحساب.")
         : "";
+
+  const toggleQuery = new URLSearchParams();
+  if (next) toggleQuery.set("next", next);
+  if (reason) toggleQuery.set("reason", reason);
+  const toggleQueryStr = toggleQuery.toString();
+  const toggleHref = `/${locale}/${isLogin ? "register" : "login"}${toggleQueryStr ? `?${toggleQueryStr}` : ""}`;
+
   return (
     <form className={`${s.form} ${s.authForm}`} action={isLogin ? customerLoginAction : customerRegisterAction} onSubmit={(e) => {
       const form = new FormData(e.currentTarget);
@@ -50,9 +59,16 @@ export function AuthForm({ mode, locale, error, next, courierAreas = [], deliver
         toast.warning(errText);
       }
     }}>
+      {(reason === "checkout" || next === "checkout") && (
+        <div className={s.authNotice} role="status">
+          <ShoppingBag size={18} aria-hidden="true" />
+          <span>{tr(isLogin ? "يجب تسجيل الدخول لمتابعة إتمام الطلب." : "أنشئ حساباً جديداً لمتابعة إتمام الطلب.")}</span>
+        </div>
+      )}
 
       <input type="hidden" name="locale" value={locale} />
-      {isLogin && (next === "orders" || next === "profile" || next === "admin") && <input type="hidden" name="next" value={next} />}
+      {next && <input type="hidden" name="next" value={next} />}
+      {reason && <input type="hidden" name="reason" value={reason} />}
       {!isLogin && <input className={s.input} name="name" placeholder={tr("الاسم الكامل")} required autoComplete="name" />}
       <input className={`${s.input} ${s.emailInput}`} name="email" type={isAdminLogin ? "text" : "email"} placeholder={tr(isAdminLogin ? "اسم المستخدم أو البريد الإلكتروني" : "البريد الإلكتروني")} required autoComplete={isAdminLogin ? "username" : "email"} dir={isAdminLogin ? "auto" : "ltr"} />
       {!isLogin && <input className={`${s.input} ${s.phoneInput}`} name="phone" type="tel" placeholder={tr("رقم الهاتف")} required autoComplete="tel" />}
@@ -79,7 +95,7 @@ export function AuthForm({ mode, locale, error, next, courierAreas = [], deliver
       <AuthSubmitButton isLogin={isLogin} locale={locale} />
       <p className={s.muted}>
         {tr(isLogin ? "ليس لديك حساب؟ " : "لديك حساب؟ ")}
-        <Link className={s.link} href={`/${locale}/${isLogin ? "register" : "login"}`}>{tr(isLogin ? "إنشاء حساب جديد" : "تسجيل الدخول")}</Link>
+        <Link className={s.link} href={toggleHref}>{tr(isLogin ? "إنشاء حساب جديد" : "تسجيل الدخول")}</Link>
       </p>
     </form>
   );

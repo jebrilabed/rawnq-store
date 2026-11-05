@@ -2274,6 +2274,26 @@
     color: var(--teal)
 }
 
+.authNotice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fbf5e8;
+    border: 1px solid #e7d2a5;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    color: #8c6014;
+    font-size: .92rem;
+    font-weight: 600;
+    line-height: 1.45
+}
+
+.authNotice svg {
+    flex-shrink: 0;
+    color: var(--gold)
+}
+
 .authForm {
     max-width: none
 }
