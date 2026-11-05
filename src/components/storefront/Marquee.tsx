@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Play } from "lucide-react";
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
 
@@ -5,6 +7,7 @@ const ITEMS = [
   "توصيل سريع",
   "دفع عند الاستلام",
   "جودة مضمونة",
+  "طريقة الطلب (فيديو)",
   "دعم عبر واتساب",
   "تابعنا على إنستغرام",
   "تابعنا على فيسبوك",
@@ -76,15 +79,40 @@ export function Marquee({
           const label = translate(locale, item);
 
           let href: string | null = null;
+          let isVideo = false;
           if (item === "دعم عبر واتساب") {
             href = waHref;
           } else if (item === "تابعنا على إنستغرام") {
             href = igHref;
           } else if (item === "تابعنا على فيسبوك") {
             href = fbHref;
+          } else if (item === "طريقة الطلب (فيديو)") {
+            href = `/${locale}/page/faq#how-to-order`;
+            isVideo = true;
           }
 
           if (href) {
+            const isInternal = href.startsWith("/");
+            if (isInternal) {
+              return (
+                <Link
+                  key={key}
+                  href={href}
+                  className={`${s.marqueeLink} ${isVideo ? s.marqueeVideoLink : ""}`}
+                  tabIndex={isClone ? -1 : undefined}
+                >
+                  {isVideo && (
+                    <Play
+                      size={12}
+                      fill="currentColor"
+                      style={{ display: "inline-block", verticalAlign: "middle", marginInlineEnd: 5 }}
+                      aria-hidden="true"
+                    />
+                  )}
+                  {label}
+                </Link>
+              );
+            }
             return (
               <a
                 key={key}

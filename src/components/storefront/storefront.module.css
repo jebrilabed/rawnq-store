@@ -654,6 +654,18 @@
 .marqueeLink:hover {
     opacity: .85
 }
+.marqueeVideoLink {
+    color: #ffd875;
+    display: inline-flex;
+    align-items: center;
+    transition: color .2s;
+}
+
+.marqueeVideoLink:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
 
 .marquee:hover .track {
     animation-play-state: paused
@@ -2820,6 +2832,39 @@
     font-size: .92rem;
     line-height: 1.9
 }
+.faqAccordion {
+    display: grid;
+    gap: 11px;
+}
+
+.faqVideoWrap {
+    margin-top: 14px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #dbe5dc;
+    background: #0f172a;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    max-width: 580px;
+}
+
+.faqVideoHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--teal);
+    color: #fff;
+    font-size: .88rem;
+    font-weight: 700;
+}
+
+.faqVideo {
+    display: block;
+    width: 100%;
+    max-height: 560px;
+    background: #000;
+}
+
 
 .contentEmpty {
     padding: 24px;

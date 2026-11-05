@@ -3,6 +3,7 @@ import { BadgeHelp, RotateCcw, Sparkles } from "lucide-react";
 import s from "@/components/storefront/storefront.module.css";
 import { getContent } from "@/lib/data/db";
 import { translate } from "@/lib/i18n";
+import { FaqAccordion } from "@/components/storefront/FaqAccordion";
 
 export const dynamic = "force-dynamic";
 
@@ -23,18 +24,7 @@ export default async function ContentPage({ params }: { params: { slug: string; 
           </div>
         </header>
         <section className={s.faqList} aria-label={tr("الأسئلة الشائعة")}>
-          {content.faq.length ? content.faq.map(([question, answer], index) => (
-            <details key={`${index}-${question}`} className={s.faqCard}>
-              <summary>
-                <span className={s.faqNumber}>{String(index + 1).padStart(2, "0")}</span>
-                <span className={s.faqQuestion}>{question}</span>
-                <span className={s.faqToggle} aria-hidden="true">+</span>
-              </summary>
-              <div className={s.faqAnswer}><p>{answer}</p></div>
-            </details>
-          )) : (
-            <p className={s.contentEmpty}>{tr("لا توجد أسئلة شائعة حاليًا.")}</p>
-          )}
+          <FaqAccordion items={content.faq} locale={params.locale} />
         </section>
       </main>
     );
