@@ -6,7 +6,6 @@ import { commitOrder, OrderCommitError } from "@/lib/data/admin";
 import { getProduct } from "@/lib/data/catalog";
 import { uploadTransferReceipt } from "@/lib/data/cloudinary";
 import { getSettings } from "@/lib/data/db";
-import { sendBestRouteOrder } from "@/lib/integrations/best-route-orders";
 import type { OrderItem, OrderSummary } from "@/lib/orders";
 import bestRouteAreaCatalog from "@/lib/integrations/best-route-areas.json";
 
@@ -35,6 +34,7 @@ export async function uploadTransferReceiptAction(form: FormData): Promise<{ ok:
 /**
  * لا نثق بأي سعر أو اسم قادم من المتصفح: نعيد بناء الطلب من الكتالوج على الخادم،
  * ثم نخصم المخزون ونحفظ الطلب داخل معاملة Prisma واحدة.
+ * الطلب يُحفظ فقط — لا إرسال تلقائي لأي شركة شحن. يختار الأدمن مزود الشحن يدوياً لاحقاً.
  */
 export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
   if (!input || typeof input !== "object") return { ok: false, error: "بيانات الطلب غير صالحة." };
@@ -103,15 +103,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       await commitOrder(order, customerUserId);
-      let deliverySent = false;
-      try {
-        const shipment = await sendBestRouteOrder(order.orderNumber, { allowUnconfirmedBankPayment: true });
-        deliverySent = shipment.ok;
-        if (!shipment.ok) console.error(`Best Route auto-send failed for ${order.orderNumber}: ${shipment.error}`);
-      } catch (error) {
-        console.error(`Could not submit order ${order.orderNumber} to Best Route.`, error);
-      }
-      return { ok: true, order, deliverySent };
+      return { ok: true, order, deliverySent: false };
     } catch (error) {
       // The public order number is short for readability; retry the rare unique-key collision.
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002" && attempt < 4) {

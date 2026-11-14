@@ -90,6 +90,7 @@ model StoreOrder {
   total       Decimal     @db.Decimal(10, 2)
   items       OrderItem[]
   statusHistory OrderStatusHistory[]
+  shipment    Shipment?
 
   @@index([createdAt])
   @@index([status])
@@ -196,4 +197,24 @@ model CustomerUser {
   favorites    FavoriteProduct[]
   role         String   @default("CUSTOMER")
   createdAt    DateTime @default(now())
+}
+
+
+model Shipment {
+  id              String      @id @default(cuid())
+  orderId         String      @unique
+  order           StoreOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider        String
+  state           String      @default("NOT_SENT")
+  providerOrderId String?
+  referenceId     String?
+  error           String?
+  providerStatus  String?
+  moneyStatus     String?
+  deliveryFee     Decimal?    @db.Decimal(10, 2)
+  syncedAt        DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([provider, state])
 }

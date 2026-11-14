@@ -140,6 +140,35 @@ export async function getBestRouteShipment(orderNumber: string) {
   } : undefined;
 }
 
+export async function getOrderShipment(orderNumber: string) {
+  const order = await prisma.storeOrder.findUnique({
+    where: { orderNumber },
+    select: {
+      id: true, bestRouteState: true, bestRouteOrderId: true, bestRouteError: true, bestRouteUpdatedAt: true,
+      shipment: true,
+    },
+  });
+  if (!order) return undefined;
+  const shipment = order.shipment;
+  return {
+    bestRoute: {
+      state: order.bestRouteState,
+      orderId: order.bestRouteOrderId ?? undefined,
+      error: order.bestRouteError ?? undefined,
+      updatedAt: order.bestRouteUpdatedAt?.toISOString(),
+    },
+    taiar: shipment ? {
+      state: shipment.state,
+      orderId: shipment.providerOrderId ?? undefined,
+      referenceId: shipment.referenceId ?? undefined,
+      error: shipment.error ?? undefined,
+      providerStatus: shipment.providerStatus ?? undefined,
+      moneyStatus: shipment.moneyStatus ?? undefined,
+      deliveryFee: shipment.deliveryFee ? Number(shipment.deliveryFee) : undefined,
+      syncedAt: shipment.syncedAt?.toISOString(),
+    } : null,
+  };
+}
 export async function getCustomerOrders(customerUserId: string): Promise<CustomerOrderListItem[]> {
   const rows = await prisma.storeOrder.findMany({
     where: { customerUserId },

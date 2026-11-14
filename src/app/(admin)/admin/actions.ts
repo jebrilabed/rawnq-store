@@ -446,3 +446,28 @@ export async function changePasswordAction(f: FormData) {
   await recordWorkerEdit(session, { action: "تغيير كلمة المرور", entityType: "حساب", entityName: session.user.name ?? session.user.email ?? "موظف", details: "تغيير كلمة المرور الشخصية" });
   redirect("/admin/account?passwordChanged=1");
 }
+
+// ---- Taiar Shipping Actions ----
+
+export async function sendTaiarOrderAction(orderNumber: string, bankPaymentConfirmed: boolean) {
+  await requireAdmin();
+  const { sendTaiarOrder } = await import("@/lib/integrations/taiar-orders");
+  const result = await sendTaiarOrder(orderNumber, { bankPaymentConfirmed });
+  revalidatePath(`/admin/orders/${orderNumber}`);
+  revalidatePath("/admin/orders");
+  return result;
+}
+
+export async function getShipmentAction(orderNumber: string) {
+  await requireAdmin();
+  const { getOrderShipment } = await import("@/lib/data/admin");
+  return getOrderShipment(orderNumber);
+}
+
+export async function syncTaiarShipmentAction(orderNumber: string) {
+  await requireAdmin();
+  const { syncTaiarShipmentStatus } = await import("@/lib/integrations/taiar-orders");
+  const result = await syncTaiarShipmentStatus(orderNumber);
+  revalidatePath(`/admin/orders/${orderNumber}`);
+  return result;
+}

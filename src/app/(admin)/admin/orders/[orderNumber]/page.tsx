@@ -5,15 +5,15 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { ConfirmButton, StatusSelect } from "@/components/admin/Controls";
 import { deleteOrderAction } from "../../actions";
 import s from "@/components/admin/admin.module.css";
-import { getBestRouteShipment, getOrder } from "@/lib/data/admin";
-import { BestRouteOrderButton } from "@/components/admin/BestRouteOrderButton";
+import { getOrderShipment, getOrder } from "@/lib/data/admin";
+import { ShippingProviderPanel } from "@/components/admin/ShippingProviderPanel";
 import { formatPrice } from "@/lib/format";
 import { PAYMENT_LABEL } from "@/lib/orders";
 import { OrderStatusTracking } from "@/components/ui/OrderStatusTracking";
 
 export default async function OrderAdmin({ params }: { params: { orderNumber: string } }) {
   await requireAdmin();
-  const [o, shipment] = await Promise.all([getOrder(params.orderNumber), getBestRouteShipment(params.orderNumber)]);
+  const [o, shipmentData] = await Promise.all([getOrder(params.orderNumber), getOrderShipment(params.orderNumber)]);
   if (!o) notFound();
   return (
     <>
@@ -29,8 +29,21 @@ export default async function OrderAdmin({ params }: { params: { orderNumber: st
           <Link href="/admin/orders" className={s.btnGhost}>العودة للطلبات</Link>
         </div>
       </header>
-      {shipment && <BestRouteOrderButton orderNumber={o.orderNumber} payment={o.payment} orderStatus={o.status}
-        shipment={shipment} orderTypeConfigured={Boolean(process.env.BEST_ROUTE_ORDER_TYPE_ID?.trim())} />}
+      {shipmentData && (
+        <ShippingProviderPanel
+          orderNumber={o.orderNumber}
+          payment={o.payment}
+          orderStatus={o.status}
+          bestRoute={shipmentData.bestRoute}
+          taiar={shipmentData.taiar}
+          orderTypeConfigured={Boolean(process.env.BEST_ROUTE_ORDER_TYPE_ID?.trim())}
+          taiarConfigured={Boolean(
+            process.env.TAIAR_PHONE?.trim() &&
+            process.env.TAIAR_PASSWORD &&
+            process.env.TAIAR_SENDER_ID?.trim()
+          )}
+        />
+      )}
       <OrderStatusTracking status={o.status} history={o.statusHistory} locale="ar" />
       <div className={s.sectionHead}><div><h2>المنتجات</h2><p>{o.items.length} صنف في هذا الطلب</p></div></div>
       <div className={s.tableWrap}><table className={s.table}>

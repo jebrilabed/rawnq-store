@@ -8,7 +8,7 @@ type SendBestRouteOrderOptions = {
 };
 
 export async function sendBestRouteOrder(orderNumber: string, options: SendBestRouteOrderOptions = {}) {
-  const order = await prisma.storeOrder.findUnique({ where: { orderNumber }, include: { items: true } });
+  const order = await prisma.storeOrder.findUnique({ where: { orderNumber }, include: { items: true, shipment: true } });
   if (!order) return { ok: false as const, state: "NOT_SENT", error: "لم أجد الطلب." };
   if (order.status === "CANCELLED") return { ok: false as const, state: order.bestRouteState, error: "لا يمكن إرسال طلب ملغي." };
   if (order.bestRouteState === "SENT") return { ok: false as const, state: "SENT", error: "تم إرسال هذا الطلب مسبقاً." };
