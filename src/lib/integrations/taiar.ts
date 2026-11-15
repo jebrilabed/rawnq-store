@@ -19,17 +19,19 @@ export type TaiarCreateOrderInput = {
   referenceId: string;
   receiverName: string;
   receiverMobile: string;
-  receiverCity: number; // Taiar city ID
+  receiverCity: number; // Taiar city ID (city_id from /addresses/cities)
   receiverAddress: string;
+  receiverCountry?: string; // defaults to "PS"
   title: string;
-  codValues: number; // subtotal if COD, 0 if bank/prepaid
-  paymentType: 1 | 2; // 1=COD, 2=bank/prepaid
+  codValues: number; // subtotal if COD, 0 if prepaid
+  paymentType: "cash" | "check" | "cash/check"; // Taiar string enum
+  deliveryFee?: number; // defaults to 0
+  commission?: number; // defaults to 0
+  discount?: number; // defaults to 0
   quantity: number;
   description: string;
   note?: string;
-};
-
-export type TaiarCity = {
+};export type TaiarCity = {
   id: number;
   name: string;
   [key: string]: unknown;
@@ -176,13 +178,28 @@ export async function authenticate(): Promise<string> {
   const { phone, password } = requireCredentials();
   const response = await requestJson("/login", "POST", { phone, password });
   const data = response as Record<string, unknown>;
-  if (!data || data.success !== true) {
+
+  // Taiar returns: { status: "success", message: "Login successful", token: "...", userId: ... }
+  // Token lives at the root level (not nested in data.data)
+  const isSuccess =
+    data?.status === "success" ||
+    data?.status === true ||
+    data?.status === 200 ||
+    data?.success === true ||
+    data?.code === 200;
+
+  // Extract token — Taiar puts it at root level
+  const token =
+    (typeof data?.token === "string" ? data.token : undefined) ??
+    (typeof (data?.data as Record<string, unknown>)?.token === "string"
+      ? (data.data as Record<string, unknown>).token as string
+      : undefined) ??
+    (typeof data?.access_token === "string" ? data.access_token : undefined);
+
+  if (!token || !isSuccess) {
     const msg = typeof data?.message === "string" ? data.message : "فشل تسجيل الدخول إلى Taiar.";
     throw new TaiarRejectedError(msg);
   }
-  const tokenData = data.data as Record<string, unknown>;
-  const token = typeof tokenData?.token === "string" ? tokenData.token : undefined;
-  if (!token) throw new Error("لم يرجع Taiar بـ token صالح.");
 
   tokenCache.token = token;
   tokenCache.expiresAt = Date.now() + TOKEN_TTL_MS;
@@ -208,10 +225,27 @@ export async function getTaiarCities(lang: "ar" | "en" = "ar"): Promise<TaiarCit
     Authorization: `Bearer ${token}`,
   });
   const data = response as Record<string, unknown>;
-  if (!data || data.success !== true || !Array.isArray(data.data)) {
+
+  // Taiar cities response: { data: [...cities...], metadata: {...} }
+  // No success/status field — presence of data array indicates success
+  let list: TaiarCity[];
+  if (Array.isArray(data?.data)) {
+    // Normalize city_id -> id if needed
+    list = (data.data as Record<string, unknown>[]).map((c) => ({
+      id: (c.city_id ?? c.id) as number,
+      name: (c.name ?? "") as string,
+      ...c,
+    }));
+  } else if (Array.isArray(data)) {
+    list = (data as Record<string, unknown>[]).map((c) => ({
+      id: (c.city_id ?? c.id) as number,
+      name: (c.name ?? "") as string,
+      ...c,
+    }));
+  } else {
     throw new Error("فشل جلب قائمة مدن Taiar.");
   }
-  const list = data.data as TaiarCity[];
+
   cityCache[lang] = { list, expiresAt: Date.now() + CITY_CACHE_TTL_MS };
   return list;
 }
@@ -234,10 +268,15 @@ export async function createTaiarOrder(
     receiver_mobile: input.receiverMobile,
     receiver_city: input.receiverCity,
     receiver_address: input.receiverAddress,
+    receiver_country: input.receiverCountry ?? "PS",
     title: input.title,
-    cod_values: input.codValues,
-    payment_type: input.paymentType,
-    order_type: 1, // regular / default
+    // cod_values must be an array of { value: number } objects per Taiar API
+    cod_values: [{ value: input.codValues }],
+    payment_type: input.paymentType, // "cash" | "check" | "cash/check"
+    order_type: "delivery",          // only valid string Taiar accepts
+    delivery_fee: input.deliveryFee ?? 0,
+    commission: input.commission ?? 0,
+    discount: input.discount ?? 0,
     quantity: input.quantity,
     description: input.description,
     note: input.note ?? "",
@@ -248,14 +287,29 @@ export async function createTaiarOrder(
   });
   const data = response as Record<string, unknown>;
 
-  if (!data || data.success !== true) {
+  // Taiar may return: { status: "success", message: "...", data: { id, reference_id, ... } }
+  // OR: { id, reference_id, ... } directly at root
+  // We detect rejection by checking if data.data?.id or data.id is present
+  const isSuccess =
+    data?.status === "success" ||
+    data?.status === true ||
+    data?.status === 200 ||
+    data?.success === true ||
+    data?.code === 200;
+
+  if (!isSuccess) {
     const msg =
       typeof data?.message === "string" ? data.message : "رفض Taiar الطلب.";
     throw new TaiarRejectedError(msg);
   }
 
-  const orderData = data.data as Record<string, unknown>;
-  const orderId = orderData?.id !== undefined ? String(orderData.id) : undefined;
+  const orderData =
+    (data?.data as Record<string, unknown> | undefined) ?? data;
+  const orderId =
+    orderData?.id !== undefined ? String(orderData.id) :
+    orderData?.order_id !== undefined ? String(orderData.order_id) :
+    undefined;
+
   const referenceId =
     typeof orderData?.reference_id === "string"
       ? orderData.reference_id
@@ -276,11 +330,30 @@ export async function getTaiarShipment(orderId: string): Promise<TaiarShipmentDe
     Authorization: `Bearer ${token}`,
   });
   const data = response as Record<string, unknown>;
-  if (!data || data.success !== true) {
+
+  // Taiar may return: { status: "success", data: { ... } } or the object directly
+  const isSuccess =
+    data?.status === "success" ||
+    data?.status === true ||
+    data?.status === 200 ||
+    data?.success === true ||
+    data?.code === 200 ||
+    // If the response itself has an id field, treat it as success
+    data?.id !== undefined ||
+    (data?.data as Record<string, unknown>)?.id !== undefined;
+
+  if (!isSuccess) {
     const msg = typeof data?.message === "string" ? data.message : "فشل جلب بيانات الشحنة من Taiar.";
     throw new TaiarRejectedError(msg);
   }
-  return data.data as TaiarShipmentDetails;
+
+  // Unwrap data.data if nested, otherwise use data directly
+  const shipment =
+    data?.data && typeof data.data === "object" && !Array.isArray(data.data) && (data.data as Record<string, unknown>).id !== undefined
+      ? (data.data as TaiarShipmentDetails)
+      : (data as TaiarShipmentDetails);
+
+  return shipment;
 }
 
 // Re-export sanitizeError for use in taiar-orders.ts
