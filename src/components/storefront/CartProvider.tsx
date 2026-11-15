@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { parseCart, type CartLine } from "@/lib/cart";
+import { trackAddToCart, trackRemoveFromCart } from "@/lib/analytics/pixel";
 
 export type { CartLine } from "@/lib/cart";
 type Ctx = {
@@ -32,12 +33,36 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setLines((cur) => cur.some((l) => l.key === line.key)
       ? cur.map((l) => (l.key === line.key ? { ...l, qty: Math.min(99, l.qty + quantity) } : l))
       : [...cur, { ...line, qty: quantity }]);
+
+    trackAddToCart({
+      content_ids: [line.slug],
+      content_type: "product",
+      content_name: line.name,
+      value: line.price * quantity,
+      currency: "ILS",
+      quantity,
+    });
   }, []);
   const setQty = useCallback((key: string, qty: number) => {
     const nextQty = Number.isFinite(qty) ? Math.min(99, Math.trunc(qty)) : 0;
     setLines((cur) => cur.map((l) => (l.key === key ? { ...l, qty: nextQty } : l)).filter((l) => l.qty > 0));
   }, []);
-  const remove = useCallback((key: string) => setLines((cur) => cur.filter((l) => l.key !== key)), []);
+  const remove = useCallback((key: string) => {
+    setLines((cur) => {
+      const target = cur.find((l) => l.key === key);
+      if (target) {
+        trackRemoveFromCart({
+          content_ids: [target.slug],
+          content_type: "product",
+          content_name: target.name,
+          value: target.price * target.qty,
+          currency: "ILS",
+          quantity: target.qty,
+        });
+      }
+      return cur.filter((l) => l.key !== key);
+    });
+  }, []);
 
   const clear = useCallback(() => setLines([]), []);
 

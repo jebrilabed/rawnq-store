@@ -2,13 +2,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Building2, Check, ShieldCheck, Truck } from "lucide-react";
 import { placeOrder, uploadTransferReceiptAction } from "@/app/[locale]/(store)/checkout/actions";
 import { formatPrice } from "@/lib/format";
 import type { DeliveryArea } from "@/lib/data/db";
 import { saveOrder } from "@/lib/orders";
 import { useCart } from "./CartProvider";
+import { trackAddPaymentInfo, trackInitiateCheckout } from "@/lib/analytics/pixel";
 import { Spinner } from "@/components/ui/LoadingState";
 import { toast } from "@/components/ui/Toast";
 import s from "./storefront.module.css";
@@ -39,6 +40,32 @@ export function CheckoutForm({ locale, areas, courierAreas, customer, methods }:
 
   const selectedArea = areas.find((area) => area.id === deliveryAreaId);
   const shipping = selectedArea?.fee ?? 0;
+
+  const initiatedRef = useRef(false);
+  useEffect(() => {
+    if (!lines.length || initiatedRef.current) return;
+    initiatedRef.current = true;
+
+    trackInitiateCheckout({
+      content_ids: lines.map((l) => l.slug),
+      contents: lines.map((l) => ({ id: l.slug, quantity: l.qty, item_price: l.price })),
+      content_type: "product",
+      value: subtotal + shipping,
+      currency: "ILS",
+      num_items: lines.reduce((n, l) => n + l.qty, 0),
+    });
+  }, [lines, subtotal, shipping]);
+
+  function handlePaymentChange(nextPayment: "cod" | "bank") {
+    setPayment(nextPayment);
+    trackAddPaymentInfo({
+      value: subtotal + shipping,
+      currency: "ILS",
+      payment_type: nextPayment === "cod" ? "Cash on Delivery" : "Bank Transfer",
+      content_type: "product",
+      contents: lines.map((l) => ({ id: l.slug, quantity: l.qty, item_price: l.price })),
+    });
+  }
 
   async function uploadReceipt() {
     if (!receiptFile) {
@@ -172,13 +199,13 @@ export function CheckoutForm({ locale, areas, courierAreas, customer, methods }:
           </div>
           <div className={s.paymentChoices}>
             {methods.cod && <label className={`${s.paymentChoice} ${payment === "cod" ? s.paymentSelected : ""}`}>
-              <input type="radio" name="pay" checked={payment === "cod"} onChange={() => setPayment("cod")} />
+              <input type="radio" name="pay" checked={payment === "cod"} onChange={() => handlePaymentChange("cod")} />
               <span className={s.paymentIcon}><Truck size={20} /></span>
               <span className={s.paymentText}><b>{tr("الدفع عند التوصيل")}</b><small>{tr("ادفع عند استلام طلبك")}</small></span>
               <span className={s.paymentCheck}>{payment === "cod" && <Check size={14} />}</span>
             </label>}
             {methods.bank && <label className={`${s.paymentChoice} ${payment === "bank" ? s.paymentSelected : ""}`}>
-              <input type="radio" name="pay" checked={payment === "bank"} onChange={() => setPayment("bank")} />
+              <input type="radio" name="pay" checked={payment === "bank"} onChange={() => handlePaymentChange("bank")} />
               <span className={s.paymentIcon}><Building2 size={20} /></span>
               <span className={s.paymentText}><b>{tr("الدفع الفوري بالتحويل البنكي")}</b><small>{tr("حوّل المبلغ وأرفق إيصال الدفع")}</small></span>
               <span className={s.paymentCheck}>{payment === "bank" && <Check size={14} />}</span>

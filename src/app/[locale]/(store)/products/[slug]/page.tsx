@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FavoriteButton } from "@/components/storefront/FavoriteButton";
 import { VariantPicker } from "@/components/storefront/VariantPicker";
+import { ProductViewTracker } from "@/components/analytics/ProductViewTracker";
 import s from "@/components/storefront/storefront.module.css";
 import { getProduct } from "@/lib/data/catalog";
 import { translate } from "@/lib/i18n";
@@ -23,6 +24,13 @@ export default async function ProductPage({ params }: Props) {
   const tr = (text: string) => translate(params.locale, text);
   return (
     <main className={`${s.wrap} ${s.detail}`}>
+      <ProductViewTracker
+        id={product.id}
+        slug={product.slug}
+        name={product.name}
+        price={product.price}
+        categoryName={product.categorySlug}
+      />
       <div className={s.detailImg}><Image src={product.image} alt={product.name} fill priority sizes="(min-width:720px) 50vw, 100vw" /></div>
       <div className={s.panel}>
         <Link href={`/${params.locale}/products`} className={s.muted}>← {tr("كل المنتجات")}</Link>

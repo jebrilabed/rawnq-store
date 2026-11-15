@@ -1,5 +1,6 @@
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { ProductSearch } from "@/components/storefront/ProductSearch";
+import { SearchTracker } from "@/components/analytics/SearchTracker";
 import s from "@/components/storefront/storefront.module.css";
 import Link from "next/link";
 import { getProductPage } from "@/lib/data/catalog";
@@ -27,6 +28,7 @@ export default async function ProductsPage({ params, searchParams }: { params: {
   const visiblePages = Array.from({ length: Math.min(pageCount, 5) }, (_, index) => firstPage + index);
   return (
     <main className={`${s.wrap} ${s.section} ${s.compactPage}`}>
+      {query && <SearchTracker query={query} />}
       <div className={s.head}><h1>{tr("جميع المنتجات")}</h1></div>
       <div className={s.searchPageField}>
         <ProductSearch locale={locale} value={searchParams.q} category={searchParams.category} />

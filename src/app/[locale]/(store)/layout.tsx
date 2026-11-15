@@ -3,6 +3,8 @@ import { CartProvider } from "@/components/storefront/CartProvider";
 import { Footer } from "@/components/storefront/Footer";
 import { FavoritesProvider } from "@/components/storefront/FavoritesProvider";
 import { Header } from "@/components/storefront/Header";
+import { MetaPixel } from "@/components/analytics/MetaPixel";
+import { CookieConsent } from "@/components/storefront/CookieConsent";
 import { getFavoriteProductIds } from "@/lib/data/favorites";
 import { getSettings } from "@/lib/data/db";
 import { getCategories } from "@/lib/data/catalog";
@@ -22,11 +24,13 @@ export default async function StoreLayout({ children, params }: { children: Reac
   return (
     <CartProvider>
       <FavoritesProvider key={customerUserId ?? "guest"} initialIds={initialIds} authenticated={Boolean(customerUserId)}>
+        <MetaPixel />
         <div className={s.storeShell}>
           <Header locale={params.locale} storeName={settings.storeName} userRole={session?.user?.role} categories={categories} />
           <div className={s.storeMain}>{children}</div>
           <Footer locale={params.locale} userRole={session?.user?.role} />
         </div>
+        <CookieConsent locale={params.locale} />
       </FavoritesProvider>
     </CartProvider>
   );

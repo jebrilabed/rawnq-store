@@ -6,6 +6,7 @@ import { CheckCircle2 } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import { PAYMENT_LABEL, STATUS_LABEL, readOrders, type CustomerOrderListItem, type OrderSummary } from "@/lib/orders";
 import { OrderStatusTracking } from "@/components/ui/OrderStatusTracking";
+import { PurchaseTracker } from "@/components/analytics/PurchaseTracker";
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
 
@@ -104,5 +105,10 @@ export function OrderConfirmation({ locale, orderNumber, initialOrder, deliveryP
   const localOrders = useOrders();
   if (!initialOrder && !localOrders) return null;
   const order = initialOrder ?? localOrders?.find((item) => item.orderNumber === orderNumber);
-  return <OrderDetail locale={locale} orderNumber={orderNumber} order={order} confirmation deliveryPending={deliveryPending} />;
+  return (
+    <>
+      {order && <PurchaseTracker order={order} />}
+      <OrderDetail locale={locale} orderNumber={orderNumber} order={order} confirmation deliveryPending={deliveryPending} />
+    </>
+  );
 }

@@ -1,5 +1,6 @@
 "use server";
 import { randomInt } from "node:crypto";
+import { headers } from "next/headers";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { commitOrder, OrderCommitError } from "@/lib/data/admin";
@@ -8,6 +9,7 @@ import { uploadTransferReceipt } from "@/lib/data/cloudinary";
 import { getSettings } from "@/lib/data/db";
 import type { OrderItem, OrderSummary } from "@/lib/orders";
 import bestRouteAreaCatalog from "@/lib/integrations/best-route-areas.json";
+import { sendCapiPurchaseEvent } from "@/lib/analytics/capi";
 
 export type PlaceOrderInput = {
   customer: { name: string; phone: string; city: string; address: string; notes?: string };
@@ -103,6 +105,36 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       await commitOrder(order, customerUserId);
+
+      // Trigger server-side Meta Conversions API (CAPI) if configured
+      try {
+        const reqHeaders = headers();
+        const clientIp = reqHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() || reqHeaders.get("x-real-ip") || undefined;
+        const userAgent = reqHeaders.get("user-agent") || undefined;
+        const host = reqHeaders.get("host") || "";
+        const proto = reqHeaders.get("x-forwarded-proto") || "https";
+        const sourceUrl = host ? `${proto}://${host}/order-confirmation/${order.orderNumber}` : undefined;
+
+        // Run asynchronously so tracking never delays or interrupts checkout completion
+        void sendCapiPurchaseEvent(order, {
+          customer: {
+            email: session?.user?.email ?? undefined,
+            phone: order.customer.phone,
+            name: order.customer.name,
+            city: order.customer.city,
+            clientIp,
+            userAgent,
+          },
+          sourceUrl,
+        }).catch((err) => {
+          if (process.env.NODE_ENV !== "production") {
+            console.warn("[Meta CAPI] Dispatch error:", err);
+          }
+        });
+      } catch {
+        // CAPI tracking errors must never fail order creation
+      }
+
       return { ok: true, order, deliverySent: false };
     } catch (error) {
       // The public order number is short for readability; retry the rare unique-key collision.
