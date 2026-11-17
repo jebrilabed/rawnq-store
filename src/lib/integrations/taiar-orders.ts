@@ -476,18 +476,30 @@ export async function syncTaiarShipmentStatus(orderNumber: string): Promise<Sync
   try {
     const details = await getTaiarShipment(shipment.providerOrderId);
 
-    const providerStatus = details.status !== undefined ? String(details.status) : undefined;
+    const providerStatus =
+      details.status !== undefined && String(details.status).trim() !== ""
+        ? String(details.status)
+        : details.status_key !== undefined
+        ? String(details.status_key)
+        : undefined;
+
     const moneyStatus =
-      details.money_status !== undefined ? String(details.money_status) : undefined;
-    const deliveryFee =
-      details.delivery_fee !== undefined ? String(details.delivery_fee) : undefined;
+      details.financial_status !== undefined && String(details.financial_status).trim() !== ""
+        ? String(details.financial_status)
+        : details.money_status !== undefined && String(details.money_status).trim() !== ""
+        ? String(details.money_status)
+        : undefined;
+
+    const rawFee = details.delivery_fee !== undefined ? String(details.delivery_fee) : undefined;
+    const parsedFee = rawFee ? parseFloat(rawFee) : NaN;
+    const deliveryFeeNum = Number.isFinite(parsedFee) ? parsedFee : null;
 
     await prisma.shipment.update({
       where: { orderId: order.id },
       data: {
         providerStatus: providerStatus ?? null,
         moneyStatus: moneyStatus ?? null,
-        deliveryFee: deliveryFee !== undefined ? parseFloat(deliveryFee) : null,
+        deliveryFee: deliveryFeeNum,
         syncedAt: new Date(),
         updatedAt: new Date(),
       },
@@ -498,7 +510,7 @@ export async function syncTaiarShipmentStatus(orderNumber: string): Promise<Sync
       state: "SENT",
       providerStatus,
       moneyStatus,
-      deliveryFee,
+      deliveryFee: deliveryFeeNum !== null ? String(deliveryFeeNum) : undefined,
     };
   } catch (err) {
     const msg = err instanceof Error ? sanitizeTaiarError(err.message) : "فشل مزامنة حالة الشحنة.";

@@ -38,9 +38,13 @@ export type TaiarCreateOrderInput = {
 };
 
 export type TaiarShipmentDetails = {
-  id: number;
-  reference_id: string;
-  status: number;
+  id?: number | string;
+  order_id?: number | string;
+  reference_id?: string | null;
+  qr_id?: string | null;
+  status?: string | number;
+  status_key?: string;
+  financial_status?: string | number;
   money_status?: string | number;
   delivery_fee?: string | number;
   [key: string]: unknown;
@@ -331,29 +335,30 @@ export async function getTaiarShipment(orderId: string): Promise<TaiarShipmentDe
   });
   const data = response as Record<string, unknown>;
 
-  // Taiar may return: { status: "success", data: { ... } } or the object directly
-  const isSuccess =
-    data?.status === "success" ||
-    data?.status === true ||
-    data?.status === 200 ||
-    data?.success === true ||
-    data?.code === 200 ||
-    // If the response itself has an id field, treat it as success
-    data?.id !== undefined ||
-    (data?.data as Record<string, unknown>)?.id !== undefined;
-
-  if (!isSuccess) {
+  // Check if response contains an error or rejection
+  if (data?.status === "error" || data?.success === false) {
     const msg = typeof data?.message === "string" ? data.message : "فشل جلب بيانات الشحنة من Taiar.";
     throw new TaiarRejectedError(msg);
   }
 
-  // Unwrap data.data if nested, otherwise use data directly
+  // Unwrap data if nested under data.data, otherwise use root object
   const shipment =
-    data?.data && typeof data.data === "object" && !Array.isArray(data.data) && (data.data as Record<string, unknown>).id !== undefined
-      ? (data.data as TaiarShipmentDetails)
-      : (data as TaiarShipmentDetails);
+    data?.data && typeof data.data === "object" && !Array.isArray(data.data)
+      ? (data.data as Record<string, unknown>)
+      : data;
 
-  return shipment;
+  // Taiar returns the order object directly with `order_id` (e.g. { order_id: "20263934", status: "Cancelled", ... })
+  const hasOrderId =
+    shipment?.order_id !== undefined ||
+    shipment?.id !== undefined ||
+    shipment?.qr_id !== undefined;
+
+  if (!hasOrderId) {
+    const msg = typeof data?.message === "string" ? data.message : "فشل جلب بيانات الشحنة من Taiar.";
+    throw new TaiarRejectedError(msg);
+  }
+
+  return shipment as unknown as TaiarShipmentDetails;
 }
 
 // Re-export sanitizeError for use in taiar-orders.ts
