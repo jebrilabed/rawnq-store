@@ -9,6 +9,7 @@ import { uploadTransferReceipt } from "@/lib/data/cloudinary";
 import { getSettings } from "@/lib/data/db";
 import type { OrderItem, OrderSummary } from "@/lib/orders";
 import bestRouteAreaCatalog from "@/lib/integrations/best-route-areas.json";
+import { sendTaiarOrder } from "@/lib/integrations/taiar-orders";
 import { sendCapiPurchaseEvent } from "@/lib/analytics/capi";
 
 export type PlaceOrderInput = {
@@ -36,7 +37,7 @@ export async function uploadTransferReceiptAction(form: FormData): Promise<{ ok:
 /**
  * لا نثق بأي سعر أو اسم قادم من المتصفح: نعيد بناء الطلب من الكتالوج على الخادم،
  * ثم نخصم المخزون ونحفظ الطلب داخل معاملة Prisma واحدة.
- * الطلب يُحفظ فقط — لا إرسال تلقائي لأي شركة شحن. يختار الأدمن مزود الشحن يدوياً لاحقاً.
+ * بمجرد حفظ الطلب، يتم إرسال الشحنة تلقائياً إلى شركة طيار (Taiar).
  */
 export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
   if (!input || typeof input !== "object") return { ok: false, error: "بيانات الطلب غير صالحة." };
@@ -106,6 +107,18 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     try {
       await commitOrder(order, customerUserId);
 
+      // إرسال الطلب تلقائياً إلى شركة الشحن (طيار - Taiar)
+      let deliverySent = false;
+      try {
+        const shipment = await sendTaiarOrder(order.orderNumber, { allowUnconfirmedBankPayment: true });
+        deliverySent = shipment.ok;
+        if (!shipment.ok) {
+          console.error(`Taiar auto-send failed for ${order.orderNumber}: ${shipment.error}`);
+        }
+      } catch (shipmentError) {
+        console.error(`Could not submit order ${order.orderNumber} to Taiar:`, shipmentError);
+      }
+
       // Trigger server-side Meta Conversions API (CAPI) if configured
       try {
         const reqHeaders = headers();
@@ -135,7 +148,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
         // CAPI tracking errors must never fail order creation
       }
 
-      return { ok: true, order, deliverySent: false };
+      return { ok: true, order, deliverySent };
     } catch (error) {
       // The public order number is short for readability; retry the rare unique-key collision.
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002" && attempt < 4) {
