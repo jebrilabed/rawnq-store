@@ -21,6 +21,23 @@ export type ShipmentInfo = {
   syncedAt?: string;
 };
 
+const TAIAR_STATUS_MAP: Record<string, string> = {
+  waiting: "بانتظار الاستلام من المتجر",
+  cancelled: "ملغية لدى شركة الشحن",
+  delivered: "تم تسليمها للعميل بنجاح",
+  "in progress": "قيد التوصيل مع المندوب",
+  processing: "قيد المعالجة في فرع الشحن",
+  returned: "شحنة راجعة / مسترجعة",
+  postponed: "مؤجلة من قبل العميل",
+};
+
+function formatTaiarStatus(status?: string): string {
+  if (!status) return "—";
+  const lower = status.toLowerCase().trim();
+  const ar = TAIAR_STATUS_MAP[lower];
+  return ar ? `${ar} (${status})` : status;
+}
+
 type Props = {
   orderNumber: string;
   payment: "cod" | "bank";
@@ -196,7 +213,7 @@ export function ShippingProviderPanel({
         {taiarSent && taiar?.providerStatus && (
           <>
             <span>حالة الشحنة (طيار)</span>
-            <b>{taiar.providerStatus}</b>
+            <b>{formatTaiarStatus(taiar.providerStatus)}</b>
           </>
         )}
 
