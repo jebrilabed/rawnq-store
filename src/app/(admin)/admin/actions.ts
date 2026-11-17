@@ -8,8 +8,6 @@ import { STATUS_LABEL, type OrderStatus } from "@/lib/orders";
 import { requireAdmin, requireStaffOrAdmin } from "@/lib/auth/require-admin";
 import type { Variant } from "@/lib/types";
 import { uploadProductImage } from "@/lib/data/cloudinary";
-import { checkBestRouteConnection } from "@/lib/integrations/best-route";
-import { sendBestRouteOrder } from "@/lib/integrations/best-route-orders";
 import { saveStoreContent } from "@/lib/data/db";
 import { auth } from "@/auth";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
@@ -311,19 +309,6 @@ export async function updateOrderStatusAction(orderNumber: string, status: strin
   revalidatePath("/admin", "page"); // dashboard order count
 }
 
-export async function checkBestRouteConnectionAction() {
-  await requireAdmin();
-  return checkBestRouteConnection();
-}
-
-export async function sendBestRouteOrderAction(orderNumber: string, bankPaymentConfirmed: boolean) {
-  await requireAdmin();
-  const result = await sendBestRouteOrder(orderNumber, { bankPaymentConfirmed });
-  revalidatePath(`/admin/orders/${orderNumber}`);
-  revalidatePath("/admin/orders");
-  return result;
-}
-
 export async function changeAdminPasswordAction(f: FormData) {
   await requireAdmin();
   const session = await auth();
@@ -448,6 +433,25 @@ export async function changePasswordAction(f: FormData) {
 }
 
 // ---- Taiar Shipping Actions ----
+
+export async function checkTaiarConnectionAction() {
+  await requireAdmin();
+  try {
+    const { authenticate, getTaiarCities } = await import("@/lib/integrations/taiar");
+    await authenticate();
+    const cities = await getTaiarCities("ar");
+    return {
+      ok: true as const,
+      citiesCount: cities.length,
+      senderId: process.env.TAIAR_SENDER_ID ?? "",
+    };
+  } catch (err) {
+    return {
+      ok: false as const,
+      error: err instanceof Error ? err.message : "فشل الاتصال بشركة طيار.",
+    };
+  }
+}
 
 export async function sendTaiarOrderAction(orderNumber: string, bankPaymentConfirmed: boolean) {
   await requireAdmin();

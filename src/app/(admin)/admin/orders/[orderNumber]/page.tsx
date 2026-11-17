@@ -36,7 +36,6 @@ export default async function OrderAdmin({ params }: { params: { orderNumber: st
           orderStatus={o.status}
           bestRoute={shipmentData.bestRoute}
           taiar={shipmentData.taiar}
-          orderTypeConfigured={Boolean(process.env.BEST_ROUTE_ORDER_TYPE_ID?.trim())}
           taiarConfigured={Boolean(
             process.env.TAIAR_PHONE?.trim() &&
             process.env.TAIAR_PASSWORD &&

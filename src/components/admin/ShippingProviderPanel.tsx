@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
-  sendBestRouteOrderAction,
   sendTaiarOrderAction,
   syncTaiarShipmentAction,
 } from "@/app/(admin)/admin/actions";
@@ -26,122 +25,77 @@ type Props = {
   orderNumber: string;
   payment: "cod" | "bank";
   orderStatus: string;
-  bestRoute: {
+  bestRoute?: {
     state: string;
     orderId?: string;
     error?: string;
     updatedAt?: string;
   };
   taiar: ShipmentInfo | null;
-  orderTypeConfigured: boolean;
   taiarConfigured: boolean;
 };
-
-type ProviderChoice = "BEST_ROUTE" | "TAIAR";
 
 export function ShippingProviderPanel({
   orderNumber,
   payment,
   orderStatus,
-  bestRoute: initialBestRoute,
+  bestRoute,
   taiar: initialTaiar,
-  orderTypeConfigured,
   taiarConfigured,
 }: Props) {
   const router = useRouter();
 
-  const [bestRoute, setBestRoute] = useState(initialBestRoute);
   const [taiar, setTaiar] = useState(initialTaiar);
   const [bankPaymentConfirmed, setBankPaymentConfirmed] = useState(false);
   const [pending, setPending] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
-  // Determine if a provider is already active/locked
-  const bestRouteSent = bestRoute.state === "SENT";
   const taiarSent = taiar?.state === "SENT";
-  const bestRouteUncertain = bestRoute.state === "SENDING" || bestRoute.state === "UNKNOWN";
   const taiarUncertain = taiar?.state === "SENDING" || taiar?.state === "UNKNOWN";
+  const taiarRejected = taiar?.state === "REJECTED";
+  const notSent = !taiar || taiar.state === "NOT_SENT";
 
-  const isLockedToBestRoute = bestRouteSent || bestRouteUncertain;
-  const isLockedToTaiar = taiarSent || taiarUncertain;
+  // Check if this was historically sent via Best Route in the past
+  const historicallySentViaBestRoute = bestRoute?.state === "SENT";
 
-  // Selected provider: default to locked provider, or previous rejected attempt, or null (unassigned)
-  const initialSelection: ProviderChoice | null = isLockedToBestRoute
-    ? "BEST_ROUTE"
-    : isLockedToTaiar
-    ? "TAIAR"
-    : taiar?.state === "REJECTED"
-    ? "TAIAR"
-    : bestRoute.state === "REJECTED"
-    ? "BEST_ROUTE"
-    : null;
-
-  const [selectedProvider, setSelectedProvider] = useState<ProviderChoice | null>(initialSelection);
-
-  // Action: Send to selected provider
+  // Action: Send / Re-send to Taiar
   async function handleSend() {
-    if (!selectedProvider || pending || orderStatus === "CANCELLED") return;
+    if (pending || orderStatus === "CANCELLED") return;
     if (payment === "bank" && !bankPaymentConfirmed) return;
 
-    const providerName = selectedProvider === "BEST_ROUTE" ? "Best Route" : "طيار (Taiar)";
-
-    if (!confirm(`إرسال الطلب ${orderNumber} إلى ${providerName}؟ سيُنشئ ذلك شحنة فعلية لدى شركة الشحن.`)) {
+    if (!confirm(`إرسال الطلب ${orderNumber} إلى شركة طيار (Taiar)؟ سيُنشئ ذلك شحنة فعلية لدى شركة الشحن.`)) {
       return;
     }
 
     setPending(true);
 
     try {
-      if (selectedProvider === "BEST_ROUTE") {
-        const result = await sendBestRouteOrderAction(orderNumber, bankPaymentConfirmed);
-        setBestRoute({
-          state: result.state,
-          orderId: result.ok ? result.orderId : bestRoute.orderId,
-          error: result.ok ? undefined : result.error,
-          updatedAt: new Date().toISOString(),
-        });
+      const result = await sendTaiarOrderAction(orderNumber, bankPaymentConfirmed);
+      setTaiar((prev) => ({
+        state: result.state,
+        orderId: result.ok ? result.orderId : prev?.orderId,
+        referenceId: result.ok ? result.referenceId : prev?.referenceId,
+        error: result.ok ? undefined : result.error,
+        providerStatus: prev?.providerStatus,
+        moneyStatus: prev?.moneyStatus,
+        deliveryFee: prev?.deliveryFee,
+        syncedAt: result.ok ? new Date().toISOString() : prev?.syncedAt,
+      }));
 
-        if (result.ok) {
-          toast.success(`تم إرسال الطلب إلى Best Route بنجاح (رقم الشحنة: ${result.orderId}).`);
-        } else {
-          toast.error(`تعذر إرسال الطلب إلى Best Route: ${result.error}`);
-        }
+      if (result.ok) {
+        toast.success(`تم إرسال الطلب إلى شركة طيار بنجاح (رقم الشحنة: ${result.orderId}).`);
       } else {
-        const result = await sendTaiarOrderAction(orderNumber, bankPaymentConfirmed);
-        setTaiar((prev) => ({
-          state: result.state,
-          orderId: result.ok ? result.orderId : prev?.orderId,
-          referenceId: result.ok ? result.referenceId : prev?.referenceId,
-          error: result.ok ? undefined : result.error,
-          providerStatus: prev?.providerStatus,
-          moneyStatus: prev?.moneyStatus,
-          deliveryFee: prev?.deliveryFee,
-          syncedAt: result.ok ? new Date().toISOString() : prev?.syncedAt,
-        }));
-
-        if (result.ok) {
-          toast.success(`تم إرسال الطلب إلى طيار (Taiar) بنجاح (رقم الشحنة: ${result.orderId}).`);
-        } else {
-          toast.error(`تعذر إرسال الطلب إلى طيار: ${result.error}`);
-        }
+        toast.error(`تعذر إرسال الطلب إلى طيار: ${result.error}`);
       }
       router.refresh();
     } catch {
-      if (selectedProvider === "BEST_ROUTE") {
-        setBestRoute((prev) => ({
-          ...prev,
-          state: "UNKNOWN",
-          error: "انقطع الاتصال بعد بدء الإرسال؛ تحقق في لوحة Best Route باستخدام رقم المرجع.",
-        }));
-      } else {
-        setTaiar((prev) => ({
-          state: "UNKNOWN",
-          orderId: prev?.orderId,
-          referenceId: orderNumber,
-          error: "انقطع الاتصال بعد بدء الإرسال؛ تحقق في لوحة Taiar باستخدام رقم المرجع.",
-        }));
-      }
-      toast.error("تعذر تأكيد نتيجة الإرسال. تحقق في لوحة شركة الشحن برقم المرجع قبل أي إعادة محاولة.");
+      setTaiar((prev) => ({
+        state: "UNKNOWN",
+        orderId: prev?.orderId,
+        referenceId: orderNumber,
+        error: "انقطع الاتصال بعد بدء الإرسال؛ تحقق في لوحة Taiar باستخدام رقم المرجع.",
+      }));
+      toast.error("تعذر تأكيد نتيجة الإرسال. تحقق في لوحة طيار برقم المرجع قبل أي إعادة محاولة.");
       router.refresh();
     } finally {
       setPending(false);
@@ -178,107 +132,50 @@ export function ShippingProviderPanel({
     }
   }
 
-  // Current active status
-  const anySent = bestRouteSent || taiarSent;
-  const anyUncertain = bestRouteUncertain || taiarUncertain;
-  const currentProvider = bestRouteSent ? "BEST_ROUTE" : taiarSent ? "TAIAR" : selectedProvider;
-
-  // Configuration check for currently chosen provider
-  const currentConfigured =
-    currentProvider === "BEST_ROUTE"
-      ? orderTypeConfigured
-      : currentProvider === "TAIAR"
-      ? taiarConfigured
-      : true;
-
-  // Active error and state for selected provider
-  const activeState =
-    currentProvider === "BEST_ROUTE"
-      ? bestRoute.state
-      : currentProvider === "TAIAR"
-      ? taiar?.state ?? "NOT_SENT"
-      : "NOT_SENT";
-
-  const activeError =
-    currentProvider === "BEST_ROUTE"
-      ? bestRoute.error
-      : currentProvider === "TAIAR"
-      ? taiar?.error
-      : undefined;
-
-  const activeOrderId =
-    currentProvider === "BEST_ROUTE"
-      ? bestRoute.orderId
-      : currentProvider === "TAIAR"
-      ? taiar?.orderId
-      : undefined;
-
   return (
     <section className={s.bestRouteShipment} aria-labelledby="shipping-management-heading">
       {/* Header */}
       <div className={s.bestRouteHeading}>
         <div>
-          <h2 id="shipping-management-heading">إدارة الشحن اللوجستي</h2>
+          <h2 id="shipping-management-heading">إدارة الشحن (شركة طيار - Taiar)</h2>
           <p>
-            اختر شركة الشحن المناسبة واعتمد إرسال الطلب يدوياً. لا يتم إرسال أي شحنة تلقائياً.
+            يتم إرسال الطلبات تلقائياً لشركة طيار فور إتمام العميل للطلب. يمكنك متابعة حالة الشحنة أو إعادة إرسالها من هنا.
           </p>
         </div>
         <div>
-          {bestRouteSent && (
-            <span className={`${s.shipmentBadge} ${s.shipmentBadgeSent}`}>
-              تم الإرسال عبر Best Route
-            </span>
-          )}
           {taiarSent && (
             <span className={`${s.shipmentBadge} ${s.shipmentBadgeSent}`}>
-              تم الإرسال عبر طيار (Taiar)
+              ✓ تم الإرسال عبر طيار
             </span>
           )}
-          {!anySent && !anyUncertain && (
-            <span className={`${s.shipmentBadge} ${s.shipmentBadgePending}`}>
-              بانتظار اختيار وتأكيد المسؤول
+          {taiarRejected && (
+            <span className={`${s.shipmentBadge} ${s.shipmentBadgeFail}`}>
+              تعذر الإرسال
             </span>
           )}
-          {anyUncertain && (
+          {taiarUncertain && (
             <span className={`${s.shipmentBadge} ${s.shipmentBadgePending}`}>
               قيد التحقق / معلّق
+            </span>
+          )}
+          {notSent && !historicallySentViaBestRoute && (
+            <span className={`${s.shipmentBadge} ${s.shipmentBadgePending}`}>
+              بانتظار الإرسال
+            </span>
+          )}
+          {historicallySentViaBestRoute && (
+            <span className={`${s.shipmentBadge} ${s.shipmentBadgeSent}`}>
+              أُرسل سابقاً عبر Best Route
             </span>
           )}
         </div>
       </div>
 
-      {/* Provider Selector (enabled only if no shipment has been successfully sent) */}
-      {!anySent && !anyUncertain && (
-        <div className={s.shippingProviders}>
-          <label className={s.label}>
-            <span>اختيار شركة الشحن:</span>
-          </label>
-          <div className={s.providerBtns} role="radiogroup" aria-label="شركة الشحن">
-            <button
-              type="button"
-              className={`${s.providerBtn} ${
-                selectedProvider === "BEST_ROUTE" ? s.providerBtnActive : ""
-              }`}
-              onClick={() => setSelectedProvider("BEST_ROUTE")}
-              disabled={pending}
-            >
-              <span>🚚 Best Route</span>
-              {!orderTypeConfigured && <small className={s.muted}>(غير مهيأ)</small>}
-            </button>
-
-            <button
-              type="button"
-              className={`${s.providerBtn} ${
-                selectedProvider === "TAIAR" ? s.providerBtnActive : ""
-              }`}
-              onClick={() => setSelectedProvider("TAIAR")}
-              disabled={pending}
-            >
-              <span>⚡ طيار (Taiar)</span>
-              {!taiarConfigured && <small className={s.muted}>(غير مهيأ)</small>}
-            </button>
-          </div>
-        </div>
+      {/* Historical Best Route Notice */}
+      {historicallySentViaBestRoute && (
+        <p className={s.bestRouteNotice}>
+          ملاحظة أرشيفية: هذا الطلب تم إرساله سابقاً عبر مزود الشحن القديم (Best Route) برقم الشحنة: {bestRoute?.orderId}.
+        </p>
       )}
 
       {/* Shipment Details Box */}
@@ -286,17 +183,13 @@ export function ShippingProviderPanel({
         <span>رقم المرجع (الطلب)</span>
         <b dir="ltr">{orderNumber}</b>
 
-        {selectedProvider && (
-          <>
-            <span>الشركة المحددة</span>
-            <b>{selectedProvider === "BEST_ROUTE" ? "Best Route" : "طيار (Taiar)"}</b>
-          </>
-        )}
+        <span>شركة الشحن</span>
+        <b>⚡ طيار (Taiar)</b>
 
-        {activeOrderId && (
+        {taiar?.orderId && (
           <>
-            <span>رقم الشحنة لدى الشركة</span>
-            <b dir="ltr">{activeOrderId}</b>
+            <span>رقم الشحنة لدى طيار</span>
+            <b dir="ltr">{taiar.orderId}</b>
           </>
         )}
 
@@ -309,7 +202,7 @@ export function ShippingProviderPanel({
 
         {taiarSent && taiar?.moneyStatus && (
           <>
-            <span>الحالة المالية (طيار)</span>
+            <span>الحالة المالية</span>
             <b>{taiar.moneyStatus}</b>
           </>
         )}
@@ -349,8 +242,8 @@ export function ShippingProviderPanel({
         </div>
       )}
 
-      {/* Bank Payment Confirmation Checkbox */}
-      {payment === "bank" && !anySent && !anyUncertain && selectedProvider && (
+      {/* Bank Payment Confirmation Checkbox (if needed) */}
+      {payment === "bank" && !taiarSent && !taiarUncertain && (
         <label className={s.bestRouteConfirm}>
           <input
             type="checkbox"
@@ -362,40 +255,35 @@ export function ShippingProviderPanel({
         </label>
       )}
 
-      {/* Configuration Notices */}
-      {selectedProvider === "BEST_ROUTE" && !orderTypeConfigured && !anySent && (
-        <p className={s.bestRouteNotice}>
-          اضبط متغير `BEST_ROUTE_ORDER_TYPE_ID` في إعدادات الخادم قبل إرسال الشحنة.
-        </p>
-      )}
-      {selectedProvider === "TAIAR" && !taiarConfigured && !anySent && (
+      {/* Configuration Notice */}
+      {!taiarConfigured && !taiarSent && (
         <p className={s.bestRouteNotice}>
           اضبط متغيرات `TAIAR_PHONE` و `TAIAR_PASSWORD` و `TAIAR_SENDER_ID` في إعدادات الخادم أولاً.
         </p>
       )}
 
       {/* Error / Warning alerts */}
-      {activeError && (
-        <p role="alert" className={anyUncertain ? s.bestRouteNotice : s.error}>
-          {activeError}
+      {taiar?.error && (
+        <p role="alert" className={taiarUncertain ? s.bestRouteNotice : s.error}>
+          {taiar.error}
         </p>
       )}
 
-      {anyUncertain && (
+      {taiarUncertain && (
         <p className={s.bestRouteNotice}>
-          نتيجة الإرسال غير محسومة. تحقق في لوحة تحكم شركة الشحن برقم المرجع ({orderNumber}) قبل
+          نتيجة الإرسال غير محسومة. تحقق في لوحة تحكم شركة طيار برقم المرجع ({orderNumber}) قبل
           أي محاولة إعادة إرسال لمنع تكرار الشحنة.
         </p>
       )}
 
       {orderStatus === "CANCELLED" && (
         <p className={s.bestRouteNotice}>
-          هذا الطلب ملغي. لا يمكن إرسال طلبات ملغية إلى شركات الشحن.
+          هذا الطلب ملغي. لا يمكن إرسال طلبات ملغية إلى شركة الشحن.
         </p>
       )}
 
-      {/* Dispatch / Retry Button */}
-      {!anySent && !anyUncertain && selectedProvider && (
+      {/* Dispatch / Retry Button for Taiar */}
+      {!taiarSent && !taiarUncertain && (
         <div>
           <button
             type="button"
@@ -403,7 +291,7 @@ export function ShippingProviderPanel({
             onClick={() => void handleSend()}
             disabled={
               pending ||
-              !currentConfigured ||
+              !taiarConfigured ||
               orderStatus === "CANCELLED" ||
               (payment === "bank" && !bankPaymentConfirmed)
             }
@@ -411,28 +299,16 @@ export function ShippingProviderPanel({
           >
             {pending ? (
               <span className={s.actionPending}>
-                <Spinner /> جاري إرسال الشحنة…
+                <Spinner /> جاري إرسال الشحنة إلى طيار…
               </span>
-            ) : activeState === "REJECTED" ? (
-              `إعادة محاولة الإرسال إلى ${
-                selectedProvider === "BEST_ROUTE" ? "Best Route" : "طيار"
-              }`
+            ) : taiarRejected ? (
+              "إعادة محاولة إرسال الشحنة إلى طيار"
             ) : (
-              `تأكيد وإرسال الشحنة إلى ${
-                selectedProvider === "BEST_ROUTE" ? "Best Route" : "طيار"
-              }`
+              "إرسال الشحنة إلى طيار الآن"
             )}
           </button>
         </div>
       )}
-
-      {/* Helpful advice when not yet selected */}
-      {!anySent && !anyUncertain && !selectedProvider && (
-        <p className={s.bestRouteNotice}>
-          يرجى اختيار شركة الشحن (Best Route أو طيار) من الأزرار أعلاه لتفعيل زر الإرسال.
-        </p>
-      )}
     </section>
   );
 }
-

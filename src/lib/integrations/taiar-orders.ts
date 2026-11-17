@@ -234,20 +234,12 @@ export async function sendTaiarOrder(
   // ------------------------------------------------------------------
   // 2. Guard against duplicate / uncertain dispatch
   // ------------------------------------------------------------------
-  // If this order was already sent to Best Route, block sending to Taiar
-  // (business rule: only one provider per order)
+  // If this order was historically sent to Best Route in the past, do not re-dispatch
   if (order.bestRouteState === "SENT") {
     return {
       ok: false,
       state: "NOT_SENT",
-      error: "تم إرسال هذا الطلب بالفعل إلى Best Route. لا يمكن إرساله لطيار أيضاً.",
-    };
-  }
-  if (order.bestRouteState === "SENDING") {
-    return {
-      ok: false,
-      state: "NOT_SENT",
-      error: "جارٍ إرسال هذا الطلب إلى Best Route حالياً. انتظر حتى تنتهي العملية.",
+      error: "تم إرسال هذا الطلب سابقاً عبر Best Route.",
     };
   }
 
