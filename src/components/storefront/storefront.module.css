@@ -3196,3 +3196,38 @@ a.line:hover {
     border-color: #fff;
     color: #fff;
 }
+
+/* Trust Badges on Product Page */
+.trustBadges {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.trustBadgeItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 550;
+    color: #475569;
+    background: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.trustBadgeItem svg {
+    color: var(--teal);
+    flex-shrink: 0;
+}
+
+/* Related Products Section */
+.relatedWrap {
+    margin-top: 56px;
+    padding-top: 36px;
+    border-top: 1px solid #f1f5f9;
+}

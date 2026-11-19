@@ -145,6 +145,28 @@ export async function getProduct(slug: string, locale = "ar"): Promise<Product |
   return row ? toProduct(row, locale) : null;
 }
 
+export async function getRelatedProducts(slug: string, categorySlug: string, locale = "ar", limit = 4): Promise<Product[]> {
+  const target = Math.max(1, Math.min(12, Math.trunc(limit)));
+  const sameCategoryRows = await prisma.product.findMany({
+    where: { categorySlug, slug: { not: slug }, published: true },
+    take: target,
+    include: { variants: true },
+    orderBy: productOrder(),
+  });
+  const products = sameCategoryRows.map((row) => toProduct(row, locale));
+  const missing = target - products.length;
+  if (missing <= 0) return products;
+
+  const excludedSlugs = [slug, ...products.map((p) => p.slug)];
+  const fallbackRows = await prisma.product.findMany({
+    where: { slug: { notIn: excludedSlugs }, published: true },
+    take: missing,
+    include: { variants: true },
+    orderBy: productOrder(),
+  });
+  return [...products, ...fallbackRows.map((row) => toProduct(row, locale))];
+}
+
 export async function getAdminProduct(id: string): Promise<Product | null> {
   const row = await prisma.product.findUnique({ where: { id }, include: { variants: true } });
   return row ? toProduct(row) : null;
