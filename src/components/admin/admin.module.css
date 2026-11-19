@@ -187,3 +187,42 @@
 @media(max-width:760px){.shell{display:block}.sidebar{position:static;height:auto;gap:14px;padding:12px 14px}.brand{padding:0 4px}.brand img{width:34px;height:34px}.navCaption,.sidebarFoot{display:none}.tabs{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tab{flex:0 0 auto;min-height:38px;padding:7px 10px;font-size:.82rem}.top{position:static;min-height:56px;padding:9px 16px}.topIdentity{display:none}.main{padding:21px 16px 36px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.pageHeader{align-items:flex-start;flex-direction:column;margin-bottom:20px}.pageHeader h1{font-size:1.45rem}.pageActions{width:100%}.settingsGrid,.variantAxes{grid-template-columns:1fr}.bestRouteResults{grid-template-columns:repeat(2,minmax(0,1fr))}.baseProductFields{grid-template-columns:repeat(2,minmax(0,1fr))}.settingsWide{grid-column:auto}}
 @media(max-width:480px){.main{padding-inline:12px}.stat{padding:12px}.statValue{font-size:1.35rem}.statIcon{width:30px;height:30px}.table td,.table th{padding:10px}.two,.baseProductFields{grid-template-columns:1fr}.categoryAdd{grid-template-columns:1fr}.categoryAdd button{width:100%}.act{gap:4px}.inline{flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){.categoryPickerTrigger svg,.categoryPickerOption svg{transition:none}.categoryPickerMenu,.categoryPickerChildren{animation-duration:.01ms}}
+
+/* Orders Filter & Search */
+.ordersFilterWrap{display:flex;flex-direction:column;gap:14px;margin-bottom:20px;background:var(--a-surface);border:1px solid var(--a-line);border-radius:8px;padding:16px}
+.ordersFilterTop{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.filterSearchBox{position:relative;flex:1;min-width:240px}
+.filterSearchInput{width:100%;min-height:40px;padding:8px 36px 8px 12px;border:1px solid #ccd7cf;border-radius:6px;font:inherit;font-size:.88rem;background:#fff;color:var(--a-ink);transition:border-color .15s ease}
+.filterSearchInput:focus{border-color:var(--a-green);outline:2px solid #175d4b22}
+.filterSearchIcon{position:absolute;inset-inline-start:11px;top:50%;transform:translateY(-50%);color:var(--a-muted);pointer-events:none}
+.filterStatusTabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.filterStatusBtn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--a-line);border-radius:6px;background:#fff;color:var(--a-ink);font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s ease}
+.filterStatusBtn:hover{border-color:var(--a-green);background:#f7faf8}
+.filterStatusBtnActive{background:var(--a-green)!important;border-color:var(--a-green)!important;color:#fff!important}
+.filterCountBadge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:rgba(0,0,0,.08);font-size:.72rem;font-weight:700}
+.filterStatusBtnActive .filterCountBadge{background:rgba(255,255,255,.25);color:#fff}
+
+/* Printable Invoice Styles */
+.printableInvoice{display:none}
+
+@media print{
+  .shell{display:block!important;background:#fff!important;color:#000!important}
+  .sidebar,.top,.pageHeader,.pageActions,.shippingProviders,.bestRouteShipment,.statusControl,.sectionHead,.tableWrap,.kv,.ordersFilterWrap,.shell h2,.shell header{display:none!important}
+  .main{width:100%!important;margin:0!important;padding:0!important}
+  .printableInvoice{display:block!important;font-family:system-ui,-apple-system,sans-serif;color:#111;direction:rtl;text-align:right}
+  .printHeader{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #18392f;padding-bottom:12px;margin-bottom:20px}
+  .printHeader h1{font-size:1.6rem;margin:0 0 4px;color:#18392f;font-weight:800}
+  .printHeader p{margin:0;color:#555;font-size:.95rem}
+  .printMeta{text-align:left;direction:rtl;font-size:.88rem;line-height:1.6}
+  .printCustomerGrid{background:#fbfcfb;border:1px solid #ddd;border-radius:6px;padding:12px 16px;margin-bottom:20px}
+  .printCustomerGrid h3{margin:0 0 8px;font-size:1.05rem;color:#18392f;border-bottom:1px solid #e5e5e5;padding-bottom:4px}
+  .printCustomerGrid p{margin:5px 0;font-size:.92rem}
+  .printTable{width:100%;border-collapse:collapse;margin-bottom:20px}
+  .printTable th,.printTable td{border:1px solid #ccc;padding:8px 10px;text-align:right;font-size:.9rem}
+  .printTable th{background:#f2f5f3;font-weight:700;color:#18392f}
+  .printTotals{margin-inline-start:auto;width:320px;border:1px solid #ccc;border-radius:6px;padding:10px 14px;background:#fbfcfb}
+  .printTotals>div{display:flex;justify-content:space-between;padding:4px 0;font-size:.92rem}
+  .printGrandTotal{border-top:2px solid #18392f;margin-top:6px;padding-top:6px!important;font-size:1.1rem!important;font-weight:800;color:#18392f}
+  .printFooter{margin-top:36px;text-align:center;border-top:1px dashed #bbb;padding-top:14px;color:#666;font-size:.85rem}
+}
+

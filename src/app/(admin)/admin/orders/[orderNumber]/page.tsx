@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { ConfirmButton, StatusSelect } from "@/components/admin/Controls";
+import { PrintOrderButton, WhatsAppCustomerButton } from "@/components/admin/OrderCustomerActions";
 import { deleteOrderAction } from "../../actions";
 import s from "@/components/admin/admin.module.css";
 import { getOrderShipment, getOrder } from "@/lib/data/admin";
@@ -21,6 +22,13 @@ export default async function OrderAdmin({ params }: { params: { orderNumber: st
         <div><span className={s.eyebrow}>تفاصيل الطلب</span><h1>{o.orderNumber}</h1><p>{new Date(o.createdAt).toLocaleString("ar")}</p></div>
         <div className={s.pageActions}>
           <StatusSelect orderNumber={o.orderNumber} status={o.status} />
+          <PrintOrderButton />
+          <WhatsAppCustomerButton
+            phone={o.customer.phone}
+            customerName={o.customer.name}
+            orderNumber={o.orderNumber}
+            total={o.total}
+          />
           <form action={deleteOrderAction}>
             <input type="hidden" name="orderNumber" value={o.orderNumber} />
             <input type="hidden" name="returnTo" value="/admin/orders" />
@@ -60,12 +68,86 @@ export default async function OrderAdmin({ params }: { params: { orderNumber: st
       <h2 style={{ fontSize: "1rem", margin: "16px 0 8px" }}>العميل</h2>
       {o.deliveryAreaName && <div className={s.kv}><span>منطقة التوصيل</span><b>{o.deliveryAreaName}</b></div>}
       <div className={s.kv}><span>الاسم</span><b>{o.customer.name}</b></div>
-      <div className={s.kv}><span>الهاتف</span><b dir="ltr">{o.customer.phone}</b></div>
+      <div className={s.kv}>
+        <span>الهاتف</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <b dir="ltr">{o.customer.phone}</b>
+          <WhatsAppCustomerButton
+            phone={o.customer.phone}
+            customerName={o.customer.name}
+            orderNumber={o.orderNumber}
+            total={o.total}
+            size="sm"
+          />
+        </div>
+      </div>
       <div className={s.kv}><span>المدينة</span><b>{o.customer.city}</b></div>
       <div className={s.kv}><span>العنوان</span><b>{o.customer.address}</b></div>
       <div className={s.kv}><span>الدفع</span><b>{PAYMENT_LABEL[o.payment]}</b></div>
       {o.paymentReceiptUrl && <div className={s.kv}><span>إيصال التحويل</span><a className={s.sm} href={o.paymentReceiptUrl} target="_blank" rel="noreferrer">عرض الإيصال</a></div>}
       {o.customer.notes && <div className={s.kv}><span>ملاحظات</span><b>{o.customer.notes}</b></div>}
+
+      {/* Printable Invoice (visible only during window.print) */}
+      <div className={s.printableInvoice} aria-hidden="true">
+        <div className={s.printHeader}>
+          <div>
+            <h1>متجر رونق | RAWNQ STORE</h1>
+            <p>سند إرسالية وفاتورة مبيعات للطلب رقم #{o.orderNumber}</p>
+          </div>
+          <div className={s.printMeta}>
+            <div><b>رقم الطلب:</b> {o.orderNumber}</div>
+            <div><b>التاريخ:</b> {new Date(o.createdAt).toLocaleDateString("ar-EG")}</div>
+            <div><b>طريقة الدفع:</b> {PAYMENT_LABEL[o.payment]}</div>
+          </div>
+        </div>
+
+        <div className={s.printCustomerGrid}>
+          <h3>بيانات العميل المستلم:</h3>
+          <p><strong>الاسم:</strong> {o.customer.name}</p>
+          <p><strong>الهاتف:</strong> <span dir="ltr">{o.customer.phone}</span></p>
+          <p><strong>المدينة / المنطقة:</strong> {o.deliveryAreaName || o.customer.city}</p>
+          <p><strong>العنوان بالتفصيل:</strong> {o.customer.address}</p>
+          {o.customer.notes && <p><strong>ملاحظات العميل:</strong> {o.customer.notes}</p>}
+        </div>
+
+        <table className={s.printTable}>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>المنتج</th>
+              <th>الخيار</th>
+              <th>الكمية</th>
+              <th>سعر الوحدة</th>
+              <th>الإجمالي</th>
+            </tr>
+          </thead>
+          <tbody>
+            {o.items.map((item, idx) => (
+              <tr key={idx}>
+                <td>{idx + 1}</td>
+                <td>{item.name}</td>
+                <td>{item.option || "—"}</td>
+                <td>{item.qty}</td>
+                <td>{formatPrice(item.unitPrice)}</td>
+                <td>{formatPrice(item.qty * item.unitPrice)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className={s.printTotals}>
+          <div><span>المجموع الفرعي:</span> <span>{formatPrice(o.subtotal)}</span></div>
+          <div><span>أجرة التوصيل:</span> <span>{formatPrice(o.shipping)}</span></div>
+          <div className={s.printGrandTotal}>
+            <span>المبلغ المستحق للتحصيل (COD):</span>
+            <strong>{formatPrice(o.total)}</strong>
+          </div>
+        </div>
+
+        <div className={s.printFooter}>
+          <p>شكراً لتسوقكم من متجر رونق | نسعد دائماً بخدمتكم</p>
+        </div>
+      </div>
     </>
   );
 }

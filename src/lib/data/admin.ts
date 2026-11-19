@@ -95,26 +95,53 @@ export async function logWorkerActivity(input: {
   await prisma.adminActivityLog.create({ data: { ...input, entityId: input.entityId ?? null, details: input.details ?? "" } });
 }
 
-export type OrderListRow = { orderNumber: string; status: OrderStatus; customerName: string; total: number; image: string };
+export type OrderListRow = {
+  orderNumber: string;
+  status: OrderStatus;
+  customerName: string;
+  phone?: string;
+  city?: string;
+  createdAt?: string;
+  total: number;
+  image: string;
+};
 
 export async function getOrders(): Promise<OrderListRow[]> {
   const rows = await prisma.storeOrder.findMany({
-    select: { orderNumber: true, status: true, customerName: true, total: true, items: { take: 1, select: { image: true } } },
+    select: {
+      orderNumber: true,
+      status: true,
+      customerName: true,
+      phone: true,
+      city: true,
+      createdAt: true,
+      total: true,
+      items: { take: 1, select: { image: true } },
+    },
     orderBy: { createdAt: "desc" },
   });
   return rows.map((row) => ({
-    orderNumber: row.orderNumber, status: row.status as OrderStatus, customerName: row.customerName,
+    orderNumber: row.orderNumber, status: row.status as OrderStatus, customerName: row.customerName, phone: row.phone, city: row.city, createdAt: row.createdAt.toISOString(),
     total: Number(row.total), image: row.items[0]?.image ?? "/brand/logo.png",
   }));
 }
 
 export async function getRecentOrders(take = 5): Promise<OrderListRow[]> {
   const rows = await prisma.storeOrder.findMany({
-    select: { orderNumber: true, status: true, customerName: true, total: true, items: { take: 1, select: { image: true } } },
+    select: {
+      orderNumber: true,
+      status: true,
+      customerName: true,
+      phone: true,
+      city: true,
+      createdAt: true,
+      total: true,
+      items: { take: 1, select: { image: true } },
+    },
     orderBy: { createdAt: "desc" }, take: Math.max(1, Math.min(50, Math.trunc(take))),
   });
   return rows.map((row) => ({
-    orderNumber: row.orderNumber, status: row.status as OrderStatus, customerName: row.customerName,
+    orderNumber: row.orderNumber, status: row.status as OrderStatus, customerName: row.customerName, phone: row.phone, city: row.city, createdAt: row.createdAt.toISOString(),
     total: Number(row.total), image: row.items[0]?.image ?? "/brand/logo.png",
   }));
 }
