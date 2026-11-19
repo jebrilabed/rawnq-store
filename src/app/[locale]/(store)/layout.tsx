@@ -5,6 +5,7 @@ import { FavoritesProvider } from "@/components/storefront/FavoritesProvider";
 import { Header } from "@/components/storefront/Header";
 import { MetaPixel } from "@/components/analytics/MetaPixel";
 import { CookieConsent } from "@/components/storefront/CookieConsent";
+import { FloatingWhatsApp } from "@/components/storefront/FloatingWhatsApp";
 import { getFavoriteProductIds } from "@/lib/data/favorites";
 import { getSettings } from "@/lib/data/db";
 import { getCategories } from "@/lib/data/catalog";
@@ -30,6 +31,7 @@ export default async function StoreLayout({ children, params }: { children: Reac
           <div className={s.storeMain}>{children}</div>
           <Footer locale={params.locale} userRole={session?.user?.role} />
         </div>
+        <FloatingWhatsApp phone={settings.whatsapp || settings.phone} locale={params.locale} />
         <CookieConsent locale={params.locale} />
       </FavoritesProvider>
     </CartProvider>
