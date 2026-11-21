@@ -9,6 +9,7 @@ import { OrderStatusTracking } from "@/components/ui/OrderStatusTracking";
 import { PurchaseTracker } from "@/components/analytics/PurchaseTracker";
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
+import { cloudinaryLoader } from "@/lib/image-loader";
 
 function useOrders() {
   const [orders, setOrders] = useState<OrderSummary[] | null>(null);
@@ -32,7 +33,7 @@ export function OrdersList({ locale, orders }: { locale: string; orders: Custome
       <div className={s.ordersList}>
         {orders.map((o) => (
           <Link key={o.orderNumber} href={`/${locale}/orders/${o.orderNumber}`} className={s.orderRow}>
-            <Image src={o.image} alt="" width={72} height={72} />
+            <Image src={o.image} alt="" width={72} height={72} loader={cloudinaryLoader} />
             <div className={s.lineBody}>
               <b>{tr("طلب")} {o.orderNumber}</b>
               <span className={s.muted}>{fmtDate(o.createdAt, locale)}</span>
@@ -75,7 +76,7 @@ export function OrderDetail({ locale, orderNumber, order, confirmation, delivery
       <OrderStatusTracking status={o.status} history={o.statusHistory} locale={locale} />
       {o.items.map((i, k) => (
         <div key={k} className={s.line}>
-          <Image src={i.image} alt="" width={64} height={64} />
+          <Image src={i.image} alt="" width={64} height={64} loader={cloudinaryLoader} />
           <div className={s.lineBody}>
             <b>{tr(i.name)}</b>
             {i.option && <small className={s.muted}>{tr(i.option)}</small>}

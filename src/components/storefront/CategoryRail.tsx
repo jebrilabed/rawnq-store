@@ -5,6 +5,7 @@ import { AutoScrollRail } from "./AutoScrollRail";
 import s from "./storefront.module.css";
 import { localeDirection, translate } from "@/lib/i18n";
 import { orderCategories } from "@/lib/categories";
+import { cloudinaryLoader } from "@/lib/image-loader";
 
 const SECTION_IMAGES = {
   gifts: "/sections/Elegant Gifts and Décor Display.png",
@@ -290,7 +291,7 @@ export function CategoryRail({ categories, locale, parentCategory }: { categorie
         return (
           <Link key={category.slug} data-rail-item href={`/${locale}/categories/${category.slug}`} className={s.categoryCard}>
             {categoryImage
-              ? <span className={s.categoryImage}><Image src={categoryImage} alt={category.name} width={400} height={400} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} sizes="(max-width: 480px) 44vw, (max-width: 720px) 44vw, 270px" /></span>
+              ? <span className={s.categoryImage}><Image src={categoryImage} alt={category.name} width={270} height={270} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} sizes="(max-width: 720px) 44vw, 270px" loader={cloudinaryLoader} /></span>
               : <span className={s.categoryTitle}>{category.name}</span>}
           </Link>
         );

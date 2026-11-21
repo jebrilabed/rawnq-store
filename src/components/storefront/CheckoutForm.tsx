@@ -12,6 +12,7 @@ import { useCart } from "./CartProvider";
 import { trackAddPaymentInfo, trackInitiateCheckout } from "@/lib/analytics/pixel";
 import { Spinner } from "@/components/ui/LoadingState";
 import { toast } from "@/components/ui/Toast";
+import { cloudinaryLoader } from "@/lib/image-loader";
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
 
@@ -254,6 +255,7 @@ export function CheckoutForm({ locale, areas, courierAreas, customer, methods }:
                           width={42}
                           height={42}
                           className={s.checkoutThumb}
+                          loader={cloudinaryLoader}
                         />
                       )}
                       <div className={s.checkoutProductInfo}>

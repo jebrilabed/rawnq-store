@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/format";
 import { StatusSelect, ConfirmButton } from "@/components/admin/Controls";
 import { deleteOrderAction } from "@/app/(admin)/admin/actions";
 import { WhatsAppCustomerButton } from "@/components/admin/OrderCustomerActions";
+import { cloudinaryLoader } from "@/lib/image-loader";
 import s from "./admin.module.css";
 
 const STATUS_KEYS: OrderStatus[] = ["NEW", "PROCESSING", "SHIPPED", "DONE", "CANCELLED"];
@@ -148,7 +149,7 @@ export function OrdersTableFilter({ initialOrders }: { initialOrders: OrderListR
                 <tr key={o.orderNumber}>
                   <td>
                     <div className={s.itemCell}>
-                      <Image className={s.thumb} src={o.image} alt="" width={42} height={42} />
+                      <Image className={s.thumb} src={o.image} alt="" width={42} height={42} loader={cloudinaryLoader} />
                       <div>
                         <b>{o.orderNumber}</b>
                         {o.createdAt && (

@@ -75,7 +75,7 @@ export function Header({ locale, storeName, userRole, categories }: { locale: st
         <div className={`${s.wrap} ${s.bar}`}>
           <button className={s.menuBtn} onClick={() => setOpen(true)} aria-label={tr("القائمة")}><Menu size={22} /></button>
           <Link href={base} className={s.logo}>
-            <Image src="/brand/logo.png" alt={`شعار ${storeName}`} width={44} height={44} priority />
+            <Image src="/brand/logo.png" alt={`شعار ${storeName}`} width={44} height={44} priority unoptimized />
             <span className={s.logoName}>{storeName}</span>
           </Link>
           <nav className={s.nav} aria-label={tr("التنقل الرئيسي")}>

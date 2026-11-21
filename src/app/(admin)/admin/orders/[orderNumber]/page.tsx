@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cloudinaryLoader } from "@/lib/image-loader";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { ConfirmButton, StatusSelect } from "@/components/admin/Controls";
 import { PrintOrderButton, WhatsAppCustomerButton } from "@/components/admin/OrderCustomerActions";
@@ -56,7 +57,7 @@ export default async function OrderAdmin({ params }: { params: { orderNumber: st
       <div className={s.tableWrap}><table className={s.table}>
         <thead><tr><th>المنتج</th><th>الخيار</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th></tr></thead>
         <tbody>{o.items.map((i, k) => (
-          <tr key={k}><td><div className={s.itemCell}><Image className={s.thumb} src={i.image} alt="" width={42} height={42} /><b>{i.name}</b></div></td>
+          <tr key={k}><td><div className={s.itemCell}><Image className={s.thumb} src={i.image} alt="" width={42} height={42} loader={cloudinaryLoader} /><b>{i.name}</b></div></td>
             <td>{i.option || "—"}</td><td>{i.qty}</td><td>{formatPrice(i.unitPrice)}</td><td><b>{formatPrice(i.qty * i.unitPrice)}</b></td>
           </tr>
         ))}</tbody>

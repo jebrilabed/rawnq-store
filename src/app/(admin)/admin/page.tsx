@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { cloudinaryLoader } from "@/lib/image-loader";
 import { AlertTriangle, ArrowUpLeft, Boxes, Package, ShoppingBag, Wallet } from "lucide-react";
 import { StatusSelect } from "@/components/admin/Controls";
 import s from "@/components/admin/admin.module.css";
@@ -30,7 +31,7 @@ export default async function Dashboard() {
           <thead><tr><th>الطلب</th><th>العميل</th><th>الإجمالي</th><th>الحالة</th><th>الإجراء</th></tr></thead>
           <tbody>{orders.map((o) => (
             <tr key={o.orderNumber}>
-              <td><div className={s.itemCell}><Image className={s.thumb} src={o.image} alt="" width={42} height={42} /><b>{o.orderNumber}</b></div></td>
+              <td><div className={s.itemCell}><Image className={s.thumb} src={o.image} alt="" width={42} height={42} loader={cloudinaryLoader} /><b>{o.orderNumber}</b></div></td>
               <td>{o.customerName}</td><td><b>{formatPrice(o.total)}</b></td>
               <td><StatusSelect orderNumber={o.orderNumber} status={o.status} /></td>
               <td><Link href={`/admin/orders/${o.orderNumber}`} className={s.sm}>التفاصيل</Link></td>

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { cloudinaryLoader } from "@/lib/image-loader";
 import { Plus } from "lucide-react";
 import { deleteProductAction, togglePublishedAction } from "../actions";
 import { ConfirmButton, SubmitButton } from "@/components/admin/Controls";
@@ -30,7 +31,7 @@ export default async function ProductsAdmin() {
           <tbody>{products.map((p) => {
             const stock = stockOf(p);
             return <tr key={p.id}>
-              <td><div className={s.itemCell}><Image className={s.thumb} src={p.image} alt="" width={42} height={42} /><div><b>{p.name}</b>{p.variants.length > 0 && <small>متعدد الخيارات</small>}</div></div></td>
+              <td><div className={s.itemCell}><Image className={s.thumb} src={p.image} alt="" width={42} height={42} loader={cloudinaryLoader} /><div><b>{p.name}</b>{p.variants.length > 0 && <small>متعدد الخيارات</small>}</div></div></td>
               <td>{p.category.name}</td><td><b>{formatPrice(p.price)}</b></td>
               <td><span className={`${s.pill} ${stock <= low ? s.low : s.ok}`}>{stock === 0 ? "نفد" : stock}</span></td>
               <td><span className={`${s.pill} ${p.published ? s.ok : s.warning}`}>{p.published ? "منشور" : "مخفي"}</span></td>

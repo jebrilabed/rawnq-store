@@ -10,6 +10,7 @@ import { ProductViewTracker } from "@/components/analytics/ProductViewTracker";
 import s from "@/components/storefront/storefront.module.css";
 import { getProduct, getRelatedProducts } from "@/lib/data/catalog";
 import { translate } from "@/lib/i18n";
+import { cloudinaryLoader } from "@/lib/image-loader";
 
 export const dynamic = "force-dynamic";
 
@@ -70,7 +71,14 @@ export default async function ProductPage({ params }: Props) {
             categoryName={product.categorySlug}
           />
           <div className={s.detailImg}>
-            <Image src={product.image} alt={product.name} fill priority sizes="(min-width:720px) 50vw, 100vw" />
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              priority
+              sizes="(min-width:720px) 50vw, 100vw"
+              loader={cloudinaryLoader}
+            />
           </div>
           <div className={s.panel}>
             <Link href={`/${params.locale}/products`} className={s.muted}>← {tr("كل المنتجات")}</Link>

@@ -21,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className={s.shell}>
       <aside className={s.sidebar}>
         <div className={s.brand}>
-          <Image src="/brand/logo.png" alt="" width={40} height={40} />
+          <Image src="/brand/logo.png" alt="" width={40} height={40} unoptimized />
           <span className={s.brandText}><strong>{storeName}</strong><small>لوحة إدارة المتجر</small></span>
         </div>
         <div>
