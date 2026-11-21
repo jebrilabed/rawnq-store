@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { CloudinaryImage } from "@/components/ui/CloudinaryImage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2, RotateCcw, ShieldCheck, Truck } from "lucide-react";
@@ -10,7 +10,6 @@ import { ProductViewTracker } from "@/components/analytics/ProductViewTracker";
 import s from "@/components/storefront/storefront.module.css";
 import { getProduct, getRelatedProducts } from "@/lib/data/catalog";
 import { translate } from "@/lib/i18n";
-import { cloudinaryLoader } from "@/lib/image-loader";
 
 export const dynamic = "force-dynamic";
 
@@ -71,13 +70,12 @@ export default async function ProductPage({ params }: Props) {
             categoryName={product.categorySlug}
           />
           <div className={s.detailImg}>
-            <Image
+            <CloudinaryImage
               src={product.image}
               alt={product.name}
               fill
               priority
               sizes="(min-width:720px) 50vw, 100vw"
-              loader={cloudinaryLoader}
             />
           </div>
           <div className={s.panel}>

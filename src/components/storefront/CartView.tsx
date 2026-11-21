@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import { CloudinaryImage } from "@/components/ui/CloudinaryImage";
 import Link from "next/link";
 import { Minus, Plus, ShoppingBasket, X } from "lucide-react";
 import { formatPrice } from "@/lib/format";
@@ -7,7 +7,6 @@ import { useCart } from "./CartProvider";
 import { toast } from "@/components/ui/Toast";
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
-import { cloudinaryLoader } from "@/lib/image-loader";
 
 
 
@@ -31,7 +30,7 @@ export function CartView({ locale }: { locale: string }) {
         <div className={s.cartItemsHeader}><strong>{tr("منتجاتك")}</strong><span>{lines.length} · {count} {tr("قطع")}</span></div>
         {lines.map((l) => (
           <div key={l.key} className={s.cartLine}>
-            <Image src={l.image} alt="" width={88} height={88} loader={cloudinaryLoader} />
+            <CloudinaryImage src={l.image} alt="" width={88} height={88} />
             <div className={s.cartLineInfo}>
               <b>{tr(l.name)}</b>
               {l.option && <small>{tr(l.option)}</small>}

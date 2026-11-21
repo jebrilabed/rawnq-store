@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
+import { CloudinaryImage } from "@/components/ui/CloudinaryImage";
 import Link from "next/link";
 import { Search, X, MessageCircle } from "lucide-react";
 import type { OrderListRow } from "@/lib/data/admin";
@@ -10,7 +10,6 @@ import { formatPrice } from "@/lib/format";
 import { StatusSelect, ConfirmButton } from "@/components/admin/Controls";
 import { deleteOrderAction } from "@/app/(admin)/admin/actions";
 import { WhatsAppCustomerButton } from "@/components/admin/OrderCustomerActions";
-import { cloudinaryLoader } from "@/lib/image-loader";
 import s from "./admin.module.css";
 
 const STATUS_KEYS: OrderStatus[] = ["NEW", "PROCESSING", "SHIPPED", "DONE", "CANCELLED"];
@@ -149,7 +148,7 @@ export function OrdersTableFilter({ initialOrders }: { initialOrders: OrderListR
                 <tr key={o.orderNumber}>
                   <td>
                     <div className={s.itemCell}>
-                      <Image className={s.thumb} src={o.image} alt="" width={42} height={42} loader={cloudinaryLoader} />
+                      <CloudinaryImage className={s.thumb} src={o.image} alt="" width={42} height={42} />
                       <div>
                         <b>{o.orderNumber}</b>
                         {o.createdAt && (

@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import { CloudinaryImage } from "@/components/ui/CloudinaryImage";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -12,7 +12,6 @@ import { useCart } from "./CartProvider";
 import { trackAddPaymentInfo, trackInitiateCheckout } from "@/lib/analytics/pixel";
 import { Spinner } from "@/components/ui/LoadingState";
 import { toast } from "@/components/ui/Toast";
-import { cloudinaryLoader } from "@/lib/image-loader";
 import s from "./storefront.module.css";
 import { translate } from "@/lib/i18n";
 
@@ -249,13 +248,12 @@ export function CheckoutForm({ locale, areas, courierAreas, customer, methods }:
                   <td className={s.tdProduct}>
                     <div className={s.checkoutProductCell}>
                       {line.image && (
-                        <Image
+                        <CloudinaryImage
                           src={line.image}
                           alt=""
                           width={42}
                           height={42}
                           className={s.checkoutThumb}
-                          loader={cloudinaryLoader}
                         />
                       )}
                       <div className={s.checkoutProductInfo}>

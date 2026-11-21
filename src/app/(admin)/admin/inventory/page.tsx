@@ -1,5 +1,4 @@
-import Image from "next/image";
-import { cloudinaryLoader } from "@/lib/image-loader";
+import { CloudinaryImage } from "@/components/ui/CloudinaryImage";
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import { StockForm } from "@/components/admin/StockForm";
@@ -28,7 +27,7 @@ export default async function InventoryAdmin() {
             const total = stockOf(p);
             const rows = p.variants.length ? p.variants : [{ id: "base", color: null, size: null, stock: p.stock }];
             return rows.map((variant, index) => <tr key={`${p.id}-${variant.id}`}>
-              {index === 0 && <td rowSpan={rows.length}><div className={s.itemCell}><Image className={s.thumb} src={p.image} alt="" width={42} height={42} loader={cloudinaryLoader} /><b>{p.name}</b></div></td>}
+              {index === 0 && <td rowSpan={rows.length}><div className={s.itemCell}><CloudinaryImage className={s.thumb} src={p.image} alt="" width={42} height={42} /><b>{p.name}</b></div></td>}
               {index === 0 && <td rowSpan={rows.length}><span className={`${s.pill} ${total <= low ? s.low : s.ok}`}>{total === 0 ? "نفد" : `${total} قطعة`}</span></td>}
               <td><span className={s.variantLabel}>{[variant.color, variant.size].filter(Boolean).join(" / ") || "أساسي"}</span></td>
               <td><StockForm id={p.id} variant={p.variants.length ? variant.id : undefined} qty={variant.stock} /></td>
